@@ -1,0 +1,53 @@
+/* Mobile-first responsive styles */
+@media (max-width: 768px) {
+  .container {
+    padding-left: 15px;
+    padding-right: 15px;
+  }
+  
+  .banner-title {
+    font-size: 36px !important;
+    line-height: 42px !important;
+  }
+  
+  .mobile-grid {
+    grid-template-columns: repeat(5, 1fr) !important;
+    gap: 8px !important;
+  }
+  
+  .number-btn, .bonus-number-btn {
+    padding: 8px !important;
+    font-size: 14px !important;
+  }
+  
+  .modal-dialog {
+    margin: 10px !important;
+  }
+  
+  .log-reg-modal-wrapper .modal-body {
+    padding: 20px !important;
+  }
+  
+  .col-lg-8, .col-lg-4 {
+    width: 100% !important;
+    margin-bottom: 20px;
+  }
+  
+  .single-draw {
+    margin-bottom: 20px !important;
+  }
+  
+  .draw-slider {
+    flex-direction: column !important;
+  }
+  
+  .draw-slider .item {
+    width: 100% !important;
+    padding: 15px !important;
+  }
+  
+  .col-lg-4.col-md-6 {
+    width: 100% !important;
+    margin-bottom: 20px;
+  }
+}

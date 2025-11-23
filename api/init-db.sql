@@ -1,0 +1,29 @@
+CREATE DATABASE IF NOT EXISTS lottery_db;
+USE lottery_db;
+
+CREATE TABLE IF NOT EXISTS users (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    email VARCHAR(255) UNIQUE NOT NULL,
+    password VARCHAR(255) NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS entries (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT NOT NULL,
+    lottery VARCHAR(50) NOT NULL,
+    numbers JSON NOT NULL,
+    bonus_numbers JSON NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(id)
+);
+
+CREATE TABLE IF NOT EXISTS results (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    lottery VARCHAR(50) NOT NULL,
+    winning_numbers JSON NOT NULL,
+    bonus_numbers JSON NOT NULL,
+    draw_date DATE NOT NULL,
+    total_pool_money DECIMAL(10,3) NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);

@@ -1,0 +1,160 @@
+.header-section.header-active {
+  position: fixed;
+  top: 0px;
+  left: 0px;
+  width: 100%;
+  z-index: 99;
+  box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.2);
+  animation-name: fadeInDown;
+  animation-duration: 1s;
+}
+
+.header-top-area-inner {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: nowrap;
+}
+
+.header-top-area-inner .right-area {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.header-top-area-inner .logo {
+  flex-shrink: 1;
+  min-width: 0;
+}
+
+.modal.show {
+  display: block !important;
+}
+
+.modal {
+  background: rgba(0, 0, 0, 0.5);
+}
+
+.log-reg-area {
+  white-space: nowrap;
+}
+
+.cart-area {
+  margin-left: 10px;
+}
+
+/* Mobile menu styles from original LotteryApp */
+@media (max-width: 991px) {
+  .menu {
+    display: none;
+    position: fixed;
+    background-color: rgb(108, 0, 146);
+    width: 100%;
+    max-width: 500px;
+    top: 0px;
+    left: 0;
+    padding-left: 15px;
+    height: calc(100vh - 0px);
+    overflow-y: scroll;
+    padding-top: 20px;
+    padding-bottom: 20px;
+    z-index: 33;
+  }
+  
+  .menu.mobile-open {
+    display: block;
+    animation-name: fadeInLeft;
+    animation-duration: 1s;
+  }
+  
+  .menu li {
+    width: 100%;
+    padding: 0;
+    display: block;
+  }
+  
+  .menu li a {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    color: #e9eeff;
+    text-transform: uppercase;
+    padding-right: 20px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    padding-top: 7px;
+    padding-bottom: 7px;
+  }
+  
+  .menu li a:hover,
+  .menu li a.active {
+    color: #27ff5a;
+  }
+  
+  .header-section {
+    box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.2);
+    background-color: rgb(108, 0, 146);
+    border: none;
+    padding: 10px 0px;
+  }
+}
+
+@media (max-width: 767px) {
+  .header-top-area-inner {
+    align-self: center;
+    align-items: center;
+    align-content: center;
+  }
+  
+  .header-top-area-inner .logo h2 {
+    font-size: 18px;
+  }
+  
+  .custom-button1, .custom-button2 {
+    padding: 1px 4px;
+    font-size: 14px;
+    line-height: 24px;
+  }
+  
+  .header-top-area-inner .right-area .log-reg-area .custom-button1:first-child {
+    margin-right: 5px;
+  }
+  
+  .header-top-area-inner .right-area .log-reg-area {
+    margin-right: 10px;
+  }
+  
+  .header-top-area-inner .right-area .cart-area .amount {
+    display: none;
+  }
+}
+
+@media (max-width: 575px) {
+  .menu {
+    width: calc(100% - 65px);
+    max-width: calc(100% - 65px);
+  }
+}
+
+@media (max-width: 414px) {
+  .header-top-area-inner .right-area .log-reg-area {
+    margin-right: 0px;
+  }
+  
+  .header-top-area-inner .logo h2 {
+    font-size: 16px;
+  }
+}
+
+@media (max-width: 340px) {
+  .header-top-area-inner .right-area .log-reg-area .custom-button1:first-child {
+    margin-right: 1px;
+  }
+  
+  .header-top-area-inner .right-area .log-reg-area {
+    margin-right: 5px;
+  }
+  
+  .header-top-area-inner .logo h2 {
+    font-size: 14px;
+  }
+}

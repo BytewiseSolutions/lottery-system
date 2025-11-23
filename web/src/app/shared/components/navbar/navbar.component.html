@@ -1,0 +1,64 @@
+<header class="top-header">
+  <div class="header-top-area">
+    <div class="container">
+      <div class="row">
+        <div class="col-lg-12">
+          <div class="header-top-area-inner">
+            <a routerLink="/" class="logo">
+              <h2 style="margin: 0; font-weight: bold; font-size: 24px;">Total Free Lotto</h2>
+            </a>
+            <div class="right-area">
+              <div class="log-reg-area" *ngIf="!isLoggedIn">
+                <a href="#" class="custom-button1" (click)="openRegisterModal()">Sign Up</a>
+                <a href="#" class="custom-button2" (click)="openLoginModal()">Login In</a>
+              </div>
+              <div class="log-reg-area" *ngIf="isLoggedIn">
+                <a href="#" class="custom-button2" (click)="logout()">Logout</a>
+              </div>
+              <div class="cart-area">
+                <div class="amount">
+                  <h4 class="mony">$ {{totalPoolMoney | number:'1.3-3'}}</h4>
+                  <p>Winning Money Now</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="header-section">
+    <div class="container">
+      <div class="header-wrapper">
+        <ul class="menu" [class.mobile-open]="mobileMenuOpen">
+          <li><a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}" (click)="mobileMenuOpen = false">Home</a></li>
+          <li><a routerLink="/lotteries" routerLinkActive="active" (click)="mobileMenuOpen = false">Lotteries</a></li>
+          <li><a routerLink="/results" routerLinkActive="active" (click)="mobileMenuOpen = false">Results</a></li>
+          <li><a routerLink="/about" routerLinkActive="active" (click)="mobileMenuOpen = false">About</a></li>
+          <li><a routerLink="/faq" routerLinkActive="active" (click)="mobileMenuOpen = false">Faq</a></li>
+          <li><a routerLink="/history" routerLinkActive="active" (click)="mobileMenuOpen = false">History</a></li>
+          <li><a routerLink="/contact" routerLinkActive="active" (click)="mobileMenuOpen = false">Contact</a></li>
+        </ul>
+        <div class="header-bar d-lg-none" [class.active]="mobileMenuOpen" (click)="toggleMobileMenu()">
+          <span></span>
+          <span></span>
+          <span></span>
+        </div>
+      </div>
+    </div>
+  </div>
+</header>
+
+<app-login 
+  [isVisible]="showLoginModal"
+  (loginSuccess)="onLoginSuccess($event)"
+  (closeModal)="onCloseLogin()"
+  (switchToSignupEvent)="onSwitchToSignup()">
+</app-login>
+
+<app-signup 
+  [isVisible]="showSignupModal"
+  (signupSuccess)="onSignupSuccess($event)"
+  (closeModal)="onCloseSignup()"
+  (switchToLoginEvent)="onSwitchToLogin()">
+</app-signup>

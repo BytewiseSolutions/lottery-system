@@ -1,0 +1,389 @@
+<app-layout>
+<section class="banner-section">
+  <div class="container">
+    <div class="row">
+      <div class="col-12 text-center">
+        <h1 class="banner-title">{{lotteryType === 'mon' ? 'Mon' : lotteryType === 'wed' ? 'Wed' : 'Fri'}} Lotto</h1>
+        <p class="text">Only 3 easy steps: <strong>PICK</strong> → <strong>PLAY</strong> → <strong>$WIN</strong></p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="lottery-play-section" style="padding: 50px 0;">
+  <div class="container">
+    <div class="row">
+      <div class="col-lg-8">
+        <!-- Section One: Pick 5 Numbers -->
+        <div *ngIf="currentSection === 1" class="play-section">
+          <h3>Pick 5 Numbers</h3>
+          <h4>Section One</h4>
+          <div class="numbers-grid mobile-grid" style="display: grid; grid-template-columns: repeat(10, 1fr); gap: 10px; margin: 20px 0;">
+            <button *ngFor="let num of numbers" 
+                    class="number-btn" 
+                    [class.selected]="selectedNumbers.includes(num)"
+                    (click)="toggleNumber(num)"
+                    [disabled]="!selectedNumbers.includes(num) && selectedNumbers.length >= 5">
+              {{num}}
+            </button>
+          </div>
+          <button class="custom-button2" 
+                  [disabled]="selectedNumbers.length !== 5"
+                  (click)="nextSection()">Next</button>
+        </div>
+
+        <!-- Section Two: Pick 2 Bonus Numbers -->
+        <div *ngIf="currentSection === 2" class="play-section">
+          <h3>Pick 2 bonus numbers</h3>
+          <h4>Section Two</h4>
+          <div class="numbers-grid mobile-grid" style="display: grid; grid-template-columns: repeat(10, 1fr); gap: 10px; margin: 20px 0;">
+            <button *ngFor="let num of numbers" 
+                    class="bonus-number-btn" 
+                    [class.selected]="selectedBonusNumbers.includes(num)"
+                    (click)="toggleBonusNumber(num)"
+                    [disabled]="!selectedBonusNumbers.includes(num) && selectedBonusNumbers.length >= 2">
+              {{num}}
+            </button>
+          </div>
+          <button class="custom-button2" 
+                  [disabled]="selectedBonusNumbers.length !== 2"
+                  (click)="nextSection()">Next</button>
+        </div>
+
+        <!-- Section Three: Review -->
+        <div *ngIf="currentSection === 3" class="play-section">
+          <h3>How you are about to play</h3>
+          <h4>Section One</h4>
+          <div style="margin: 20px 0;">
+            <span *ngFor="let num of selectedNumbers" class="preview-number">{{num}}</span>
+          </div>
+          <h4>Section Two</h4>
+          <div style="margin: 20px 0;">
+            <span *ngFor="let num of selectedBonusNumbers" class="preview-number">{{num}}</span>
+          </div>
+          <div class="button-group" style="margin: 20px 0; display: flex; gap: 15px; flex-wrap: wrap;">
+            <button *ngIf="isLoggedIn" class="custom-button2" (click)="submitEntry()">Submit ($0.001)</button>
+            <button *ngIf="!isLoggedIn" class="custom-button2" (click)="showLogin()">Login to Play</button>
+            <button class="custom-button1" (click)="editEntry()">Edit</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-lg-4">
+        <div class="sidebar-info" style="background: #f8f9fa; padding: 20px; border-radius: 10px;">
+          <div *ngIf="currentSection === 1">
+            <h4>How To Play</h4>
+            <p>You pick 5 numbers from Section One and 2 bonus numbers from Section Two.</p>
+            <p>Section One is the page you are in now. Section Two is the page you will be directed to after clicking on Next.</p>
+            <p>Remember you can play as many times as you like. The more you play, the larger the pool money.</p>
+            <div class="selected-preview">
+              <span *ngFor="let num of selectedNumbers" class="preview-number">{{num}}</span>
+            </div>
+          </div>
+
+          <div *ngIf="currentSection === 2">
+            <h4>How To Play</h4>
+            <p>You pick 5 numbers from Section One and 2 bonus numbers from Section Two.</p>
+            <p>Section One is the page you were on previously. You are in Section Two where you will be picking 2 bonus numbers.</p>
+            <p>Remember you can play as many times as you like. The more you play, the larger the pool money.</p>
+            <div class="selected-preview">
+              <div>Main: <span *ngFor="let num of selectedNumbers" class="preview-number">{{num}}</span></div>
+              <div>Bonus: <span *ngFor="let num of selectedBonusNumbers" class="preview-number">{{num}}</span></div>
+            </div>
+          </div>
+
+          <div *ngIf="currentSection === 3">
+            <h4>Editing Menu</h4>
+            <p>Last Playing</p>
+            <p>Submit Entry Part</p>
+            <p>Edit Entry Part</p>
+            <p>The more you play, the more you increase your winning chances.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+</app-layout>
+
+<app-login 
+  [isVisible]="showLoginModal"
+  (loginSuccess)="onLoginSuccess($event)"
+  (closeModal)="onCloseLogin()"
+  (switchToSignupEvent)="onSwitchToSignup()">
+</app-login>
+
+<app-signup 
+  [isVisible]="showSignupModal"
+  (signupSuccess)="onSignupSuccess($event)"
+  (closeModal)="onCloseSignup()"
+  (switchToLoginEvent)="onSwitchToLogin()">
+</app-signup>
+
+<style>
+.number-btn, .bonus-number-btn {
+  background: #fff;
+  border: 2px solid #ddd;
+  padding: 10px;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.number-btn:hover, .bonus-number-btn:hover {
+  background: #f0f0f0;
+}
+
+.number-btn.selected, .bonus-number-btn.selected {
+  background: #007bff;
+  color: white;
+  border-color: #007bff;
+}
+
+.selected-preview {
+  margin-top: 20px;
+  padding: 15px;
+  background: white;
+  border-radius: 5px;
+  border: 1px solid #ddd;
+}
+
+.preview-number {
+  display: inline-block;
+  background: #007bff;
+  color: white;
+  padding: 5px 10px;
+  margin: 2px;
+  border-radius: 3px;
+}
+
+/* Login & Registration Modal Styles from original LotteryApp */
+.log-reg-modal-wrapper .modal-body {
+  padding: 30px 40px 40px;
+  position: relative;
+  width: 100%;
+}
+
+.log-reg-modal-wrapper .modal-body .close {
+  position: absolute;
+  top: 4px;
+  right: 7px;
+  display: inline-block;
+  padding: 0px;
+  margin: 0px;
+  cursor: pointer;
+  font-size: 24px;
+  color: #999;
+}
+
+.log-reg-modal-wrapper.log .title {
+  margin: 0 auto 30px;
+}
+
+.log-reg-modal-wrapper.log .modal-body {
+  padding: 30px 40px 35px;
+}
+
+.log-reg-inner .title {
+  font-size: 24px;
+  line-height: 34px;
+  font-weight: 700;
+  display: block;
+  margin: 0 auto 24px;
+  text-align: center;
+  color: #5949b3;
+}
+
+.log-reg-inner .main-content .form-group {
+  margin-bottom: 20px;
+}
+
+.log-reg-inner .main-content .form-group label {
+  font-size: 18px;
+  line-height: 28px;
+  color: #5949b3;
+  font-weight: 700;
+  margin-bottom: 8px;
+  display: block;
+}
+
+.log-reg-inner .main-content .form-group .my-form-control {
+  border: 1px solid #ebebf3;
+  background-color: #f6f6fa;
+  font-size: 16px;
+  color: #273bff;
+  padding: 0px 30px;
+  height: 60px;
+  width: 100%;
+  border-radius: 5px;
+}
+
+.log-reg-inner .main-content .form-group .my-form-control::placeholder {
+  color: #6f6c9f !important;
+}
+
+.log-reg-inner .main-content .f-pass {
+  font-size: 16px;
+  line-height: 26px;
+  margin-bottom: 20px;
+}
+
+.log-reg-inner .main-content .f-pass a {
+  color: #0403c4;
+  text-decoration: none;
+}
+
+.log-reg-inner .main-content .button-wrapper {
+  display: block;
+  text-align: center;
+  margin-top: 30px;
+}
+
+.log-reg-inner .main-content .button-wrapper .custom-button2 {
+  padding: 10px 20px;
+  background: linear-gradient(0deg, #f4ba2e 0%, #fea036 100%);
+  border: 1px solid #fea036;
+  border-radius: 5px;
+  color: #ffffff;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.log-reg-inner .main-content .or {
+  margin-top: 29px;
+  margin-bottom: 15px;
+  font-size: 16px;
+  font-weight: 700;
+  color: #5949b3;
+  display: block;
+  text-align: center;
+  position: relative;
+  width: 100%;
+}
+
+.log-reg-inner .main-content .or.log {
+  margin-top: 24px;
+}
+
+.log-reg-inner .main-content .or p {
+  display: inline-block;
+  background: #fff;
+  margin-bottom: 0px;
+  padding: 0px 15px;
+  position: relative;
+  z-index: 2;
+}
+
+.log-reg-inner .main-content .or::before {
+  position: absolute;
+  content: "";
+  height: 1px;
+  width: 100%;
+  background: rgba(0, 0, 0, 0.15);
+  left: 0px;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+.log-reg-inner .main-content .or-content {
+  display: block;
+  text-align: center;
+}
+
+.log-reg-inner .main-content .or-content p {
+  color: #3b368c;
+  font-size: 16px;
+  line-height: 26px;
+  margin-bottom: 10px;
+}
+
+.log-reg-inner .main-content .or-content .or-btn {
+  margin-top: 9px;
+  border: 1px solid rgba(59, 54, 140, 0.1);
+  background-color: #eaf2fc;
+  box-shadow: 1.948px 13.864px 6px 0px rgba(220, 234, 251, 0.3);
+  padding: 10px 30px;
+  border-radius: 50px;
+  margin-bottom: 19px;
+  transition: all ease 0.3s;
+  display: inline-block;
+  text-decoration: none;
+  color: #333;
+}
+
+.log-reg-inner .main-content .or-content .or-btn img {
+  margin-right: 8px;
+  width: 20px;
+}
+
+.log-reg-inner .main-content .or-content .or-signup {
+  font-size: 16px;
+  margin-bottom: 0px;
+  color: #5949b3;
+}
+
+.log-reg-inner .main-content .or-content .or-signup a {
+  color: #0403c4;
+  font-weight: 600;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.modal.show {
+  display: block !important;
+}
+
+.modal {
+  background: rgba(0, 0, 0, 0.5);
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 1050;
+}
+
+.modal-dialog {
+  position: relative;
+  width: auto;
+  margin: 1.75rem;
+  pointer-events: none;
+}
+
+.modal-dialog-centered {
+  display: flex;
+  align-items: center;
+  min-height: calc(100% - 3.5rem);
+}
+
+.modal-content {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  pointer-events: auto;
+  background-color: #fff;
+  background-clip: padding-box;
+  border: 1px solid rgba(0,0,0,.2);
+  border-radius: 0.3rem;
+  outline: 0;
+}
+
+.button-group {
+  display: flex;
+  gap: 15px;
+  flex-wrap: wrap;
+}
+
+@media (max-width: 768px) {
+  .button-group {
+    flex-direction: column;
+    gap: 10px;
+  }
+  
+  .button-group button {
+    width: 100%;
+  }
+}
+</style>

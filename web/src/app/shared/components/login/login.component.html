@@ -1,0 +1,42 @@
+<div class="modal fade log-reg-modal-wrapper log" [class.show]="isVisible" [style.display]="isVisible ? 'block' : 'none'">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-body">
+        <div class="close" (click)="close()">
+          <span>&times;</span>
+        </div>
+        <div class="log-reg-inner">
+          <h2 class="title">Welcome to Total Free Lotto</h2>
+          <div class="main-content">
+            <form (ngSubmit)="onLogin()">
+              <div class="form-group">
+                <label>Your Email</label>
+                <input type="email" class="my-form-control" [(ngModel)]="email" [ngModelOptions]="{standalone: true}" placeholder="Enter Your Email" required>
+              </div>
+              <div class="form-group">
+                <label>Password</label>
+                <input type="password" class="my-form-control" [(ngModel)]="password" [ngModelOptions]="{standalone: true}" placeholder="Enter Your Password" required>
+              </div>
+              <p class="f-pass">
+                Forgot your password? <a href="#">recover password</a>
+              </p>
+              <div class="button-wrapper">
+                <button type="submit" class="custom-button2">Sign In</button>
+              </div>
+              <div class="or log">
+                <p>OR</p>
+              </div>
+              <div class="or-content">
+                <p>Sign up with your email</p>
+                <a href="#" class="or-btn"><img src="assets/images/google.png" alt> Sign Up with Google</a>
+                <p class="or-signup">
+                  Don't have an account? <a href="#" (click)="switchToSignup()">Sign up here</a>
+                </p>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

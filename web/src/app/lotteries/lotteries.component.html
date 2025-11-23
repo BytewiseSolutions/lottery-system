@@ -1,0 +1,41 @@
+<app-layout>
+<section class="banner-section">
+  <div class="container">
+    <div class="row">
+      <div class="col-12">
+        <h1 class="banner-title">Lotteries</h1>
+        <p class="text">Pick the one you want to play in.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="draw-section">
+  <div class="container">
+    <div class="row">
+      <div class="col-12 col-md-6 col-lg-4 mb-4" *ngFor="let draw of draws">
+        <div class="single-draw">
+          <img class="overlay" [src]="'assets/images/overlaymask' + (draw.id === 1 ? '1' : draw.id === 2 ? '' : '3') + '.png'" alt>
+          <div class="icon">
+            <img [src]="'assets/images/d' + draw.id + '.png'" alt>
+          </div>
+          <h4 style="text-align: center;">
+            {{ draw.name }}<br>
+            {{ formatDate(draw.nextDraw) }}<br>
+            {{ draw.jackpot }}
+          </h4>
+          <a routerLink="/play-lottery" [queryParams]="{lottery: getLotteryCode(draw.name)}" 
+             [class]="draw.id === 2 ? 'custom-button2' : 'custom-button1'">Play</a>
+          <div class="next-draw">
+            <span class="text">Next Draw :</span>
+            <div class="time">
+              <img src="assets/images/time.png" alt>
+              <h6>{{ getCountdown(draw.nextDraw) }}</h6>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+</app-layout>

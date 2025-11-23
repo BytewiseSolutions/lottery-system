@@ -1,0 +1,164 @@
+<app-layout>
+<section class="banner-section" style="padding: 60px 0;">
+  <div class="container">
+    <div class="row">
+      <div class="col-12">
+        <h1 class="banner-title">Results</h1>
+        <p class="text">Also check our social media pages for latest results</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="lottery-result" style="padding: 50px 0;">
+  <div class="container">
+    <div class="row">
+      <div class="col-lg-8">
+        <div class="result-box">
+          <h4 class="box-header">Recent Results Only</h4>
+          
+          <div *ngIf="results.length === 0" class="no-results">
+            <p>No lottery results available yet.</p>
+          </div>
+          
+          <div class="result-list">
+            <div class="single-list" *ngFor="let result of results">
+              <div class="light-area">
+                <div class="light-area-top">
+                  <div class="left">
+                    <img [src]="result.game?.includes('Mon') ? 'assets/images/d1.png' : result.game?.includes('Wed') ? 'assets/images/d2.png' : 'assets/images/d3.png'" alt>
+                    <h4>{{result.game}}</h4>
+                  </div>
+                  <div class="right">
+                    <span>Draw took place on</span>
+                    <h6>{{formatDate(result.date)}}</h6>
+                  </div>
+                </div>
+                <div class="light-area-bottom">
+                  <div class="left">
+                    <p>Winning Numbers:</p>
+                    <div class="numbers">
+                      <span *ngFor="let num of result.numbers">{{num}}</span>
+                      <span *ngFor="let bonus of result.bonusNumbers" class="bonus">{{bonus}}</span>
+                    </div>
+                  </div>
+                  <div class="right">
+                    <span>Pool Money Was</span>
+                    <h6>{{result.poolMoney}}</h6>
+                  </div>
+                </div>
+              </div>
+              <div class="color-area clickable-next-draw" 
+                   [routerLink]="['/play-lottery']" 
+                   [queryParams]="{lottery: getLotteryCode(result.game)}">
+                <div class="top">
+                  <span>Next {{result.game}} Draw</span>
+                  <h6>Coming Soon</h6>
+                </div>
+                <div class="bottom">
+                  <span>Pool Money Now</span>
+                  <h6>Growing...</h6>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <div class="col-lg-4">
+        <div class="sidebar-info">
+          <div class="date-picker-card">
+            <h5>Pick a date</h5>
+            <input type="date" class="form-control" placeholder="yyyy/mm/dd">
+          </div>
+          
+          <div class="social-media-card">
+            <h5>Follow Us</h5>
+            <p>Check our social media pages for winner announcements and latest updates!</p>
+            <div class="social-links">
+              <a href="#" class="social-link">Facebook</a>
+              <a href="#" class="social-link">Twitter</a>
+              <a href="#" class="social-link">Instagram</a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+</app-layout>
+
+<style>
+.clickable-next-draw {
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.clickable-next-draw:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+}
+
+.sidebar-info {
+  position: sticky;
+  top: 20px;
+}
+
+.date-picker-card, .social-media-card {
+  background: #f8f9fa;
+  padding: 20px;
+  border-radius: 10px;
+  margin-bottom: 20px;
+}
+
+.date-picker-card h5, .social-media-card h5 {
+  color: #333;
+  margin-bottom: 15px;
+  font-weight: 600;
+}
+
+.form-control {
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  padding: 10px;
+  width: 100%;
+}
+
+.social-links {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.social-link {
+  background: #007bff;
+  color: white;
+  padding: 8px 16px;
+  border-radius: 5px;
+  text-decoration: none;
+  text-align: center;
+  transition: background 0.3s ease;
+}
+
+.social-link:hover {
+  background: #0056b3;
+  color: white;
+  text-decoration: none;
+}
+
+.numbers .bonus {
+  background: #28a745 !important;
+}
+
+.no-results {
+  text-align: center;
+  padding: 40px;
+  color: #666;
+}
+
+@media (max-width: 768px) {
+  .sidebar-info {
+    margin-top: 30px;
+  }
+}
+</style>

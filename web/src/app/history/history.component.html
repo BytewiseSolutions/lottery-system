@@ -1,0 +1,231 @@
+<app-layout>
+<section class="banner-section" style="padding: 60px 0;">
+  <div class="container">
+    <div class="row">
+      <div class="col-12">
+        <h1 class="banner-title">History</h1>
+        <p class="text">How I previously played</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="history-section" style="padding: 50px 0;">
+  <div class="container">
+    <div class="row">
+      <div class="col-lg-8">
+        <div *ngIf="!isLoggedIn" class="login-prompt">
+          <p>Login to view your lottery entry history.</p>
+        </div>
+        
+        <div *ngIf="isLoggedIn && groupedEntries.length === 0" class="no-history">
+          <p>No lottery entries found. Start playing to see your history!</p>
+        </div>
+
+        <div *ngIf="isLoggedIn && groupedEntries.length > 0" class="history-entries">
+          <div *ngFor="let group of groupedEntries" class="date-group">
+            <div class="date-header">
+              <h4>{{formatDate(group.date)}}</h4>
+            </div>
+            
+            <div class="entry-item">
+              <div class="entry-details">
+                <div class="lottery-info">
+                  <strong>{{group.entries[0].lottery}}</strong>
+                  <span class="entry-time">Entry Recorded at: {{formatTime(group.entries[0].created_at)}}</span>
+                </div>
+                <div class="numbers">
+                  <span *ngFor="let num of group.entries[0].numbers" class="number">{{num}}</span>
+                  <span *ngFor="let bonus of group.entries[0].bonus_numbers" class="bonus-number">{{bonus}}</span>
+                </div>
+                <button *ngIf="group.hasMoreEntries" 
+                        class="more-entries-btn" 
+                        (click)="toggleMoreEntries(group)">
+                  {{group.showAllEntries ? 'Less Entries' : 'More Entries'}}
+                </button>
+              </div>
+            </div>
+
+            <div *ngIf="group.showAllEntries" class="additional-entries">
+              <div *ngFor="let entry of group.entries.slice(1)" class="entry-item">
+                <div class="entry-details">
+                  <div class="lottery-info">
+                    <strong>{{entry.lottery}}</strong>
+                    <span class="entry-time">Entry Recorded at: {{formatTime(entry.created_at)}}</span>
+                  </div>
+                  <div class="numbers">
+                    <span *ngFor="let num of entry.numbers" class="number">{{num}}</span>
+                    <span *ngFor="let bonus of entry.bonus_numbers" class="bonus-number">{{bonus}}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <div class="col-lg-4">
+        <div class="sidebar-content">
+          <div class="date-picker-card">
+            <h5>Pick a date</h5>
+            <input type="date" class="form-control" placeholder="yyyy/mm/dd" [(ngModel)]="selectedDate">
+          </div>
+          
+          <div class="quote-card">
+            <p>"{{currentQuote}}"</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+</app-layout>
+
+<style>
+.date-group {
+  margin-bottom: 30px;
+  border-bottom: 1px solid #eee;
+  padding-bottom: 20px;
+}
+
+.date-header h4 {
+  color: #333;
+  margin-bottom: 15px;
+  font-weight: 600;
+}
+
+.entry-item {
+  background: #f8f9fa;
+  padding: 15px;
+  border-radius: 8px;
+  margin-bottom: 10px;
+}
+
+.lottery-info {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.lottery-info strong {
+  color: #007bff;
+  font-size: 16px;
+}
+
+.entry-time {
+  color: #666;
+  font-size: 14px;
+}
+
+.numbers {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 10px;
+}
+
+.number {
+  background: #007bff;
+  color: white;
+  padding: 5px 10px;
+  border-radius: 4px;
+  font-weight: 600;
+  min-width: 30px;
+  text-align: center;
+}
+
+.bonus-number {
+  background: #28a745;
+  color: white;
+  padding: 5px 10px;
+  border-radius: 4px;
+  font-weight: 600;
+  min-width: 30px;
+  text-align: center;
+}
+
+.more-entries-btn {
+  background: #ffc107;
+  color: #333;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.more-entries-btn:hover {
+  background: #e0a800;
+}
+
+.additional-entries {
+  margin-top: 10px;
+  padding-left: 20px;
+  border-left: 3px solid #007bff;
+}
+
+.sidebar-content {
+  position: sticky;
+  top: 20px;
+}
+
+.date-picker-card {
+  background: #f8f9fa;
+  padding: 20px;
+  border-radius: 10px;
+  margin-bottom: 20px;
+}
+
+.date-picker-card h5 {
+  color: #333;
+  margin-bottom: 15px;
+  font-weight: 600;
+}
+
+.form-control {
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  padding: 10px;
+  width: 100%;
+}
+
+.quote-card {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  padding: 25px;
+  border-radius: 10px;
+  text-align: center;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+}
+
+.quote-card p {
+  font-size: 16px;
+  font-style: italic;
+  margin: 0;
+  line-height: 1.6;
+}
+
+.login-prompt, .no-history {
+  text-align: center;
+  padding: 40px;
+  background: #f8f9fa;
+  border-radius: 10px;
+}
+
+@media (max-width: 768px) {
+  .lottery-info {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 5px;
+  }
+  
+  .numbers {
+    justify-content: center;
+  }
+  
+  .quotes-sidebar {
+    margin-top: 30px;
+  }
+}
+</style>

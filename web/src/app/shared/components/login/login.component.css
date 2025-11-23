@@ -1,0 +1,212 @@
+/* Original LotteryApp Modal Styles */
+.log-reg-modal-wrapper .modal-body {
+  padding: 30px 40px 40px;
+  position: relative;
+  width: 100%;
+}
+
+.log-reg-modal-wrapper .modal-body .close {
+  position: absolute;
+  top: 4px;
+  right: 7px;
+  display: inline-block;
+  padding: 0px;
+  margin: 0px;
+  cursor: pointer;
+  font-size: 24px;
+  color: #999;
+}
+
+.log-reg-modal-wrapper.log .title {
+  margin: 0 auto 30px;
+}
+
+.log-reg-modal-wrapper.log .modal-body {
+  padding: 30px 40px 35px;
+}
+
+.log-reg-inner .title {
+  font-size: 24px;
+  line-height: 34px;
+  font-weight: 700;
+  display: block;
+  margin: 0 auto 24px;
+  text-align: center;
+  color: #5949b3;
+}
+
+.log-reg-inner .main-content .form-group {
+  margin-bottom: 20px;
+}
+
+.log-reg-inner .main-content .form-group label {
+  font-size: 18px;
+  line-height: 28px;
+  color: #5949b3;
+  font-weight: 700;
+  margin-bottom: 8px;
+  display: block;
+}
+
+.log-reg-inner .main-content .form-group .my-form-control {
+  border: 1px solid #ebebf3;
+  background-color: #f6f6fa;
+  font-size: 16px;
+  color: #273bff;
+  padding: 0px 30px;
+  height: 60px;
+  width: 100%;
+  border-radius: 5px;
+}
+
+.log-reg-inner .main-content .form-group .my-form-control::placeholder {
+  color: #6f6c9f !important;
+}
+
+.log-reg-inner .main-content .f-pass {
+  font-size: 16px;
+  line-height: 26px;
+  margin-bottom: 20px;
+}
+
+.log-reg-inner .main-content .f-pass a {
+  color: #0403c4;
+  text-decoration: none;
+}
+
+.log-reg-inner .main-content .button-wrapper {
+  display: block;
+  text-align: center;
+  margin-top: 30px;
+}
+
+.log-reg-inner .main-content .button-wrapper .custom-button2 {
+  padding: 10px 20px;
+  background: linear-gradient(0deg, #f4ba2e 0%, #fea036 100%);
+  border: 1px solid #fea036;
+  border-radius: 5px;
+  color: #ffffff;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.log-reg-inner .main-content .or {
+  margin-top: 29px;
+  margin-bottom: 15px;
+  font-size: 16px;
+  font-weight: 700;
+  color: #5949b3;
+  display: block;
+  text-align: center;
+  position: relative;
+  width: 100%;
+}
+
+.log-reg-inner .main-content .or.log {
+  margin-top: 24px;
+}
+
+.log-reg-inner .main-content .or p {
+  display: inline-block;
+  background: #fff;
+  margin-bottom: 0px;
+  padding: 0px 15px;
+  position: relative;
+  z-index: 2;
+}
+
+.log-reg-inner .main-content .or::before {
+  position: absolute;
+  content: "";
+  height: 1px;
+  width: 100%;
+  background: rgba(0, 0, 0, 0.15);
+  left: 0px;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+.log-reg-inner .main-content .or-content {
+  display: block;
+  text-align: center;
+}
+
+.log-reg-inner .main-content .or-content p {
+  color: #3b368c;
+  font-size: 16px;
+  line-height: 26px;
+  margin-bottom: 10px;
+}
+
+.log-reg-inner .main-content .or-content .or-btn {
+  margin-top: 9px;
+  border: 1px solid rgba(59, 54, 140, 0.1);
+  background-color: #eaf2fc;
+  box-shadow: 1.948px 13.864px 6px 0px rgba(220, 234, 251, 0.3);
+  padding: 10px 30px;
+  border-radius: 50px;
+  margin-bottom: 19px;
+  transition: all ease 0.3s;
+  display: inline-block;
+  text-decoration: none;
+  color: #333;
+}
+
+.log-reg-inner .main-content .or-content .or-btn img {
+  margin-right: 8px;
+  width: 20px;
+}
+
+.log-reg-inner .main-content .or-content .or-signup {
+  font-size: 16px;
+  margin-bottom: 0px;
+  color: #5949b3;
+}
+
+.log-reg-inner .main-content .or-content .or-signup a {
+  color: #0403c4;
+  font-weight: 600;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.modal.show {
+  display: block !important;
+}
+
+.modal {
+  background: rgba(0, 0, 0, 0.5);
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 1050;
+}
+
+.modal-dialog {
+  position: relative;
+  width: auto;
+  margin: 1.75rem;
+  pointer-events: none;
+}
+
+.modal-dialog-centered {
+  display: flex;
+  align-items: center;
+  min-height: calc(100% - 3.5rem);
+}
+
+.modal-content {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  pointer-events: auto;
+  background-color: #fff;
+  background-clip: padding-box;
+  border: 1px solid rgba(0,0,0,.2);
+  border-radius: 0.3rem;
+  outline: 0;
+}
