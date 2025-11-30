@@ -6,10 +6,9 @@ const db = require('./config/database');
 require('dotenv').config();
 
 const app = express();
-const PORT = process.env.PORT || 3003;
+const PORT = process.env.PORT || 3002;
 const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
 
-// Debug: Log database connection details
 console.log('DB Config:', {
   host: process.env.DB_HOST,
   user: process.env.DB_USER,
@@ -23,9 +22,6 @@ app.use(cors({
 }));
 app.use(express.json());
 
-// Pool money will be calculated from database entries
-
-// Helper function to get next draw date
 function getNextDrawDate(dayName) {
   const days = { monday: 1, wednesday: 3, friday: 5 };
   const now = new Date();
@@ -35,15 +31,13 @@ function getNextDrawDate(dayName) {
   
   let daysUntilNext = targetDay - currentDay;
   
-  // If today is the draw day but it's already past 8 PM, go to next week
   if (daysUntilNext === 0 && currentHour >= 20) {
     daysUntilNext = 7;
   }
-  // If the target day has passed this week, go to next week
+
   else if (daysUntilNext < 0) {
     daysUntilNext += 7;
   }
-  // If daysUntilNext is 0 and it's before 8 PM, keep it as today
   
   const nextDate = new Date(now);
   nextDate.setDate(now.getDate() + daysUntilNext);
@@ -52,7 +46,6 @@ function getNextDrawDate(dayName) {
   return nextDate.toISOString();
 }
 
-// Helper function to generate random numbers
 function generateRandomNumbers(count, min, max) {
   const numbers = [];
   while (numbers.length < count) {
@@ -64,7 +57,6 @@ function generateRandomNumbers(count, min, max) {
   return numbers.sort((a, b) => a - b);
 }
 
-// Middleware to verify JWT token
 function authenticateToken(req, res, next) {
   const authHeader = req.headers['authorization'];
   const token = authHeader && authHeader.split(' ')[1];
@@ -86,12 +78,11 @@ app.get('/api/health', (req, res) => {
   res.json({ status: 'API is running' });
 });
 
-// Register endpoint
+
 app.post('/api/register', async (req, res) => {
   const { email, password, confirmPassword } = req.body;
   
   try {
-    // Validation
     if (!email || !password || !confirmPassword) {
       return res.status(400).json({ error: 'All fields are required' });
     }
@@ -104,16 +95,13 @@ app.post('/api/register', async (req, res) => {
       return res.status(400).json({ error: 'Password must be at least 6 characters' });
     }
     
-    // Check if user exists
     const [existingUsers] = await db.execute('SELECT id FROM users WHERE email = ?', [email]);
     if (existingUsers.length > 0) {
       return res.status(400).json({ error: 'User already exists' });
     }
     
-    // Hash password
     const hashedPassword = await bcrypt.hash(password, 10);
-    
-    // Create user in database
+
     const [result] = await db.execute(
       'INSERT INTO users (email, password) VALUES (?, ?)',
       [email, hashedPassword]
@@ -121,7 +109,6 @@ app.post('/api/register', async (req, res) => {
     
     const userId = result.insertId;
     
-    // Generate token
     const token = jwt.sign({ id: userId, email }, JWT_SECRET, { expiresIn: '24h' });
     
     res.json({ 
@@ -136,7 +123,6 @@ app.post('/api/register', async (req, res) => {
   }
 });
 
-// Login endpoint
 app.post('/api/login', async (req, res) => {
   const { email, password } = req.body;
   
@@ -145,7 +131,6 @@ app.post('/api/login', async (req, res) => {
       return res.status(400).json({ error: 'Email and password are required' });
     }
     
-    // Find user in database
     const [users] = await db.execute('SELECT * FROM users WHERE email = ?', [email]);
     if (users.length === 0) {
       return res.status(400).json({ error: 'Invalid credentials' });
@@ -153,13 +138,11 @@ app.post('/api/login', async (req, res) => {
     
     const user = users[0];
     
-    // Check password
     const validPassword = await bcrypt.compare(password, user.password);
     if (!validPassword) {
       return res.status(400).json({ error: 'Invalid credentials' });
     }
     
-    // Generate token
     const token = jwt.sign({ id: user.id, email: user.email }, JWT_SECRET, { expiresIn: '24h' });
     
     res.json({ 
@@ -176,7 +159,6 @@ app.post('/api/login', async (req, res) => {
 
 app.get('/api/draws', async (req, res) => {
   try {
-    // Calculate pool money from entries
     const [poolData] = await db.execute(`
       SELECT lottery, COUNT(*) * 0.001 as pool_amount 
       FROM entries 
@@ -331,6 +313,37 @@ app.get('/api/pool', async (req, res) => {
   } catch (error) {
     console.error('Error fetching pool data:', error);
     res.json({ 'Mon Lotto': 0, 'Wed Lotto': 0, 'Fri Lotto': 0 });
+  }
+});
+
+// Get statistics for About page
+app.get('/api/stats', async (req, res) => {
+  try {
+    // Get total entries
+    const [totalEntries] = await db.execute('SELECT COUNT(*) as total FROM entries');
+    
+
+    const [totalPayouts] = await db.execute('SELECT SUM(total_pool_money) as total FROM results');
+    
+    const [winnersLastMonth] = await db.execute(`
+      SELECT COUNT(*) as winners FROM winners 
+      WHERE created_at >= DATE_SUB(NOW(), INTERVAL 1 MONTH)
+    `);
+    
+    const stats = {
+      winnersLastMonth: winnersLastMonth[0].winners || 0,
+      totalEntries: totalEntries[0].total || 0,
+      totalPayouts: totalPayouts[0].total || 0
+    };
+    
+    res.json(stats);
+  } catch (error) {
+    console.error('Error fetching stats:', error);
+    res.json({
+      winnersLastMonth: 0,
+      totalEntries: 0,
+      totalPayouts: 0
+    });
   }
 });
 

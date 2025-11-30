@@ -1,5 +1,5 @@
 const mysql = require('mysql2/promise');
-require('dotenv').config({ path: './api/.env' });
+require('dotenv').config();
 
 async function setupDatabase() {
     try {
@@ -58,6 +58,21 @@ async function setupDatabase() {
             )
         `);
         console.log('Results table created or already exists');
+
+        await dbConnection.execute(`
+            CREATE TABLE IF NOT EXISTS winners (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                entry_id INT,
+                result_id INT,
+                user_id INT,
+                prize_amount DECIMAL(10,3),
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                FOREIGN KEY (entry_id) REFERENCES entries(id),
+                FOREIGN KEY (result_id) REFERENCES results(id),
+                FOREIGN KEY (user_id) REFERENCES users(id)
+            )
+        `);
+        console.log('Winners table created or already exists');
 
         await dbConnection.end();
         console.log('Database setup completed successfully!');
