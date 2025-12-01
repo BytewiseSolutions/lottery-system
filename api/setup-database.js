@@ -33,13 +33,15 @@ async function setupDatabase() {
         `);
         console.log('Users table created or already exists');
 
+        await dbConnection.execute(`DROP TABLE IF EXISTS entries`);
         await dbConnection.execute(`
-            CREATE TABLE IF NOT EXISTS entries (
+            CREATE TABLE entries (
                 id INT AUTO_INCREMENT PRIMARY KEY,
                 user_id INT NOT NULL,
                 lottery VARCHAR(50) NOT NULL,
                 numbers JSON NOT NULL,
                 bonus_numbers JSON NOT NULL,
+                draw_date DATE NOT NULL,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                 FOREIGN KEY (user_id) REFERENCES users(id)
             )

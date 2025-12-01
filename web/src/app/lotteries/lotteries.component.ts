@@ -23,8 +23,15 @@ export class LotteriesComponent implements OnInit {
 
   private loadDraws() {
     this.lotteryService.getDraws().subscribe(draws => {
-      this.draws = [...draws, ...draws]; // Duplicate for 6 items display
+      this.draws = draws.slice(0, 6);
+      this.cdr.detectChanges();
     });
+  }
+
+  private addWeekToDate(dateString: string): string {
+    const date = new Date(dateString);
+    date.setDate(date.getDate() + 7);
+    return date.toISOString();
   }
 
   formatDate(dateString: string): string {
@@ -37,11 +44,10 @@ export class LotteriesComponent implements OnInit {
     });
   }
 
-  getLotteryCode(name: string): string {
-    if (name.includes('Mon')) return 'mon';
-    if (name.includes('Wed')) return 'wed';
-    if (name.includes('Fri')) return 'fri';
-    return 'mon';
+  getLotteryCode(name: string, date?: string): string {
+    const baseCode = name.includes('Mon') ? 'mon' : 
+                    name.includes('Wed') ? 'wed' : 'fri';
+    return date ? `${baseCode}-${date}` : baseCode;
   }
 
   getCountdown(targetDate: string): string {

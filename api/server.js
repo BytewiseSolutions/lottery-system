@@ -160,23 +160,47 @@ app.post('/api/login', async (req, res) => {
 app.get('/api/draws', async (req, res) => {
   try {
     const [poolData] = await db.execute(`
-      SELECT lottery, COUNT(*) * 0.001 as pool_amount 
+      SELECT lottery, draw_date, COUNT(*) * 0.001 as pool_amount 
       FROM entries 
-      GROUP BY lottery
+      GROUP BY lottery, draw_date
+      ORDER BY draw_date
     `);
     
-    const pools = {};
+    const draws = [];
+    let id = 1;
+    
     poolData.forEach(row => {
-      pools[row.lottery] = parseFloat(row.pool_amount) || 0;
+      const drawDate = new Date(row.draw_date);
+      drawDate.setHours(20, 0, 0, 0);
+      
+      draws.push({
+        id: id++,
+        name: row.lottery,
+        jackpot: `$${parseFloat(row.pool_amount).toFixed(3)}`,
+        nextDraw: drawDate.toISOString()
+      });
     });
     
-    const draws = [
-      { id: 1, name: 'Mon Lotto', jackpot: `$${(pools['Mon Lotto'] || 0).toFixed(3)}`, nextDraw: getNextDrawDate('monday') },
-      { id: 2, name: 'Wed Lotto', jackpot: `$${(pools['Wed Lotto'] || 0).toFixed(3)}`, nextDraw: getNextDrawDate('wednesday') },
-      { id: 3, name: 'Fri Lotto', jackpot: `$${(pools['Fri Lotto'] || 0).toFixed(3)}`, nextDraw: getNextDrawDate('friday') }
-    ];
+    // Ensure we have exactly 6 draws by adding future draws if needed
+    const lotteries = ['Mon Lotto', 'Wed Lotto', 'Fri Lotto'];
+    const days = ['monday', 'wednesday', 'friday'];
     
-    res.json(draws);
+    while (draws.length < 6) {
+      const lotteryIndex = (draws.length) % 3;
+      const lottery = lotteries[lotteryIndex];
+      const nextDraw = getNextDrawDate(days[lotteryIndex]);
+      const futureDate = new Date(nextDraw);
+      futureDate.setDate(futureDate.getDate() + Math.floor(draws.length / 3) * 7);
+      
+      draws.push({
+        id: draws.length + 1,
+        name: lottery,
+        jackpot: '$0.000',
+        nextDraw: futureDate.toISOString()
+      });
+    }
+    
+    res.json(draws.slice(0, 6));
   } catch (error) {
     console.error('Error fetching draws:', error);
     res.status(500).json({ error: 'Failed to fetch draws' });
@@ -209,11 +233,11 @@ app.get('/api/results', async (req, res) => {
 
 // Submit lottery entry (login required)
 app.post('/api/play', authenticateToken, async (req, res) => {
-  const { lottery, numbers, bonusNumbers } = req.body;
+  const { lottery, numbers, bonusNumbers, drawDate } = req.body;
   
   try {
     // Validate input
-    if (!lottery || !numbers || !bonusNumbers) {
+    if (!lottery || !numbers || !bonusNumbers || !drawDate) {
       return res.status(400).json({ error: 'Missing required fields' });
     }
     
@@ -227,14 +251,14 @@ app.post('/api/play', authenticateToken, async (req, res) => {
     
     // Insert entry into database
     const [result] = await db.execute(
-      'INSERT INTO entries (user_id, lottery, numbers, bonus_numbers) VALUES (?, ?, ?, ?)',
-      [req.user.id, lotteryName, JSON.stringify(numbers), JSON.stringify(bonusNumbers)]
+      'INSERT INTO entries (user_id, lottery, numbers, bonus_numbers, draw_date) VALUES (?, ?, ?, ?, ?)',
+      [req.user.id, lotteryName, JSON.stringify(numbers), JSON.stringify(bonusNumbers), drawDate]
     );
     
-    // Calculate new pool amount
+    // Calculate new pool amount for this specific draw
     const [poolData] = await db.execute(
-      'SELECT COUNT(*) * 0.001 as pool_amount FROM entries WHERE lottery = ?',
-      [lotteryName]
+      'SELECT COUNT(*) * 0.001 as pool_amount FROM entries WHERE lottery = ? AND draw_date = ?',
+      [lotteryName, drawDate]
     );
     
     const newPoolAmount = parseFloat(poolData[0].pool_amount) || 0.001;

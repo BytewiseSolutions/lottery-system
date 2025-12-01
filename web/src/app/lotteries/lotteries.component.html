@@ -24,7 +24,7 @@
             {{ formatDate(draw.nextDraw) }}<br>
             {{ draw.jackpot }}
           </h4>
-          <a routerLink="/play-lottery" [queryParams]="{lottery: getLotteryCode(draw.name)}" 
+          <a routerLink="/play-lottery" [queryParams]="{lottery: getLotteryCode(draw.name), drawDate: draw.nextDraw.split('T')[0]}" 
              [class]="draw.id === 2 ? 'custom-button2' : 'custom-button1'">Play</a>
           <div class="next-draw">
             <span class="text">Next Draw :</span>
