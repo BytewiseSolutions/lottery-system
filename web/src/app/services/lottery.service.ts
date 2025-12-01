@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable, interval, of } from 'rxjs';
+import { Observable, interval, of, Subject } from 'rxjs';
 import { map, startWith, switchMap, catchError } from 'rxjs/operators';
 import { environment } from '../../environments/environment';
 
@@ -17,11 +17,18 @@ export interface PoolData {
   'Fri Lotto': number;
 }
 
+export interface Stats {
+  winnersLastMonth: number;
+  totalEntries: number;
+  totalPayouts: number;
+}
+
 @Injectable({
   providedIn: 'root'
 })
 export class LotteryService {
   private apiUrl = environment.apiUrl;
+  private refreshTrigger = new Subject<void>();
 
   constructor(private http: HttpClient) {}
 
@@ -31,7 +38,6 @@ export class LotteryService {
       switchMap(() => this.http.get<Draw[]>(`${this.apiUrl}/draws`).pipe(
         catchError(error => {
           console.error('API Error:', error);
-          // Return mock data if API fails
           return of([
             { id: 1, name: 'Mon Lotto', jackpot: '$0.000', nextDraw: new Date(Date.now() + 2*24*60*60*1000).toISOString() },
             { id: 2, name: 'Wed Lotto', jackpot: '$0.000', nextDraw: new Date(Date.now() + 4*24*60*60*1000).toISOString() },
@@ -40,6 +46,10 @@ export class LotteryService {
         })
       ))
     );
+  }
+
+  refreshDraws(): void {
+    this.refreshTrigger.next();
   }
 
   getPoolMoney(): Observable<PoolData> {
@@ -77,6 +87,19 @@ export class LotteryService {
           return `${days.toString().padStart(2, '0')} Days ${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
         }
         return '00 Days 00:00:00';
+      })
+    );
+  }
+
+  getStats(): Observable<Stats> {
+    return this.http.get<Stats>(`${this.apiUrl}/stats`).pipe(
+      catchError(error => {
+        console.error('Stats API Error:', error);
+        return of({
+          winnersLastMonth: 0,
+          totalEntries: 0,
+          totalPayouts: 0
+        });
       })
     );
   }

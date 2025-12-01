@@ -1,28 +1,115 @@
 <app-layout>
-<section class="banner-section">
+<section class="breadcrumb-area">
   <div class="container">
-    <div class="row">
-      <div class="col-12">
-        <h1 class="banner-title">FAQ</h1>
-        <p class="text">Frequently Asked Questions</p>
-      </div>
+    <div class="content">
+      <h2 class="title">Frequently Asked Questions</h2>
+      <ul class="breadcrumb-list extra-padding">
+        <li><a routerLink="/">Home</a></li>
+        <li><a href="#">FAQ</a></li>
+      </ul>
     </div>
   </div>
 </section>
 
-<section class="faq-section">
+<section class="faq padding-top padding-bottom">
   <div class="container">
     <div class="row">
-      <div class="col-lg-8 mx-auto">
+      <div class="col-lg-10 mx-auto">
         <div class="faq-content">
-          <h3>How does the lottery work?</h3>
-          <p>Each entry costs $0.001 which goes directly to the prize pool. The more people play, the bigger the jackpot becomes.</p>
+          <div class="faq-item">
+            <div class="faq-header" (click)="toggleFaq(1)">
+              <h3>1. Is TotalFreeLotto really free to play?</h3>
+              <span class="toggle-icon" [class.active]="activeFaq === 1">+</span>
+            </div>
+            <div class="faq-body" [class.active]="activeFaq === 1">
+              <p>Absolutely—TotalFreeLotto is 100% free. You don't need to pay anything to enter any of our draws. There are no hidden fees, no subscription charges, and no in-app purchases. You simply pick your numbers and submit your entry. We believe everyone deserves a fair chance to win without ever having to spend their hard-earned money.</p>
+            </div>
+          </div>
           
-          <h3>When are the draws?</h3>
-          <p>Draws happen three times a week: Monday, Wednesday, and Friday at 8 PM.</p>
+          <div class="faq-item">
+            <div class="faq-header" (click)="toggleFaq(2)">
+              <h3>2. How does TotalFreeLotto make money if players don't pay?</h3>
+              <span class="toggle-icon" [class.active]="activeFaq === 2">+</span>
+            </div>
+            <div class="faq-body" [class.active]="activeFaq === 2">
+              <p>Our platform is supported entirely through advertising partnerships. When people visit TotalFreeLotto and engage with the site, we earn revenue from ads shown by trusted platforms like Google AdSense and PropellerAds. This revenue helps keep the game free and also funds our prize pools. So, by playing, you help grow the winnings—without ever paying a cent.</p>
+            </div>
+          </div>
           
-          <h3>How do I claim my winnings?</h3>
-          <p>Winners are automatically notified and winnings are credited to their account.</p>
+          <div class="faq-item">
+            <div class="faq-header" (click)="toggleFaq(3)">
+              <h3>3. Do winners actually receive real money?</h3>
+              <span class="toggle-icon" [class.active]="activeFaq === 3">+</span>
+            </div>
+            <div class="faq-body" [class.active]="activeFaq === 3">
+              <p>Yes! When you win, you win real, spendable money. Every draw has a prize pool that grows based on entries, and winners receive payouts from that pool. Our system is designed to be fair, transparent, and reliable, and we take pride in honoring every legitimate win.</p>
+            </div>
+          </div>
+          
+          <div class="faq-item">
+            <div class="faq-header" (click)="toggleFaq(4)">
+              <h3>4. How is the winning amount calculated?</h3>
+              <span class="toggle-icon" [class.active]="activeFaq === 4">+</span>
+            </div>
+            <div class="faq-body" [class.active]="activeFaq === 4">
+              <p>The prize pool depends on how many total entries are received for a draw. For every single entry submitted, we allocate $0.001 to the pool. So, the more people play, the bigger the prize becomes. This model keeps the system sustainable while giving players the fun of watching the prize grow as the countdown to the draw gets closer.</p>
+            </div>
+          </div>
+          
+          <div class="faq-item">
+            <div class="faq-header" (click)="toggleFaq(5)">
+              <h3>5. How do winners get paid?</h3>
+              <span class="toggle-icon" [class.active]="activeFaq === 5">+</span>
+            </div>
+            <div class="faq-body" [class.active]="activeFaq === 5">
+              <p>We want to make receiving your winnings as easy and convenient as possible. Once a player wins, they can choose a payment method that works for them. We currently support PayPal, Mukuru, Western Union, MoneyGram, and other widely used global payout methods. This ensures that players from different parts of the world can receive their money securely and without hassle.</p>
+            </div>
+          </div>
+          
+          <div class="faq-item">
+            <div class="faq-header" (click)="toggleFaq(6)">
+              <h3>6. What happens if there are multiple winners?</h3>
+              <span class="toggle-icon" [class.active]="activeFaq === 6">+</span>
+            </div>
+            <div class="faq-body" [class.active]="activeFaq === 6">
+              <p>If more than one person wins a draw, the prize pool is shared equally among all winners. This keeps the process fair and transparent. Whether you're the only winner or one of many, you'll always receive your rightful share of the prize money.</p>
+            </div>
+          </div>
+          
+          <div class="faq-item">
+            <div class="faq-header" (click)="toggleFaq(7)">
+              <h3>7. How do I play TotalFreeLotto?</h3>
+              <span class="toggle-icon" [class.active]="activeFaq === 7">+</span>
+            </div>
+            <div class="faq-body" [class.active]="activeFaq === 7">
+              <p>Playing is simple and fun. Each entry requires you to choose 5 numbers from the first set of 99 numbers and 2 bonus numbers from a second set of 99 numbers. If all your chosen numbers match the winning numbers, you will win the prize pool!</p>
+            </div>
+          </div>
+          
+          <div class="faq-item">
+            <div class="faq-header" (click)="toggleFaq(8)">
+              <h3>8. When and where are the draws held?</h3>
+              <span class="toggle-icon" [class.active]="activeFaq === 8">+</span>
+            </div>
+            <div class="faq-body" [class.active]="activeFaq === 8">
+              <p>We host three live draws every week—on Monday, Wednesday, and Friday. Draws typically take place at around 21:00 South Africa Standard Time, though this may change in the future. To keep everything transparent, the draws are conducted live by our CEO and streamed on platforms such as Facebook, YouTube, or TikTok so players can watch the results unfold in real time.</p>
+            </div>
+          </div>
+          
+          <div class="faq-item">
+            <div class="faq-header" (click)="toggleFaq(9)">
+              <h3>9. What features can I use on the website?</h3>
+              <span class="toggle-icon" [class.active]="activeFaq === 9">+</span>
+            </div>
+            <div class="faq-body" [class.active]="activeFaq === 9">
+              <p>TotalFreeLotto offers two main features designed to make your playing experience smarter and easier:</p>
+              <ul>
+                <li><strong>Results:</strong> View winning numbers and number of winners without even logging in.</li>
+                <li><strong>History:</strong> A personal collection of all the entries you've made so you can keep track of your numbers.</li>
+              </ul>
+              <p>These tools help you stay organized and understand your progress over time.</p>
+            </div>
+          </div>
         </div>
       </div>
     </div>

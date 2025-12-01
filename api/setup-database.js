@@ -1,5 +1,5 @@
 const mysql = require('mysql2/promise');
-require('dotenv').config({ path: './api/.env' });
+require('dotenv').config();
 
 async function setupDatabase() {
     try {
@@ -33,13 +33,15 @@ async function setupDatabase() {
         `);
         console.log('Users table created or already exists');
 
+        await dbConnection.execute(`DROP TABLE IF EXISTS entries`);
         await dbConnection.execute(`
-            CREATE TABLE IF NOT EXISTS entries (
+            CREATE TABLE entries (
                 id INT AUTO_INCREMENT PRIMARY KEY,
                 user_id INT NOT NULL,
                 lottery VARCHAR(50) NOT NULL,
                 numbers JSON NOT NULL,
                 bonus_numbers JSON NOT NULL,
+                draw_date DATE NOT NULL,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                 FOREIGN KEY (user_id) REFERENCES users(id)
             )
@@ -58,6 +60,21 @@ async function setupDatabase() {
             )
         `);
         console.log('Results table created or already exists');
+
+        await dbConnection.execute(`
+            CREATE TABLE IF NOT EXISTS winners (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                entry_id INT,
+                result_id INT,
+                user_id INT,
+                prize_amount DECIMAL(10,3),
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                FOREIGN KEY (entry_id) REFERENCES entries(id),
+                FOREIGN KEY (result_id) REFERENCES results(id),
+                FOREIGN KEY (user_id) REFERENCES users(id)
+            )
+        `);
+        console.log('Winners table created or already exists');
 
         await dbConnection.end();
         console.log('Database setup completed successfully!');

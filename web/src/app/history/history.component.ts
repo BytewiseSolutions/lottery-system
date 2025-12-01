@@ -10,6 +10,7 @@ interface HistoryEntry {
   numbers: number[];
   bonus_numbers: number[];
   created_at: string;
+  draw_date: string;
   date: string;
 }
 
@@ -103,6 +104,14 @@ export class HistoryComponent implements OnInit {
   }
 
   formatDate(dateString: string): string {
+    return new Date(dateString).toLocaleDateString('en-US', {
+      day: 'numeric',
+      month: 'long',
+      year: 'numeric'
+    });
+  }
+
+  formatDrawDate(dateString: string): string {
     return new Date(dateString).toLocaleDateString('en-US', {
       day: 'numeric',
       month: 'long',

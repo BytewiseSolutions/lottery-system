@@ -1,9 +1,10 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { LayoutComponent } from '../layout/layout.component';
 import { LoginComponent } from '../shared/components/login/login.component';
 import { SignupComponent } from '../shared/components/signup/signup.component';
+import { LotteryService } from '../services/lottery.service';
 import { environment } from '../../environments/environment';
 
 @Component({
@@ -17,16 +18,18 @@ export class PlayLotteryComponent implements OnInit {
   selectedNumbers: number[] = [];
   selectedBonusNumbers: number[] = [];
   lotteryType = 'mon';
+  drawDate = '';
   currentSection = 1;
   isLoggedIn = false;
   showLoginModal = false;
   showSignupModal = false;
 
-  constructor(private route: ActivatedRoute) {}
+  constructor(private route: ActivatedRoute, private router: Router, private lotteryService: LotteryService) {}
 
   ngOnInit() {
     this.route.queryParams.subscribe(params => {
       this.lotteryType = params['lottery'] || 'mon';
+      this.drawDate = params['drawDate'] || new Date().toISOString().split('T')[0];
     });
     
     // Check login status
@@ -131,7 +134,8 @@ export class PlayLotteryComponent implements OnInit {
           body: JSON.stringify({
             lottery: this.lotteryType,
             numbers: this.selectedNumbers,
-            bonusNumbers: this.selectedBonusNumbers
+            bonusNumbers: this.selectedBonusNumbers,
+            drawDate: this.drawDate
           })
         });
         
@@ -139,9 +143,10 @@ export class PlayLotteryComponent implements OnInit {
         
         if (result.success) {
           alert(`Entry submitted! New pool amount: $${result.newPoolAmount}`);
-          this.selectedNumbers = [];
-          this.selectedBonusNumbers = [];
-          this.currentSection = 1;
+          // Trigger immediate refresh of lottery balances
+          this.lotteryService.refreshDraws();
+          // Redirect to lotteries page
+          this.router.navigate(['/lotteries']);
         } else {
           alert(result.error || 'Failed to submit entry');
         }

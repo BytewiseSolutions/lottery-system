@@ -1,0 +1,15 @@
+.draw-section {
+  padding-bottom: 80px;
+}
+
+.single-draw {
+  margin-bottom: 30px;
+}
+
+.lottery-result {
+  background-color: #f8f9fa;
+}
+
+.lottery-result .bg-image {
+  opacity: 0.1;
+}
