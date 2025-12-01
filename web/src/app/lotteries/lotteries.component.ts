@@ -23,8 +23,16 @@ export class LotteriesComponent implements OnInit {
 
   private loadDraws() {
     this.lotteryService.getDraws().subscribe(draws => {
-      this.draws = draws.slice(0, 6);
+      this.draws = draws;
       this.cdr.detectChanges();
+    });
+    
+    // Listen for refresh triggers
+    this.lotteryService['refreshTrigger'].subscribe(() => {
+      this.lotteryService.getDraws().subscribe(draws => {
+        this.draws = draws;
+        this.cdr.detectChanges();
+      });
     });
   }
 

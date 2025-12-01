@@ -8,6 +8,7 @@ import { HistoryComponent } from './history/history.component';
 import { ContactComponent } from './contact/contact.component';
 import { PlayLotteryComponent } from './play-lottery/play-lottery.component';
 import { TermsComponent } from './terms/terms.component';
+import { PrivacyComponent } from './privacy/privacy.component';
 
 export const routes: Routes = [
   { path: '', component: HomeComponent },
@@ -20,5 +21,6 @@ export const routes: Routes = [
   { path: 'contact', component: ContactComponent },
   { path: 'play-lottery', component: PlayLotteryComponent },
   { path: 'terms', component: TermsComponent },
+  { path: 'privacy', component: PrivacyComponent },
   { path: '**', redirectTo: '' }
 ];

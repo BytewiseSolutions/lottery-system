@@ -1,9 +1,10 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { LayoutComponent } from '../layout/layout.component';
 import { LoginComponent } from '../shared/components/login/login.component';
 import { SignupComponent } from '../shared/components/signup/signup.component';
+import { LotteryService } from '../services/lottery.service';
 import { environment } from '../../environments/environment';
 
 @Component({
@@ -23,7 +24,7 @@ export class PlayLotteryComponent implements OnInit {
   showLoginModal = false;
   showSignupModal = false;
 
-  constructor(private route: ActivatedRoute) {}
+  constructor(private route: ActivatedRoute, private router: Router, private lotteryService: LotteryService) {}
 
   ngOnInit() {
     this.route.queryParams.subscribe(params => {
@@ -142,9 +143,10 @@ export class PlayLotteryComponent implements OnInit {
         
         if (result.success) {
           alert(`Entry submitted! New pool amount: $${result.newPoolAmount}`);
-          this.selectedNumbers = [];
-          this.selectedBonusNumbers = [];
-          this.currentSection = 1;
+          // Trigger immediate refresh of lottery balances
+          this.lotteryService.refreshDraws();
+          // Redirect to lotteries page
+          this.router.navigate(['/lotteries']);
         } else {
           alert(result.error || 'Failed to submit entry');
         }

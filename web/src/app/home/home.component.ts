@@ -25,7 +25,7 @@ export class HomeComponent implements OnInit {
   private loadData() {
     this.lotteryService.getDraws().subscribe({
       next: (draws) => {
-        this.draws = draws;
+        this.draws = draws.slice(0, 3);
       },
       error: (error) => {
         console.error('Error loading draws:', error);

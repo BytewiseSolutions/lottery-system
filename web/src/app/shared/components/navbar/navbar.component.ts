@@ -105,10 +105,12 @@ export class NavbarComponent implements OnInit {
   private updatePoolMoney() {
     this.lotteryService.getDraws().subscribe({
       next: (draws) => {
-        this.totalPoolMoney = draws.reduce((total, draw) => {
-          const amount = parseFloat(draw.jackpot.replace('$', '')) || 0;
-          return total + amount;
-        }, 0);
+        // Show balance for the next upcoming draw (first draw)
+        if (draws.length > 0) {
+          this.totalPoolMoney = parseFloat(draws[0].jackpot.replace('$', '')) || 0;
+        } else {
+          this.totalPoolMoney = 0;
+        }
       },
       error: (error) => {
         console.error('Error updating pool money:', error);

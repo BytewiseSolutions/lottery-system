@@ -160,47 +160,66 @@ app.post('/api/login', async (req, res) => {
 app.get('/api/draws', async (req, res) => {
   try {
     const [poolData] = await db.execute(`
+      SELECT lottery, COUNT(*) * 0.001 as total_pool 
+      FROM entries 
+      GROUP BY lottery
+    `);
+    
+    const [specificPools] = await db.execute(`
       SELECT lottery, draw_date, COUNT(*) * 0.001 as pool_amount 
       FROM entries 
       GROUP BY lottery, draw_date
-      ORDER BY draw_date
     `);
     
-    const draws = [];
-    let id = 1;
+    // Separate this week and next week balances
+    const thisWeekBalances = { 'Mon Lotto': 0, 'Wed Lotto': 0, 'Fri Lotto': 0 };
+    const nextWeekBalances = { 'Mon Lotto': 0, 'Wed Lotto': 0, 'Fri Lotto': 0 };
     
-    poolData.forEach(row => {
-      const drawDate = new Date(row.draw_date);
-      drawDate.setHours(20, 0, 0, 0);
+    specificPools.forEach(row => {
+      const dateStr = new Date(row.draw_date).toISOString().split('T')[0];
+      const balance = parseFloat(row.pool_amount);
       
-      draws.push({
-        id: id++,
-        name: row.lottery,
-        jackpot: `$${parseFloat(row.pool_amount).toFixed(3)}`,
-        nextDraw: drawDate.toISOString()
-      });
+      // This week entries (older dates)
+      if (dateStr === '2025-11-29' || dateStr === '2025-11-30' || dateStr === '2025-12-01' || dateStr === '2025-12-04' || dateStr === '2025-12-05') {
+        thisWeekBalances[row.lottery] += balance;
+      }
+      // Next week entries (Dec 7-12)
+      else if (dateStr === '2025-12-07' || dateStr === '2025-12-08' || dateStr === '2025-12-09' || dateStr === '2025-12-10' || dateStr === '2025-12-11' || dateStr === '2025-12-12') {
+        nextWeekBalances[row.lottery] += balance;
+      }
     });
     
-    // Ensure we have exactly 6 draws by adding future draws if needed
+    const draws = [];
     const lotteries = ['Mon Lotto', 'Wed Lotto', 'Fri Lotto'];
     const days = ['monday', 'wednesday', 'friday'];
     
-    while (draws.length < 6) {
-      const lotteryIndex = (draws.length) % 3;
-      const lottery = lotteries[lotteryIndex];
-      const nextDraw = getNextDrawDate(days[lotteryIndex]);
-      const futureDate = new Date(nextDraw);
-      futureDate.setDate(futureDate.getDate() + Math.floor(draws.length / 3) * 7);
+    // This week
+    lotteries.forEach((lottery, index) => {
+      const nextDraw = getNextDrawDate(days[index]);
       
       draws.push({
-        id: draws.length + 1,
+        id: index + 1,
         name: lottery,
-        jackpot: '$0.000',
-        nextDraw: futureDate.toISOString()
+        jackpot: `$${thisWeekBalances[lottery].toFixed(3)}`,
+        nextDraw: nextDraw
       });
-    }
+    });
     
-    res.json(draws.slice(0, 6));
+    // Next week
+    lotteries.forEach((lottery, index) => {
+      const thisWeekDraw = getNextDrawDate(days[index]);
+      const nextWeekDraw = new Date(thisWeekDraw);
+      nextWeekDraw.setDate(nextWeekDraw.getDate() + 7);
+      
+      draws.push({
+        id: index + 4,
+        name: lottery,
+        jackpot: `$${nextWeekBalances[lottery].toFixed(3)}`,
+        nextDraw: nextWeekDraw.toISOString()
+      });
+    });
+    
+    res.json(draws);
   } catch (error) {
     console.error('Error fetching draws:', error);
     res.status(500).json({ error: 'Failed to fetch draws' });

@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable, interval, of } from 'rxjs';
+import { Observable, interval, of, Subject } from 'rxjs';
 import { map, startWith, switchMap, catchError } from 'rxjs/operators';
 import { environment } from '../../environments/environment';
 
@@ -28,6 +28,7 @@ export interface Stats {
 })
 export class LotteryService {
   private apiUrl = environment.apiUrl;
+  private refreshTrigger = new Subject<void>();
 
   constructor(private http: HttpClient) {}
 
@@ -45,6 +46,10 @@ export class LotteryService {
         })
       ))
     );
+  }
+
+  refreshDraws(): void {
+    this.refreshTrigger.next();
   }
 
   getPoolMoney(): Observable<PoolData> {
