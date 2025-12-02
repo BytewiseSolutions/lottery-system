@@ -1,5 +1,4 @@
-/* Copy the same styles as login component */
-@import '../login/login.component.css';
+
 
 /* Additional styles for signup specific elements */
 .custom-control {
@@ -98,4 +97,112 @@
 
 .button-wrapper .or-signup a {
   color: #fd8624;
+}
+
+/* Responsive styles */
+@media (max-width: 768px) {
+  .modal-dialog {
+    margin: 10px;
+    max-width: calc(100% - 20px);
+  }
+  
+  .log-reg-inner {
+    padding: 20px 15px;
+  }
+  
+  .title {
+    font-size: 20px;
+    margin-bottom: 15px;
+  }
+  
+  .form-group {
+    margin-bottom: 15px;
+  }
+  
+  .my-form-control {
+    font-size: 16px;
+    padding: 12px 15px;
+  }
+  
+  .custom-button2 {
+    width: 100%;
+    padding: 12px;
+    font-size: 16px;
+  }
+  
+  .custom-control-label {
+    font-size: 13px;
+    line-height: 20px;
+  }
+  
+  .socials a {
+    width: 40px;
+    height: 40px;
+    line-height: 40px;
+    margin: 0 3px;
+  }
+}
+
+
+
+/* Center form properly */
+.main-content {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+}
+
+form {
+  width: 100%;
+  max-width: 500px;
+}
+
+/* Two-column form layout */
+.form-row {
+  display: flex;
+  gap: 15px;
+  margin-bottom: 0;
+}
+
+.form-group.half-width {
+  flex: 1;
+  margin-bottom: 20px;
+}
+
+.form-group.full-width {
+  width: 100%;
+  margin-bottom: 20px;
+}
+
+@media (max-width: 480px) {
+  .modal-dialog {
+    margin: 5px;
+    max-width: calc(100% - 10px);
+  }
+  
+  .log-reg-inner {
+    padding: 15px 10px;
+  }
+  
+  .title {
+    font-size: 18px;
+  }
+  
+  .form-group label {
+    font-size: 14px;
+  }
+  
+  .text-muted.small {
+    font-size: 12px;
+  }
+  
+  /* Stack columns on mobile */
+  .form-row {
+    flex-direction: column;
+    gap: 0;
+  }
+  
+  .form-group.half-width {
+    width: 100%;
+  }
 }

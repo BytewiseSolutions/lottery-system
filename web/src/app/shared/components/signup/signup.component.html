@@ -8,19 +8,32 @@
         <div class="log-reg-inner">
           <h2 class="title">Create an Account</h2>
           <div class="main-content">
-            <form (ngSubmit)="onSignup()">
-              <div class="form-group">
-                <label>Your Email</label>
-                <input type="email" class="my-form-control" [(ngModel)]="email" [ngModelOptions]="{standalone: true}" placeholder="Enter Your Email" required>
+            <form (ngSubmit)="onSignup()" *ngIf="!showOtpVerification">
+              <div class="form-group full-width">
+                <label>Email</label>
+                <input type="email" class="my-form-control" [(ngModel)]="email" [ngModelOptions]="{standalone: true}" placeholder="Enter Your Email">
               </div>
-              <div class="form-group">
-                <label>Password</label>
-                <input type="password" class="my-form-control" [(ngModel)]="password" [ngModelOptions]="{standalone: true}" placeholder="Enter Your Password" required>
+              <div class="form-row">
+                <div class="form-group half-width">
+                  <label>Full Name</label>
+                  <input type="text" class="my-form-control" [(ngModel)]="fullName" [ngModelOptions]="{standalone: true}" placeholder="Enter Your Full Name" required>
+                </div>
+                <div class="form-group half-width">
+                  <label>Phone Number</label>
+                  <input type="tel" class="my-form-control" [(ngModel)]="phone" [ngModelOptions]="{standalone: true}" placeholder="Enter Your Phone Number">
+                </div>
               </div>
-              <div class="form-group">
-                <label>Confirm Password</label>
-                <input type="password" class="my-form-control" [(ngModel)]="confirmPassword" [ngModelOptions]="{standalone: true}" placeholder="Enter Your Confirm Password" required>
+              <div class="form-row">
+                <div class="form-group half-width">
+                  <label>Password</label>
+                  <input type="password" class="my-form-control" [(ngModel)]="password" [ngModelOptions]="{standalone: true}" placeholder="Enter Your Password" required>
+                </div>
+                <div class="form-group half-width">
+                  <label>Confirm Password</label>
+                  <input type="password" class="my-form-control" [(ngModel)]="confirmPassword" [ngModelOptions]="{standalone: true}" placeholder="Enter Your Confirm Password" required>
+                </div>
               </div>
+              <p class="text-muted small">Note: You must provide either email or phone number (or both)</p>
               <div class="custom-control custom-checkbox">
                 <input type="checkbox" class="custom-control-input" id="customCheck1" [(ngModel)]="agreeTerms" [ngModelOptions]="{standalone: true}" required>
                 <label class="custom-control-label" for="customCheck1">
@@ -33,15 +46,41 @@
                   Already have an account? <a href="#" (click)="switchToLogin()">Login</a>
                 </p>
               </div>
-              <div class="or">
-                <p>OR</p>
-              </div>
-              <div class="socials">
-                <a href="#"><i class="fab fa-facebook-f"></i></a>
-                <a href="#"><i class="fab fa-twitter"></i></a>
-                <a href="#"><i class="fab fa-google"></i></a>
-              </div>
             </form>
+            
+            <!-- OTP Verification Form -->
+            <div *ngIf="showOtpVerification">
+              <h3>Verify Your Account</h3>
+              <p>We've sent verification codes to your registered contact methods.</p>
+              
+              <div *ngIf="requiresEmailVerification">
+                <div class="form-group">
+                  <label>Email OTP</label>
+                  <input type="text" class="my-form-control" [(ngModel)]="emailOtp" placeholder="Enter 6-digit code" maxlength="6">
+                  <button type="button" class="btn btn-sm btn-link" (click)="resendOtp('email')">Resend Email OTP</button>
+                </div>
+                <button type="button" class="custom-button2" (click)="verifyOtp('email')">Verify Email</button>
+              </div>
+              
+              <div *ngIf="requiresPhoneVerification">
+                <div class="form-group">
+                  <label>Phone OTP</label>
+                  <input type="text" class="my-form-control" [(ngModel)]="phoneOtp" placeholder="Enter 6-digit code" maxlength="6">
+                  <button type="button" class="btn btn-sm btn-link" (click)="resendOtp('phone')">Resend SMS OTP</button>
+                </div>
+                <button type="button" class="custom-button2" (click)="verifyOtp('phone')">Verify Phone</button>
+              </div>
+              
+              <p class="text-success" *ngIf="emailVerified">✓ Email verified</p>
+              <p class="text-success" *ngIf="phoneVerified">✓ Phone verified</p>
+              
+              <div *ngIf="allVerified">
+                <p class="text-success">Account verified successfully! You can now login.</p>
+                <button type="button" class="custom-button2" (click)="switchToLogin()">Go to Login</button>
+              </div>
+            </div>
+            
+
           </div>
         </div>
       </div>
