@@ -15,7 +15,7 @@ export class LoginComponent {
   @Output() closeModal = new EventEmitter<void>();
   @Output() switchToSignupEvent = new EventEmitter<void>();
 
-  email = '';
+  identifier = '';
   password = '';
 
   close() {
@@ -27,8 +27,8 @@ export class LoginComponent {
   }
 
   async onLogin() {
-    if (!this.email || !this.password) {
-      alert('Please enter both email and password');
+    if (!this.identifier || !this.password) {
+      alert('Please enter both email/phone and password');
       return;
     }
 
@@ -36,7 +36,7 @@ export class LoginComponent {
       const response = await fetch(`${environment.apiUrl}/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: this.email, password: this.password })
+        body: JSON.stringify({ identifier: this.identifier, password: this.password })
       });
 
       const result = await response.json();

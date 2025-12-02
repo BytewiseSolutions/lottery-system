@@ -27,6 +27,12 @@ function getNextDrawDate($dayName) {
 $database = new Database();
 $db = $database->getConnection();
 
+if (!$db) {
+    http_response_code(500);
+    echo json_encode(['error' => 'Database connection failed']);
+    exit;
+}
+
 try {
     // Get pool data
     $query = "SELECT lottery, draw_date, COUNT(*) * 0.001 as pool_amount FROM entries GROUP BY lottery, draw_date";

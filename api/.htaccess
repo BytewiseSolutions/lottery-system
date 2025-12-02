@@ -6,6 +6,8 @@ RewriteCond %{REQUEST_FILENAME} !-d
 RewriteRule ^api/health$ health.php [L]
 RewriteRule ^api/register$ register.php [L]
 RewriteRule ^api/login$ login.php [L]
+RewriteRule ^api/verify-otp$ verify-otp.php [L]
+RewriteRule ^api/resend-otp$ resend-otp.php [L]
 RewriteRule ^api/draws$ draws.php [L]
 RewriteRule ^api/play$ play.php [L]
 RewriteRule ^api/results$ results.php [L]

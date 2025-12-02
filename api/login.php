@@ -8,20 +8,21 @@ $db = $database->getConnection();
 
 $data = json_decode(file_get_contents("php://input"));
 
-if (!$data->email || !$data->password) {
+if (!$data->identifier || !$data->password) {
     http_response_code(400);
-    echo json_encode(['error' => 'Email and password are required']);
+    echo json_encode(['error' => 'Email/phone and password are required']);
     exit;
 }
 
 try {
-    $query = "SELECT * FROM users WHERE email = ?";
+    // Check if identifier is email or phone
+    $query = "SELECT * FROM users WHERE (email = ? OR phone = ?) AND is_active = TRUE";
     $stmt = $db->prepare($query);
-    $stmt->execute([$data->email]);
+    $stmt->execute([$data->identifier, $data->identifier]);
     
     if ($stmt->rowCount() === 0) {
         http_response_code(400);
-        echo json_encode(['error' => 'Invalid credentials']);
+        echo json_encode(['error' => 'Invalid credentials or account not verified']);
         exit;
     }
     
@@ -36,7 +37,9 @@ try {
     // Generate JWT token
     $payload = [
         'id' => $user['id'],
+        'fullName' => $user['full_name'],
         'email' => $user['email'],
+        'phone' => $user['phone'],
         'exp' => time() + (24 * 60 * 60) // 24 hours
     ];
     
@@ -46,7 +49,12 @@ try {
         'success' => true,
         'message' => 'Login successful',
         'token' => $token,
-        'user' => ['id' => $user['id'], 'email' => $user['email']]
+        'user' => [
+            'id' => $user['id'],
+            'fullName' => $user['full_name'],
+            'email' => $user['email'],
+            'phone' => $user['phone']
+        ]
     ]);
     
 } catch(PDOException $exception) {

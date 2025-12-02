@@ -10,8 +10,8 @@
           <div class="main-content">
             <form (ngSubmit)="onLogin()">
               <div class="form-group">
-                <label>Your Email</label>
-                <input type="email" class="my-form-control" [(ngModel)]="email" [ngModelOptions]="{standalone: true}" placeholder="Enter Your Email" required>
+                <label>Email or Phone Number</label>
+                <input type="text" class="my-form-control" [(ngModel)]="identifier" [ngModelOptions]="{standalone: true}" placeholder="Enter Your Email or Phone Number" required>
               </div>
               <div class="form-group">
                 <label>Password</label>

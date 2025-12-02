@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { LotteryService, Draw } from '../services/lottery.service';
@@ -15,11 +15,14 @@ export class HomeComponent implements OnInit {
   draws: Draw[] = [];
   results: any[] = [];
 
-  constructor(private lotteryService: LotteryService) {}
+  constructor(private lotteryService: LotteryService, private cdr: ChangeDetectorRef) {}
 
   ngOnInit() {
     this.loadData();
-    setInterval(() => this.loadData(), 30000);
+    setInterval(() => {
+      this.loadData();
+      this.cdr.detectChanges();
+    }, 30000);
   }
 
   private loadData() {
