@@ -1,6 +1,7 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { ToastService } from '../../../services/toast.service';
 import { environment } from '../../../../environments/environment';
 
 @Component({
@@ -15,6 +16,8 @@ export class SignupComponent {
   @Output() closeModal = new EventEmitter<void>();
   @Output() switchToLoginEvent = new EventEmitter<void>();
 
+  constructor(private toastService: ToastService) {}
+
   fullName = '';
   email = '';
   phone = '';
@@ -27,6 +30,7 @@ export class SignupComponent {
   userId: number | null = null;
   requiresEmailVerification = false;
   requiresPhoneVerification = false;
+  selectedVerificationMethod: 'email' | 'phone' = 'email';
   emailOtp = '';
   phoneOtp = '';
   emailVerified = false;
@@ -43,7 +47,7 @@ export class SignupComponent {
 
   async onSignup() {
     if (!this.email && !this.phone) {
-      alert('Please provide either email or phone number');
+      this.toastService.showError('Please provide either email or phone number');
       return;
     }
     
@@ -66,13 +70,14 @@ export class SignupComponent {
         this.userId = result.userId;
         this.requiresEmailVerification = result.requiresVerification.includes('email');
         this.requiresPhoneVerification = result.requiresVerification.includes('phone');
+        this.selectedVerificationMethod = this.requiresEmailVerification ? 'email' : 'phone';
         this.showOtpVerification = true;
-        alert(result.message);
+        this.toastService.showSuccess(result.message);
       } else {
-        alert(result.error);
+        this.toastService.showError(result.error);
       }
     } catch (error) {
-      alert('Registration failed');
+      this.toastService.showError('Registration failed');
     }
   }
   
@@ -80,7 +85,7 @@ export class SignupComponent {
     const otpCode = type === 'email' ? this.emailOtp : this.phoneOtp;
     
     if (!otpCode || otpCode.length !== 6) {
-      alert('Please enter a valid 6-digit OTP');
+      this.toastService.showError('Please enter a valid 6-digit OTP');
       return;
     }
     
@@ -107,12 +112,19 @@ export class SignupComponent {
         }
         
         this.allVerified = result.fullyVerified;
-        alert(result.message);
+        this.toastService.showSuccess(result.message);
+        
+        // Auto-redirect to login when fully verified
+        if (this.allVerified) {
+          setTimeout(() => {
+            this.switchToLogin();
+          }, 2000);
+        }
       } else {
-        alert(result.error);
+        this.toastService.showError(result.error);
       }
     } catch (error) {
-      alert('Verification failed');
+      this.toastService.showError('Verification failed');
     }
   }
   
@@ -128,9 +140,13 @@ export class SignupComponent {
       });
 
       const result = await response.json();
-      alert(result.success ? result.message : result.error);
+      if (result.success) {
+        this.toastService.showSuccess(result.message);
+      } else {
+        this.toastService.showError(result.error);
+      }
     } catch (error) {
-      alert('Failed to resend OTP');
+      this.toastService.showError('Failed to resend OTP');
     }
   }
 }

@@ -5,6 +5,17 @@ class JWT {
 
     private static function getSecretKey() {
         if (!self::$secret_key) {
+            // Load .env file
+            $envFile = __DIR__ . '/../.env';
+            if (file_exists($envFile)) {
+                $lines = file($envFile, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
+                foreach ($lines as $line) {
+                    if (strpos($line, '=') !== false && strpos($line, '#') !== 0) {
+                        list($key, $value) = explode('=', $line, 2);
+                        $_ENV[trim($key)] = trim($value);
+                    }
+                }
+            }
             self::$secret_key = $_ENV['JWT_SECRET'] ?? 'L8k9mN2pQ5rS7tU1vW3xY6zA4bC8dE0fG2hI5jK7lM9nO1pQ4rS6tU8vW0xY3zA5';
         }
         return self::$secret_key;

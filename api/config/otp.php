@@ -65,45 +65,49 @@ class OTP {
         return $token;
     }
     
-    public function sendSMSOTP($phone, $otpCode) {
-        error_log("SMS OTP to $phone: $otpCode");
+    public function sendEmailOTP($email, $otpCode) {
+        error_log("Email OTP to $email: $otpCode");
         
-        if (getenv('APP_ENV') === 'development' || !getenv('SMS_ENABLED')) {
-            error_log("SMS bypassed in development mode");
+        // In development, log OTP and skip actual email sending
+        if (getenv('APP_ENV') === 'development') {
+            error_log("Development mode - OTP: $otpCode");
             return true;
         }
         
-        $sid = getenv('TWILIO_SID');
-        $token = getenv('TWILIO_TOKEN');
-        $from = getenv('TWILIO_PHONE');
+        // Use native PHP mail() - works with Hostinger
+        $subject = "Your Lottery Verification Code";
+        $message = "Your verification code is: $otpCode\n\nThis code expires in 60 seconds.\n\nIf you didn't request this code, please ignore this email.";
+        $headers = "From: noreply@lottery-system.com\r\n";
+        $headers .= "Reply-To: noreply@lottery-system.com\r\n";
+        $headers .= "Content-Type: text/plain; charset=UTF-8\r\n";
         
-        if (!$sid || !$token || !$from) {
-            error_log("Twilio credentials not configured");
-            return false;
+        $sent = mail($email, $subject, $message, $headers);
+        error_log($sent ? "Email sent to $email" : "Email failed to $email");
+        return $sent;
+    }
+    
+    public function sendSMSOTP($phone, $otpCode) {
+        error_log("SMS OTP to $phone: $otpCode");
+        error_log("SMS disabled - OTP logged only");
+        return true;
+    }
+    
+    public function verifyOTP($userId, $otpCode, $otpType) {
+        $query = "SELECT id FROM otp_verifications 
+                  WHERE user_id = ? AND otp_code = ? AND otp_type = ? 
+                  AND expires_at > NOW() AND is_used = FALSE";
+        $stmt = $this->db->prepare($query);
+        $stmt->execute([$userId, $otpCode, $otpType]);
+        
+        if ($stmt->rowCount() > 0) {
+            // Mark OTP as used
+            $updateQuery = "UPDATE otp_verifications SET is_used = TRUE 
+                           WHERE user_id = ? AND otp_code = ? AND otp_type = ?";
+            $updateStmt = $this->db->prepare($updateQuery);
+            $updateStmt->execute([$userId, $otpCode, $otpType]);
+            return true;
         }
-        
-        $message = "Your lottery verification code is: $otpCode. Valid for 60 seconds.";
-        
-        $data = [
-            'From' => $from,
-            'To' => $phone,
-            'Body' => $message
-        ];
-        
-        $ch = curl_init();
-        curl_setopt($ch, CURLOPT_URL, "https://api.twilio.com/2010-04-01/Accounts/$sid/Messages.json");
-        curl_setopt($ch, CURLOPT_POST, true);
-        curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($data));
-        curl_setopt($ch, CURLOPT_USERPWD, "$sid:$token");
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-        
-        $response = curl_exec($ch);
-        $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-        curl_close($ch);
-        
-        $success = $httpCode === 201;
-        error_log($success ? "SMS sent successfully" : "SMS failed: HTTP $httpCode");
-        return $success;
+        return false;
     }
 }
 ?>

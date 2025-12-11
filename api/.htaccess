@@ -3,17 +3,18 @@ RewriteCond %{REQUEST_FILENAME} !-f
 RewriteCond %{REQUEST_FILENAME} !-d
 
 # API Routes
-RewriteRule ^api/health$ health.php [L]
-RewriteRule ^api/register$ register.php [L]
-RewriteRule ^api/login$ login.php [L]
-RewriteRule ^api/verify-otp$ verify-otp.php [L]
-RewriteRule ^api/resend-otp$ resend-otp.php [L]
-RewriteRule ^api/draws$ draws.php [L]
-RewriteRule ^api/play$ play.php [L]
-RewriteRule ^api/results$ results.php [L]
-RewriteRule ^api/entries$ entries.php [L]
-RewriteRule ^api/pool$ pool.php [L]
-RewriteRule ^api/stats$ stats.php [L]
+RewriteRule ^health$ health.php [L]
+RewriteRule ^register$ register.php [L]
+RewriteRule ^login$ login.php [L]
+RewriteRule ^verify-otp$ verify-otp.php [L]
+RewriteRule ^resend-otp$ resend-otp.php [L]
+RewriteRule ^draws$ draws.php [L]
+RewriteRule ^play$ play.php [L]
+RewriteRule ^play-lottery$ play.php [L]
+RewriteRule ^results$ results.php [L]
+RewriteRule ^entries$ entries.php [L]
+RewriteRule ^pool$ pool.php [L]
+RewriteRule ^stats$ stats.php [L]
 
 # Handle CORS preflight requests
 RewriteCond %{REQUEST_METHOD} OPTIONS
