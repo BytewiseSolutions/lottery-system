@@ -5,6 +5,7 @@ import { LayoutComponent } from '../layout/layout.component';
 import { LoginComponent } from '../shared/components/login/login.component';
 import { SignupComponent } from '../shared/components/signup/signup.component';
 import { LotteryService } from '../services/lottery.service';
+import { ToastService } from '../services/toast.service';
 import { environment } from '../../environments/environment';
 
 @Component({
@@ -24,7 +25,7 @@ export class PlayLotteryComponent implements OnInit {
   showLoginModal = false;
   showSignupModal = false;
 
-  constructor(private route: ActivatedRoute, private router: Router, private lotteryService: LotteryService) {}
+  constructor(private route: ActivatedRoute, private router: Router, private lotteryService: LotteryService, private toastService: ToastService) {}
 
   ngOnInit() {
     this.route.queryParams.subscribe(params => {
@@ -142,16 +143,16 @@ export class PlayLotteryComponent implements OnInit {
         const result = await response.json();
         
         if (result.success) {
-          alert(`Entry submitted! New pool amount: $${result.newPoolAmount}`);
+          this.toastService.showSuccess(`Entry submitted! New pool amount: $${result.newPoolAmount}`);
           // Trigger immediate refresh of lottery balances
           this.lotteryService.refreshDraws();
           // Redirect to lotteries page
           this.router.navigate(['/lotteries']);
         } else {
-          alert(result.error || 'Failed to submit entry');
+          this.toastService.showError(result.error || 'Failed to submit entry');
         }
       } catch (error) {
-        alert('Failed to submit entry. Please try again.');
+        this.toastService.showError('Failed to submit entry. Please try again.');
       }
     }
   }

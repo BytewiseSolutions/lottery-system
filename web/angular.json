@@ -33,6 +33,15 @@
               }
             ],
             "styles": [
+              "src/assets/css/bootstrap.min.css",
+              "src/assets/css/all.min.css",
+              "src/assets/css/magnific-popup.css",
+              "src/assets/css/owl.carousel.min.css",
+              "src/assets/css/owl.theme.default.min.css",
+              "src/assets/css/nice-select.css",
+              "src/assets/css/bootstrap-popover-x.min.css",
+              "src/assets/css/main.css",
+              "src/assets/css/responsive.css",
               "src/styles.css"
             ]
           },

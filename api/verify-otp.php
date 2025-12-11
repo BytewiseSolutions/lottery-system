@@ -27,11 +27,15 @@ try {
         $userStmt->execute([$data->userId]);
         $user = $userStmt->fetch(PDO::FETCH_ASSOC);
         
-        $isFullyVerified = true;
-        if ($user['email'] && !$user['email_verified']) $isFullyVerified = false;
-        if ($user['phone'] && !$user['phone_verified']) $isFullyVerified = false;
+        // User is active if at least one contact method is verified
+        $hasVerifiedContact = $user['email_verified'] || $user['phone_verified'];
         
-        if ($isFullyVerified) {
+        // Check if all provided contact methods are verified
+        $isFullyVerified = true;
+        if (!empty($user['email']) && !$user['email_verified']) $isFullyVerified = false;
+        if (!empty($user['phone']) && !$user['phone_verified']) $isFullyVerified = false;
+        
+        if ($hasVerifiedContact) {
             $activateQuery = "UPDATE users SET is_active = TRUE WHERE id = ?";
             $activateStmt = $db->prepare($activateQuery);
             $activateStmt->execute([$data->userId]);

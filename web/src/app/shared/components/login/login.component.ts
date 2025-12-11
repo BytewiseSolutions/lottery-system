@@ -46,7 +46,6 @@ export class LoginComponent {
         localStorage.setItem('user', JSON.stringify(result.user));
         this.loginSuccess.emit(result.user);
         this.close();
-        alert('Login successful!');
       } else {
         alert(result.error);
       }

@@ -104,6 +104,14 @@
   .modal-dialog {
     margin: 10px;
     max-width: calc(100% - 20px);
+    height: auto;
+    max-height: calc(100vh - 40px);
+  }
+  
+  .modal-content {
+    height: auto;
+    max-height: calc(100vh - 40px);
+    overflow-y: auto;
   }
   
   .log-reg-inner {
@@ -128,6 +136,8 @@
     width: 100%;
     padding: 12px;
     font-size: 16px;
+    position: relative;
+    z-index: 10;
   }
   
   .custom-control-label {
@@ -178,10 +188,19 @@ form {
   .modal-dialog {
     margin: 5px;
     max-width: calc(100% - 10px);
+    height: auto;
+    max-height: calc(100vh - 20px);
+  }
+  
+  .modal-content {
+    height: auto;
+    max-height: calc(100vh - 20px);
+    overflow-y: auto;
   }
   
   .log-reg-inner {
     padding: 15px 10px;
+    min-height: auto;
   }
   
   .title {
@@ -204,5 +223,31 @@ form {
   
   .form-group.half-width {
     width: 100%;
+  }
+  
+  /* Ensure button is always visible */
+  .button-wrapper {
+    position: relative;
+    z-index: 10;
+    padding-bottom: 20px;
+  }
+  
+  .custom-button2 {
+    width: 100%;
+    padding: 15px;
+    font-size: 16px;
+    margin-bottom: 15px;
+    position: relative;
+    z-index: 10;
+  }
+  
+  /* Fix modal positioning */
+  .modal.show {
+    padding-right: 0 !important;
+  }
+  
+  .modal-dialog {
+    transform: none !important;
+    position: relative;
   }
 }
