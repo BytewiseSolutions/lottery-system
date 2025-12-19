@@ -24,8 +24,23 @@ if (count($data->numbers) !== 5 || count($data->bonusNumbers) !== 2) {
 
 try {
     // Convert lottery code to full name
-    $lotteryName = $data->lottery === 'mon' ? 'Mon Lotto' : 
-                   ($data->lottery === 'wed' ? 'Wed Lotto' : 'Fri Lotto');
+    $lotteryName = $data->lottery === 'mon' ? 'Monday Lotto' : 
+                   ($data->lottery === 'wed' ? 'Wednesday Lotto' : 'Friday Lotto');
+    
+    // Check how many times user played today
+    $query = "SELECT COUNT(*) as play_count FROM entries WHERE user_id = ? AND DATE(created_at) = CURDATE()";
+    $stmt = $db->prepare($query);
+    $stmt->execute([$user['id']]);
+    $playCount = $stmt->fetch(PDO::FETCH_ASSOC)['play_count'];
+    
+    // If user has played 4+ times today, require human verification
+    if ($playCount >= 4 && !isset($data->humanVerified)) {
+        echo json_encode([
+            'requireHumanVerification' => true,
+            'message' => 'Please verify you are human to continue playing'
+        ]);
+        exit;
+    }
     
     // Insert entry
     $query = "INSERT INTO entries (user_id, lottery, numbers, bonus_numbers, draw_date) VALUES (?, ?, ?, ?, ?)";

@@ -12,9 +12,9 @@ export interface Draw {
 }
 
 export interface PoolData {
-  'Mon Lotto': number;
-  'Wed Lotto': number;
-  'Fri Lotto': number;
+  'Monday Lotto': number;
+  'Wednesday Lotto': number;
+  'Friday Lotto': number;
 }
 
 export interface Stats {
@@ -39,9 +39,9 @@ export class LotteryService {
         catchError(error => {
           console.error('API Error:', error);
           return of([
-            { id: 1, name: 'Mon Lotto', jackpot: '$0.000', nextDraw: new Date(Date.now() + 2*24*60*60*1000).toISOString() },
-            { id: 2, name: 'Wed Lotto', jackpot: '$0.000', nextDraw: new Date(Date.now() + 4*24*60*60*1000).toISOString() },
-            { id: 3, name: 'Fri Lotto', jackpot: '$0.000', nextDraw: new Date(Date.now() + 6*24*60*60*1000).toISOString() }
+            { id: 1, name: 'Monday Lotto', jackpot: '$0.000', nextDraw: new Date(Date.now() + 2*24*60*60*1000).toISOString() },
+            { id: 2, name: 'Wednesday Lotto', jackpot: '$0.000', nextDraw: new Date(Date.now() + 4*24*60*60*1000).toISOString() },
+            { id: 3, name: 'Friday Lotto', jackpot: '$0.000', nextDraw: new Date(Date.now() + 6*24*60*60*1000).toISOString() }
           ]);
         })
       ))
@@ -58,7 +58,7 @@ export class LotteryService {
       switchMap(() => this.http.get<PoolData>(`${this.apiUrl}/pool`).pipe(
         catchError(error => {
           console.error('Pool API Error:', error);
-          return of({ 'Mon Lotto': 0, 'Wed Lotto': 0, 'Fri Lotto': 0 });
+          return of({ 'Monday Lotto': 0, 'Wednesday Lotto': 0, 'Friday Lotto': 0 });
         })
       ))
     );

@@ -24,6 +24,9 @@ export class PlayLotteryComponent implements OnInit {
   isLoggedIn = false;
   showLoginModal = false;
   showSignupModal = false;
+  showHumanVerification = false;
+  humanVerified = false;
+  captchaVerified = false;
 
   constructor(private route: ActivatedRoute, private router: Router, private lotteryService: LotteryService, private toastService: ToastService) {}
 
@@ -36,10 +39,15 @@ export class PlayLotteryComponent implements OnInit {
     // Check login status
     this.isLoggedIn = !!localStorage.getItem('token');
     
-    // Generate numbers 1-99
-    for (let i = 1; i <= 99; i++) {
+    // Generate numbers 1-75
+    for (let i = 1; i <= 75; i++) {
       this.numbers.push(i);
     }
+    
+    // Setup CAPTCHA callback
+    (window as any).onCaptchaSuccess = () => {
+      this.captchaVerified = true;
+    };
   }
 
   toggleNumber(num: number) {
@@ -136,11 +144,17 @@ export class PlayLotteryComponent implements OnInit {
             lottery: this.lotteryType,
             numbers: this.selectedNumbers,
             bonusNumbers: this.selectedBonusNumbers,
-            drawDate: this.drawDate
+            drawDate: this.drawDate,
+            humanVerified: this.humanVerified
           })
         });
         
         const result = await response.json();
+        
+        if (result.requireHumanVerification) {
+          this.showHumanVerification = true;
+          return;
+        }
         
         if (result.success) {
           this.toastService.showSuccess(`Entry submitted! New pool amount: $${result.newPoolAmount}`);
@@ -155,5 +169,15 @@ export class PlayLotteryComponent implements OnInit {
         this.toastService.showError('Failed to submit entry. Please try again.');
       }
     }
+  }
+
+  onHumanVerified() {
+    this.humanVerified = true;
+    this.showHumanVerification = false;
+    this.submitEntry(); // Retry submission
+  }
+
+  onCloseHumanVerification() {
+    this.showHumanVerification = false;
   }
 }

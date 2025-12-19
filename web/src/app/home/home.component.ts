@@ -78,9 +78,9 @@ export class HomeComponent implements OnInit {
 
   private getCurrentPool(lottery: string): string {
     const pools: {[key: string]: string} = {
-      'Mon Lotto': '$1,990.12',
-      'Wed Lotto': '$2,902.77',
-      'Fri Lotto': '$98,943.09'
+      'Monday Lotto': '$1,990.12',
+      'Wednesday Lotto': '$2,902.77',
+      'Friday Lotto': '$98,943.09'
     };
     return pools[lottery] || '$0.00';
   }
