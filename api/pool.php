@@ -14,9 +14,9 @@ try {
     $poolData = $stmt->fetchAll(PDO::FETCH_ASSOC);
     
     $pools = [
-        'Mon Lotto' => 0,
-        'Wed Lotto' => 0,
-        'Fri Lotto' => 0
+        'Monday Lotto' => 0,
+        'Wednesday Lotto' => 0,
+        'Friday Lotto' => 0
     ];
     
     foreach ($poolData as $row) {
@@ -26,6 +26,6 @@ try {
     echo json_encode($pools);
     
 } catch(PDOException $exception) {
-    echo json_encode(['Mon Lotto' => 0, 'Wed Lotto' => 0, 'Fri Lotto' => 0]);
+    echo json_encode(['Monday Lotto' => 0, 'Wednesday Lotto' => 0, 'Friday Lotto' => 0]);
 }
 ?>

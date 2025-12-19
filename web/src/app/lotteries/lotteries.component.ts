@@ -53,8 +53,8 @@ export class LotteriesComponent implements OnInit {
   }
 
   getLotteryCode(name: string, date?: string): string {
-    const baseCode = name.includes('Mon') ? 'mon' : 
-                    name.includes('Wed') ? 'wed' : 'fri';
+    const baseCode = name.includes('Monday') ? 'mon' : 
+                    name.includes('Wednesday') ? 'wed' : 'fri';
     return date ? `${baseCode}-${date}` : baseCode;
   }
 

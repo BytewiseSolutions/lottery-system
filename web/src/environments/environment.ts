@@ -1,4 +1,4 @@
 export const environment = {
   production: false,
-  apiUrl: 'https://totalfreelotto.com/api'
+  apiUrl: 'http://localhost:3002/api'
 };

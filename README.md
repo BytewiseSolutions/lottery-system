@@ -4,7 +4,7 @@ A full-stack lottery management system built with Node.js and Angular.
 
 ## Features
 - User registration and authentication
-- Multiple lottery games (Mon/Wed/Fri Lotto)
+- Multiple lottery games (Monday/Wednesday/Friday Lotto)
 - Real-time countdown timers
 - Lottery entry submission
 - Results tracking and history

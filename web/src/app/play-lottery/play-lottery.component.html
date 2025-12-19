@@ -120,6 +120,24 @@
   (switchToLoginEvent)="onSwitchToLogin()">
 </app-signup>
 
+<!-- Human Verification Modal -->
+<div class="modal" [class.show]="showHumanVerification" *ngIf="showHumanVerification">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-body text-center" style="padding: 40px;">
+        <span class="close" (click)="onCloseHumanVerification()">&times;</span>
+        <h3 style="color: #5949b3; margin-bottom: 20px;">Human Verification</h3>
+        <p style="margin-bottom: 30px;">You've played 4+ times today. Please verify you're human to continue.</p>
+        <div style="margin: 20px 0;">
+          <p>Complete the CAPTCHA to verify:</p>
+          <div class="g-recaptcha" data-sitekey="6LeIxAcTAAAAAJcZVRqyHh71UMIEGNQ_MXjiZKhI" data-callback="onCaptchaSuccess"></div>
+          <button class="custom-button2" (click)="onHumanVerified()" [disabled]="!captchaVerified" style="padding: 15px 30px; opacity: 0.5;" [style.opacity]="captchaVerified ? '1' : '0.5'">Submit Entry</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
 <style>
 .number-btn, .bonus-number-btn {
   background: #fff;

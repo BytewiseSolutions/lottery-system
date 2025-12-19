@@ -11,14 +11,23 @@ function getNextDrawDate($dayName) {
     
     $daysUntilNext = $targetDay - $currentDay;
     
+    // If it's the same day but after 8 PM, move to next week
     if ($daysUntilNext === 0 && $currentHour >= 20) {
         $daysUntilNext = 7;
-    } elseif ($daysUntilNext < 0) {
+    } 
+    // If the target day has passed this week, move to next week
+    elseif ($daysUntilNext < 0) {
         $daysUntilNext += 7;
+    }
+    // If it's the same day and before 8 PM, it's today
+    elseif ($daysUntilNext === 0) {
+        $daysUntilNext = 0;
     }
     
     $nextDate = clone $now;
-    $nextDate->add(new DateInterval('P' . $daysUntilNext . 'D'));
+    if ($daysUntilNext > 0) {
+        $nextDate->add(new DateInterval('P' . $daysUntilNext . 'D'));
+    }
     $nextDate->setTime(20, 0, 0);
     
     return $nextDate->format('c');
@@ -34,24 +43,38 @@ if (!$db) {
 }
 
 try {
-    // Get pool data for current draws
-    $query = "SELECT lottery, COUNT(*) * 0.001 as pool_amount FROM entries GROUP BY lottery";
-    $stmt = $db->prepare($query);
-    $stmt->execute();
-    $poolData = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    // Initialize balances with $10 base amount
+    $balances = ['Monday Lotto' => 10, 'Wednesday Lotto' => 10, 'Friday Lotto' => 10];
     
-    // Initialize balances
-    $balances = ['Mon Lotto' => 0, 'Wed Lotto' => 0, 'Fri Lotto' => 0];
+    // Get pool data only for next draw dates
+    $lotteries = ['Monday Lotto', 'Wednesday Lotto', 'Friday Lotto'];
+    $days = ['monday', 'wednesday', 'friday'];
     
-    foreach ($poolData as $row) {
-        $balances[$row['lottery']] = floatval($row['pool_amount']);
+    foreach ($lotteries as $index => $lottery) {
+        $nextDrawDate = getNextDrawDate($days[$index]);
+        $drawDateOnly = date('Y-m-d', strtotime($nextDrawDate));
+        
+        // Count entries for this specific draw date
+        $query = "SELECT COUNT(*) * 0.001 as pool_amount FROM entries WHERE (lottery = ? OR lottery = ?) AND draw_date = ?";
+        $stmt = $db->prepare($query);
+        $oldName = str_replace(' Lotto', ' Lotto', $lottery);
+        if ($lottery === 'Monday Lotto') $oldName = 'Mon Lotto';
+        if ($lottery === 'Wednesday Lotto') $oldName = 'Wed Lotto';
+        if ($lottery === 'Friday Lotto') $oldName = 'Fri Lotto';
+        
+        $stmt->execute([$lottery, $oldName, $drawDateOnly]);
+        $result = $stmt->fetch(PDO::FETCH_ASSOC);
+        
+        if ($result && $result['pool_amount']) {
+            $balances[$lottery] += floatval($result['pool_amount']);
+        }
     }
     
     $draws = [];
-    $lotteries = ['Mon Lotto', 'Wed Lotto', 'Fri Lotto'];
+    $lotteries = ['Monday Lotto', 'Wednesday Lotto', 'Friday Lotto'];
     $days = ['monday', 'wednesday', 'friday'];
     
-    // This week
+    // Generate draws with next draw dates
     foreach ($lotteries as $index => $lottery) {
         $nextDraw = getNextDrawDate($days[$index]);
         
@@ -59,11 +82,20 @@ try {
             'id' => $index + 1,
             'name' => $lottery,
             'jackpot' => '$' . number_format($balances[$lottery], 3),
-            'nextDraw' => $nextDraw
+            'nextDraw' => $nextDraw,
+            'sortDate' => new DateTime($nextDraw)
         ];
     }
     
-
+    // Sort by next draw date (soonest first)
+    usort($draws, function($a, $b) {
+        return $a['sortDate'] <=> $b['sortDate'];
+    });
+    
+    // Remove sortDate before sending response
+    foreach ($draws as &$draw) {
+        unset($draw['sortDate']);
+    }
     
     echo json_encode($draws);
     
