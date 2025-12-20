@@ -52,11 +52,14 @@ export class HistoryComponent implements OnInit {
 
   async loadHistory() {
     try {
-      const response = await fetch(`${environment.apiUrl}/entries`);
+      const token = localStorage.getItem('token');
+      const response = await fetch(`${environment.apiUrl}/entries.php`, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
       const entries = await response.json();
-      const userEntries = entries.filter((entry: any) => entry.user_id === this.getCurrentUserId());
-      console.log('User entries:', userEntries);
-      this.processEntries(userEntries);
+      this.processEntries(entries);
     } catch (error) {
       console.error('Error loading history:', error);
     }

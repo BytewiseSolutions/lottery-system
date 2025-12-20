@@ -5,29 +5,34 @@ require_once 'config/database.php';
 $database = new Database();
 $db = $database->getConnection();
 
+if (!$db) {
+    http_response_code(500);
+    echo json_encode(['error' => 'Database connection failed']);
+    exit;
+}
+
 try {
-    $query = "SELECT lottery, winning_numbers, bonus_numbers, draw_date, total_pool_money 
-              FROM results 
-              ORDER BY draw_date DESC 
-              LIMIT 10";
-    $stmt = $db->prepare($query);
-    $stmt->execute();
-    $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    // Return empty results for now (no draws have happened yet)
+    $results = [];
     
-    $formattedResults = [];
-    foreach ($results as $result) {
-        $formattedResults[] = [
-            'game' => $result['lottery'],
-            'numbers' => json_decode($result['winning_numbers']),
-            'bonusNumbers' => json_decode($result['bonus_numbers']),
-            'date' => $result['draw_date'],
-            'poolMoney' => '$' . $result['total_pool_money']
-        ];
-    }
+    // You can add actual results here when draws happen
+    // Example structure:
+    // $results = [
+    //     [
+    //         'id' => 1,
+    //         'lottery' => 'Monday Lotto',
+    //         'drawDate' => '2024-12-16',
+    //         'winningNumbers' => [5, 12, 23, 34, 45],
+    //         'bonusNumbers' => [7, 18],
+    //         'jackpot' => '$15.50',
+    //         'winners' => 0
+    //     ]
+    // ];
     
-    echo json_encode($formattedResults);
+    echo json_encode($results);
     
 } catch(PDOException $exception) {
-    echo json_encode([]);
+    http_response_code(500);
+    echo json_encode(['error' => 'Failed to fetch results']);
 }
 ?>

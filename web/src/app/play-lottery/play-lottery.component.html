@@ -120,6 +120,19 @@
   (switchToLoginEvent)="onSwitchToLogin()">
 </app-signup>
 
+<!-- Success Popup -->
+<div class="success-popup" [class.show]="showSuccessPopup" *ngIf="showSuccessPopup">
+  <div class="success-content">
+    <div class="success-icon">✓</div>
+    <h3>Entry Submitted Successfully!</h3>
+    <p>Your lottery entry has been submitted. Good luck!</p>
+    <div class="success-details">
+      <div>Main Numbers: <span *ngFor="let num of selectedNumbers" class="success-number">{{num}}</span></div>
+      <div>Bonus Numbers: <span *ngFor="let num of selectedBonusNumbers" class="success-number">{{num}}</span></div>
+    </div>
+  </div>
+</div>
+
 <!-- Human Verification Modal -->
 <div class="modal" [class.show]="showHumanVerification" *ngIf="showHumanVerification">
   <div class="modal-dialog modal-dialog-centered">

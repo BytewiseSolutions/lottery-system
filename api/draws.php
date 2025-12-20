@@ -54,16 +54,22 @@ try {
         $nextDrawDate = getNextDrawDate($days[$index]);
         $drawDateOnly = date('Y-m-d', strtotime($nextDrawDate));
         
-        // Count entries for this specific draw date
-        $query = "SELECT COUNT(*) * 0.01 as pool_amount FROM entries WHERE (lottery = ? OR lottery = ?) AND draw_date = ?";
+        // Count entries for this specific draw date (only future/current draws)
+        $query = "SELECT COUNT(*) * 0.01 as pool_amount FROM entries WHERE (lottery = ? OR lottery = ?) AND draw_date >= CURDATE()";
         $stmt = $db->prepare($query);
         $oldName = str_replace(' Lotto', ' Lotto', $lottery);
         if ($lottery === 'Monday Lotto') $oldName = 'Mon Lotto';
         if ($lottery === 'Wednesday Lotto') $oldName = 'Wed Lotto';
         if ($lottery === 'Friday Lotto') $oldName = 'Fri Lotto';
         
-        $stmt->execute([$lottery, $oldName, $drawDateOnly]);
+        $stmt->execute([$lottery, $oldName]);
         $result = $stmt->fetch(PDO::FETCH_ASSOC);
+        
+        // Debug: Add the exact count for this lottery type (current/future only)
+        $debugQuery = "SELECT COUNT(*) as entry_count FROM entries WHERE (lottery = ? OR lottery = ?) AND draw_date >= CURDATE()";
+        $debugStmt = $db->prepare($debugQuery);
+        $debugStmt->execute([$lottery, $oldName]);
+        $debugResult = $debugStmt->fetch(PDO::FETCH_ASSOC);
         
         if ($result && $result['pool_amount']) {
             $balances[$lottery] += floatval($result['pool_amount']);
@@ -88,7 +94,9 @@ try {
             'name' => $lottery,
             'jackpot' => '$' . number_format($balances[$lottery], 2),
             'nextDraw' => $nextDraw,
-            'sortDate' => new DateTime($nextDraw)
+            'sortDate' => new DateTime($nextDraw),
+            'debug_entries' => $debugResult['entry_count'] ?? 0,
+            'debug_date' => $drawDateOnly
         ];
     }
     

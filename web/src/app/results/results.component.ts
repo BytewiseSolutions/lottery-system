@@ -19,7 +19,7 @@ export class ResultsComponent implements OnInit {
 
   async loadResults() {
     try {
-      const response = await fetch(`${environment.apiUrl}/results`);
+      const response = await fetch(`${environment.apiUrl}/results.php`);
       this.results = await response.json();
     } catch (error) {
       console.error('Error loading results:', error);
