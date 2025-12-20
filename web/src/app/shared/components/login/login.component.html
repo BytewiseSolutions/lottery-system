@@ -15,9 +15,10 @@
               </div>
               <div class="form-group">
                 <label>Password</label>
-                <div style="position: relative;">
-                  <input [type]="showPassword ? 'text' : 'password'" class="my-form-control" [(ngModel)]="password" [ngModelOptions]="{standalone: true}" placeholder="Enter Your Password" required>
-                  <button type="button" (click)="togglePasswordVisibility()" style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); border: none; background: none; cursor: pointer;"><i [class]="showPassword ? 'fas fa-eye-slash' : 'fas fa-eye'"></i></button>
+                <input [type]="showPassword ? 'text' : 'password'" class="my-form-control" [(ngModel)]="password" [ngModelOptions]="{standalone: true}" placeholder="Enter Your Password" required>
+                <div class="custom-control custom-checkbox" style="margin-top: 5px;">
+                  <input type="checkbox" class="custom-control-input" id="showPasswordLogin" [(ngModel)]="showPassword" [ngModelOptions]="{standalone: true}">
+                  <label class="custom-control-label" for="showPasswordLogin">Show Password</label>
                 </div>
               </div>
               <p class="f-pass">

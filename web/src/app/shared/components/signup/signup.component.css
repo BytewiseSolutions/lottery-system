@@ -39,7 +39,7 @@
   .my-form-control {
     height: 45px !important;
     font-size: 14px !important;
-    padding: 0 15px !important;
+    padding: 0 40px 0 15px !important;
   }
   
   .custom-button2 {
@@ -55,4 +55,16 @@
   .verification-tabs button {
     flex: none !important;
   }
+}
+
+.password-toggle {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  border: none;
+  background: none;
+  cursor: pointer;
+  z-index: 10;
+  color: #666;
 }

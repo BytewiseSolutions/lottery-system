@@ -99,7 +99,6 @@ export class NavbarComponent implements OnInit {
     localStorage.removeItem('user');
     this.isLoggedIn = false;
     this.userEmail = '';
-    alert('Logged out successfully!');
   }
 
   private updatePoolMoney() {

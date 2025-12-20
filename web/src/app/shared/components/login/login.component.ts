@@ -33,7 +33,6 @@ export class LoginComponent {
 
   async onLogin() {
     if (!this.identifier || !this.password) {
-      alert('Please enter both email/phone and password');
       return;
     }
 
@@ -52,10 +51,10 @@ export class LoginComponent {
         this.loginSuccess.emit(result.user);
         this.close();
       } else {
-        alert(result.error);
+        // Error handled by toast service in parent
       }
     } catch (error) {
-      alert('Login failed');
+      // Error handled by toast service in parent
     }
   }
 }
