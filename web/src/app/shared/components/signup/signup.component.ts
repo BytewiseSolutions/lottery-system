@@ -46,8 +46,18 @@ export class SignupComponent {
   }
 
   async onSignup() {
+    if (!this.fullName || !this.password || !this.confirmPassword) {
+      this.toastService.showError('Please fill in all required fields');
+      return;
+    }
+    
     if (!this.email && !this.phone) {
       this.toastService.showError('Please provide either email or phone number');
+      return;
+    }
+    
+    if (!this.agreeTerms) {
+      this.toastService.showError('Please agree to the terms and conditions');
       return;
     }
     
@@ -77,6 +87,7 @@ export class SignupComponent {
         this.toastService.showError(result.error);
       }
     } catch (error) {
+      console.error('Registration error:', error);
       this.toastService.showError('Registration failed');
     }
   }
@@ -117,8 +128,9 @@ export class SignupComponent {
         // Auto-redirect to login when fully verified
         if (this.allVerified) {
           setTimeout(() => {
+            this.close();
             this.switchToLogin();
-          }, 2000);
+          }, 1500);
         }
       } else {
         this.toastService.showError(result.error);

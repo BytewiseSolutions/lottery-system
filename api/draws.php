@@ -55,7 +55,7 @@ try {
         $drawDateOnly = date('Y-m-d', strtotime($nextDrawDate));
         
         // Count entries for this specific draw date
-        $query = "SELECT COUNT(*) * 0.001 as pool_amount FROM entries WHERE (lottery = ? OR lottery = ?) AND draw_date = ?";
+        $query = "SELECT COUNT(*) * 0.01 as pool_amount FROM entries WHERE (lottery = ? OR lottery = ?) AND draw_date = ?";
         $stmt = $db->prepare($query);
         $oldName = str_replace(' Lotto', ' Lotto', $lottery);
         if ($lottery === 'Monday Lotto') $oldName = 'Mon Lotto';
@@ -67,6 +67,11 @@ try {
         
         if ($result && $result['pool_amount']) {
             $balances[$lottery] += floatval($result['pool_amount']);
+        }
+        
+        // Ensure minimum $10 base amount
+        if ($balances[$lottery] < 10) {
+            $balances[$lottery] = 10;
         }
     }
     
@@ -81,7 +86,7 @@ try {
         $draws[] = [
             'id' => $index + 1,
             'name' => $lottery,
-            'jackpot' => '$' . number_format($balances[$lottery], 3),
+            'jackpot' => '$' . number_format($balances[$lottery], 2),
             'nextDraw' => $nextDraw,
             'sortDate' => new DateTime($nextDraw)
         ];

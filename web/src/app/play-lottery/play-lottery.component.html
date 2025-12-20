@@ -62,7 +62,7 @@
             <span *ngFor="let num of selectedBonusNumbers" class="preview-number">{{num}}</span>
           </div>
           <div class="button-group" style="margin: 20px 0; display: flex; gap: 15px; flex-wrap: wrap;">
-            <button *ngIf="isLoggedIn" class="custom-button2" (click)="submitEntry()">Submit ($0.001)</button>
+            <button *ngIf="isLoggedIn" class="custom-button2" (click)="submitEntry()">Submit ($0.01)</button>
             <button *ngIf="!isLoggedIn" class="custom-button2" (click)="showLogin()">Login to Play</button>
             <button class="custom-button1" (click)="editEntry()">Edit</button>
           </div>
@@ -177,7 +177,7 @@
 
 /* Login & Registration Modal Styles from original LotteryApp */
 .log-reg-modal-wrapper .modal-body {
-  padding: 30px 40px 40px;
+  padding: 20px;
   position: relative;
   width: 100%;
 }
@@ -360,12 +360,14 @@
   width: 100%;
   height: 100%;
   z-index: 1050;
+  overflow-y: auto;
 }
 
 .modal-dialog {
   position: relative;
-  width: auto;
-  margin: 1.75rem;
+  width: 90%;
+  max-width: 500px;
+  margin: 1rem auto;
   pointer-events: none;
 }
 
@@ -402,6 +404,36 @@
   
   .button-group button {
     width: 100%;
+  }
+  
+  .modal-dialog {
+    margin: 0.5rem;
+    max-width: calc(100% - 1rem);
+  }
+  
+  .log-reg-modal-wrapper .modal-body {
+    padding: 20px 15px 25px;
+  }
+  
+  .log-reg-inner .main-content .form-group .my-form-control {
+    padding: 0px 15px;
+    height: 50px;
+    font-size: 14px;
+  }
+  
+  .log-reg-inner .title {
+    font-size: 20px;
+    margin-bottom: 20px;
+  }
+  
+  .log-reg-inner .main-content .button-wrapper .custom-button2 {
+    width: 100%;
+    padding: 12px 20px;
+  }
+  
+  .log-reg-inner .main-content .or-content .or-btn {
+    width: 100%;
+    margin-bottom: 15px;
   }
 }
 </style>

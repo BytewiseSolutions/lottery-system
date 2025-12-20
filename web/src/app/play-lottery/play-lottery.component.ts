@@ -152,16 +152,18 @@ export class PlayLotteryComponent implements OnInit {
         const result = await response.json();
         
         if (result.requireHumanVerification) {
+          this.humanVerified = false;
+          this.captchaVerified = false;
           this.showHumanVerification = true;
           return;
         }
         
         if (result.success) {
-          this.toastService.showSuccess(`Entry submitted! New pool amount: $${result.newPoolAmount}`);
-          // Trigger immediate refresh of lottery balances
-          this.lotteryService.refreshDraws();
-          // Redirect to lotteries page
-          this.router.navigate(['/lotteries']);
+          this.toastService.showSuccess(`Entry submitted!`);
+          // Force full page reload to update balance
+          setTimeout(() => {
+            window.location.href = '/lotteries';
+          }, 1000);
         } else {
           this.toastService.showError(result.error || 'Failed to submit entry');
         }

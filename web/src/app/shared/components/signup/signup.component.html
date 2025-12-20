@@ -1,7 +1,7 @@
-<div class="modal fade log-reg-modal-wrapper" [class.show]="isVisible" [style.display]="isVisible ? 'block' : 'none'">
-  <div class="modal-dialog modal-dialog-centered">
+<div class="modal fade log-reg-modal-wrapper" [class.show]="isVisible" [style.display]="isVisible ? 'block' : 'none'" style="overflow-y: auto;">
+  <div class="modal-dialog modal-dialog-centered" style="margin: 0.5rem auto; width: calc(100% - 1rem); max-width: 600px;">
     <div class="modal-content">
-      <div class="modal-body">
+      <div class="modal-body" style="padding: 15px;">
         <div class="close" (click)="close()">
           <span>&times;</span>
         </div>

@@ -28,13 +28,14 @@ try {
                    ($data->lottery === 'wed' ? 'Wednesday Lotto' : 'Friday Lotto');
     
     // Check how many times user played today
-    $query = "SELECT COUNT(*) as play_count FROM entries WHERE user_id = ? AND DATE(created_at) = CURDATE()";
+    $query = "SELECT COUNT(*) as play_count FROM entries WHERE user_id = ? AND DATE(created_at) = DATE(NOW())";
     $stmt = $db->prepare($query);
     $stmt->execute([$user['id']]);
     $playCount = $stmt->fetch(PDO::FETCH_ASSOC)['play_count'];
     
-    // If user has played 4+ times today, require human verification
-    if ($playCount >= 4 && !isset($data->humanVerified)) {
+    error_log("User {$user['id']} play count today: $playCount"); 
+    
+    if ($playCount >= 2 && !isset($data->humanVerified)) {
         echo json_encode([
             'requireHumanVerification' => true,
             'message' => 'Please verify you are human to continue playing'
@@ -56,12 +57,12 @@ try {
     $entryId = $db->lastInsertId();
     
     // Calculate new pool amount
-    $query = "SELECT COUNT(*) * 0.001 as pool_amount FROM entries WHERE lottery = ? AND draw_date = ?";
+    $query = "SELECT COUNT(*) * 0.01 as pool_amount FROM entries WHERE lottery = ? AND draw_date = ?";
     $stmt = $db->prepare($query);
     $stmt->execute([$lotteryName, $data->drawDate]);
     $poolData = $stmt->fetch(PDO::FETCH_ASSOC);
     
-    $newPoolAmount = $poolData['pool_amount'] ?: 0.001;
+    $newPoolAmount = $poolData['pool_amount'] ?: 0.01;
     
     echo json_encode([
         'success' => true,
