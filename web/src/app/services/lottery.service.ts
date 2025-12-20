@@ -35,13 +35,13 @@ export class LotteryService {
   getDraws(): Observable<Draw[]> {
     return interval(30000).pipe(
       startWith(0),
-      switchMap(() => this.http.get<Draw[]>(`${this.apiUrl}/draws`).pipe(
+      switchMap(() => this.http.get<Draw[]>(`${this.apiUrl}/draws.php`).pipe(
         catchError(error => {
           console.error('API Error:', error);
           return of([
-            { id: 1, name: 'Monday Lotto', jackpot: '$0.000', nextDraw: new Date(Date.now() + 2*24*60*60*1000).toISOString() },
-            { id: 2, name: 'Wednesday Lotto', jackpot: '$0.000', nextDraw: new Date(Date.now() + 4*24*60*60*1000).toISOString() },
-            { id: 3, name: 'Friday Lotto', jackpot: '$0.000', nextDraw: new Date(Date.now() + 6*24*60*60*1000).toISOString() }
+            { id: 1, name: 'Monday Lotto', jackpot: '$10.00', nextDraw: new Date(Date.now() + 2*24*60*60*1000).toISOString() },
+            { id: 2, name: 'Wednesday Lotto', jackpot: '$10.00', nextDraw: new Date(Date.now() + 4*24*60*60*1000).toISOString() },
+            { id: 3, name: 'Friday Lotto', jackpot: '$10.00', nextDraw: new Date(Date.now() + 6*24*60*60*1000).toISOString() }
           ]);
         })
       ))
@@ -55,10 +55,10 @@ export class LotteryService {
   getPoolMoney(): Observable<PoolData> {
     return interval(30000).pipe(
       startWith(0),
-      switchMap(() => this.http.get<PoolData>(`${this.apiUrl}/pool`).pipe(
+      switchMap(() => this.http.get<PoolData>(`${this.apiUrl}/pool.php`).pipe(
         catchError(error => {
           console.error('Pool API Error:', error);
-          return of({ 'Monday Lotto': 0, 'Wednesday Lotto': 0, 'Friday Lotto': 0 });
+          return of({ 'Monday Lotto': 10, 'Wednesday Lotto': 10, 'Friday Lotto': 10 });
         })
       ))
     );
@@ -92,7 +92,7 @@ export class LotteryService {
   }
 
   getStats(): Observable<Stats> {
-    return this.http.get<Stats>(`${this.apiUrl}/stats`).pipe(
+    return this.http.get<Stats>(`${this.apiUrl}/stats.php`).pipe(
       catchError(error => {
         console.error('Stats API Error:', error);
         return of({

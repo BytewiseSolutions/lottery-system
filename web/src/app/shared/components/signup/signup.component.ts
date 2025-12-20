@@ -25,6 +25,10 @@ export class SignupComponent {
   confirmPassword = '';
   agreeTerms = false;
   
+  // Password visibility
+  showPassword = false;
+  showConfirmPassword = false;
+  
   // OTP verification
   showOtpVerification = false;
   userId: number | null = null;
@@ -62,7 +66,7 @@ export class SignupComponent {
     }
     
     try {
-      const response = await fetch(`${environment.apiUrl}/register`, {
+      const response = await fetch(`${environment.apiUrl}/register.php`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -92,6 +96,14 @@ export class SignupComponent {
     }
   }
   
+  togglePasswordVisibility() {
+    this.showPassword = !this.showPassword;
+  }
+  
+  toggleConfirmPasswordVisibility() {
+    this.showConfirmPassword = !this.showConfirmPassword;
+  }
+  
   async verifyOtp(type: 'email' | 'phone') {
     const otpCode = type === 'email' ? this.emailOtp : this.phoneOtp;
     
@@ -101,7 +113,7 @@ export class SignupComponent {
     }
     
     try {
-      const response = await fetch(`${environment.apiUrl}/verify-otp`, {
+      const response = await fetch(`${environment.apiUrl}/verify-otp.php`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -142,7 +154,7 @@ export class SignupComponent {
   
   async resendOtp(type: 'email' | 'phone') {
     try {
-      const response = await fetch(`${environment.apiUrl}/resend-otp`, {
+      const response = await fetch(`${environment.apiUrl}/resend-otp.php`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

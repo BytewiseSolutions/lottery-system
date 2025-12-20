@@ -17,6 +17,7 @@ export class LoginComponent {
 
   identifier = '';
   password = '';
+  showPassword = false;
 
   close() {
     this.closeModal.emit();
@@ -26,6 +27,10 @@ export class LoginComponent {
     this.switchToSignupEvent.emit();
   }
 
+  togglePasswordVisibility() {
+    this.showPassword = !this.showPassword;
+  }
+
   async onLogin() {
     if (!this.identifier || !this.password) {
       alert('Please enter both email/phone and password');
@@ -33,7 +38,7 @@ export class LoginComponent {
     }
 
     try {
-      const response = await fetch(`${environment.apiUrl}/login`, {
+      const response = await fetch(`${environment.apiUrl}/login.php`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ identifier: this.identifier, password: this.password })

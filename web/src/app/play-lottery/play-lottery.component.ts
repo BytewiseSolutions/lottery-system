@@ -134,7 +134,7 @@ export class PlayLotteryComponent implements OnInit {
     
     if (this.selectedNumbers.length === 5 && this.selectedBonusNumbers.length === 2) {
       try {
-        const response = await fetch(`${environment.apiUrl}/play`, {
+        const response = await fetch(`${environment.apiUrl}/play.php`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',

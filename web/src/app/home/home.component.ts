@@ -41,7 +41,7 @@ export class HomeComponent implements OnInit {
 
   private async loadResults() {
     try {
-      const response = await fetch(`${environment.apiUrl}/results`);
+      const response = await fetch(`${environment.apiUrl}/results.php`);
       const data = await response.json();
       this.results = data.slice(0, 1).map((result: any) => ({
         id: result.id,

@@ -15,7 +15,10 @@
               </div>
               <div class="form-group">
                 <label>Password</label>
-                <input type="password" class="my-form-control" [(ngModel)]="password" [ngModelOptions]="{standalone: true}" placeholder="Enter Your Password" required>
+                <div style="position: relative;">
+                  <input [type]="showPassword ? 'text' : 'password'" class="my-form-control" [(ngModel)]="password" [ngModelOptions]="{standalone: true}" placeholder="Enter Your Password" required>
+                  <button type="button" (click)="togglePasswordVisibility()" style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); border: none; background: none; cursor: pointer;"><i [class]="showPassword ? 'fas fa-eye-slash' : 'fas fa-eye'"></i></button>
+                </div>
               </div>
               <p class="f-pass">
                 Forgot your password? <a href="#">recover password</a>
