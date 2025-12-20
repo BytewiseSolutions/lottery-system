@@ -24,7 +24,7 @@ export class NavbarComponent implements OnInit {
   ngOnInit() {
     this.checkAuthStatus();
     this.updatePoolMoney();
-    setInterval(() => this.updatePoolMoney(), 30000);
+    setInterval(() => this.updatePoolMoney(), 60000);
     this.initStickyHeader();
   }
 

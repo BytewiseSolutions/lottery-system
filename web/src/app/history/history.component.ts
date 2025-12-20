@@ -30,6 +30,7 @@ interface GroupedEntry {
 export class HistoryComponent implements OnInit {
   isLoggedIn = false;
   historyEntries: HistoryEntry[] = [];
+  filteredEntries: HistoryEntry[] = [];
   groupedEntries: GroupedEntry[] = [];
   selectedDate = '';
   currentQuote = "A ticket today could change your tomorrow.";
@@ -69,11 +70,12 @@ export class HistoryComponent implements OnInit {
       date: new Date(entry.created_at).toDateString()
     }));
 
+    this.filteredEntries = [...this.historyEntries];
     this.groupEntriesByDate();
   }
 
   groupEntriesByDate() {
-    const grouped = this.historyEntries.reduce((acc, entry) => {
+    const grouped = this.filteredEntries.reduce((acc, entry) => {
       if (!acc[entry.date]) {
         acc[entry.date] = [];
       }
@@ -89,6 +91,19 @@ export class HistoryComponent implements OnInit {
         hasMoreEntries: grouped[date].length > 1,
         showAllEntries: false
       }));
+  }
+
+  filterByDate() {
+    if (!this.selectedDate) {
+      this.filteredEntries = [...this.historyEntries];
+    } else {
+      const selectedDateObj = new Date(this.selectedDate);
+      this.filteredEntries = this.historyEntries.filter(entry => {
+        const entryDate = new Date(entry.created_at);
+        return entryDate.toDateString() === selectedDateObj.toDateString();
+      });
+    }
+    this.groupEntriesByDate();
   }
 
   toggleMoreEntries(group: GroupedEntry) {

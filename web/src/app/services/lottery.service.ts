@@ -33,7 +33,7 @@ export class LotteryService {
   constructor(private http: HttpClient) {}
 
   getDraws(): Observable<Draw[]> {
-    return interval(30000).pipe(
+    return interval(60000).pipe(
       startWith(0),
       switchMap(() => this.http.get<Draw[]>(`${this.apiUrl}/draws.php`).pipe(
         catchError(error => {
@@ -53,7 +53,7 @@ export class LotteryService {
   }
 
   getPoolMoney(): Observable<PoolData> {
-    return interval(30000).pipe(
+    return interval(60000).pipe(
       startWith(0),
       switchMap(() => this.http.get<PoolData>(`${this.apiUrl}/pool.php`).pipe(
         catchError(error => {
