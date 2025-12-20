@@ -27,6 +27,7 @@ export class PlayLotteryComponent implements OnInit {
   showHumanVerification = false;
   humanVerified = false;
   captchaVerified = false;
+  showSuccessPopup = false;
 
   constructor(private route: ActivatedRoute, private router: Router, private lotteryService: LotteryService, private toastService: ToastService) {}
 
@@ -159,11 +160,12 @@ export class PlayLotteryComponent implements OnInit {
         }
         
         if (result.success) {
-          this.toastService.showSuccess(`Entry submitted!`);
-          // Force full page reload to update balance
+          this.showSuccessPopup = true;
+          // Hide popup and redirect after 6 seconds
           setTimeout(() => {
+            this.showSuccessPopup = false;
             window.location.href = '/lotteries';
-          }, 1000);
+          }, 6000);
         } else {
           this.toastService.showError(result.error || 'Failed to submit entry');
         }

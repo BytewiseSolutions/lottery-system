@@ -12,19 +12,20 @@ import { SignupComponent } from '../signup/signup.component';
   styleUrl: './navbar.component.css'
 })
 export class NavbarComponent implements OnInit {
-  totalPoolMoney = 0;
+  totalPoolMoney = 30;
   isLoggedIn = false;
   userEmail = '';
   showLoginModal = false;
   showSignupModal = false;
   mobileMenuOpen = false;
+  isLoading = true;
 
   constructor(private lotteryService: LotteryService) {}
 
   ngOnInit() {
     this.checkAuthStatus();
     this.updatePoolMoney();
-    setInterval(() => this.updatePoolMoney(), 30000);
+    setInterval(() => this.updatePoolMoney(), 60000);
     this.initStickyHeader();
   }
 
@@ -104,16 +105,15 @@ export class NavbarComponent implements OnInit {
   private updatePoolMoney() {
     this.lotteryService.getDraws().subscribe({
       next: (draws) => {
-        // Show balance for the next upcoming draw (first draw)
+        this.isLoading = false;
         if (draws.length > 0) {
-          this.totalPoolMoney = parseFloat(draws[0].jackpot.replace('$', '')) || 0;
-        } else {
-          this.totalPoolMoney = 0;
+          // Show only the first (next) lottery jackpot, not the total
+          this.totalPoolMoney = parseFloat(draws[0].jackpot.replace('$', ''));
         }
       },
       error: (error) => {
+        this.isLoading = false;
         console.error('Error updating pool money:', error);
-        this.totalPoolMoney = 0;
       }
     });
   }
