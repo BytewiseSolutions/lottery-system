@@ -12,24 +12,27 @@ if (!$db) {
 }
 
 try {
-    // Return empty results for now (no draws have happened yet)
-    $results = [];
+    // Get results from database
+    $query = "SELECT * FROM results ORDER BY draw_date DESC";
+    $stmt = $db->prepare($query);
+    $stmt->execute();
+    $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
     
-    // You can add actual results here when draws happen
-    // Example structure:
-    // $results = [
-    //     [
-    //         'id' => 1,
-    //         'lottery' => 'Monday Lotto',
-    //         'drawDate' => '2024-12-16',
-    //         'winningNumbers' => [5, 12, 23, 34, 45],
-    //         'bonusNumbers' => [7, 18],
-    //         'jackpot' => '$15.50',
-    //         'winners' => 0
-    //     ]
-    // ];
+    // Format results for frontend
+    $formattedResults = [];
+    foreach ($results as $result) {
+        $formattedResults[] = [
+            'id' => $result['id'],
+            'lottery' => $result['lottery'],
+            'drawDate' => $result['draw_date'],
+            'winningNumbers' => json_decode($result['winning_numbers']),
+            'bonusNumbers' => json_decode($result['bonus_numbers']),
+            'jackpot' => $result['jackpot'],
+            'winners' => $result['winners']
+        ];
+    }
     
-    echo json_encode($results);
+    echo json_encode($formattedResults);
     
 } catch(PDOException $exception) {
     http_response_code(500);

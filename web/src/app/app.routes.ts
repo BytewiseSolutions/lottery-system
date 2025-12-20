@@ -9,6 +9,7 @@ import { ContactComponent } from './contact/contact.component';
 import { PlayLotteryComponent } from './play-lottery/play-lottery.component';
 import { TermsComponent } from './terms/terms.component';
 import { PrivacyComponent } from './privacy/privacy.component';
+import { AdminComponent } from './admin/admin.component';
 
 export const routes: Routes = [
   { path: '', component: HomeComponent },
@@ -22,5 +23,6 @@ export const routes: Routes = [
   { path: 'play-lottery', component: PlayLotteryComponent },
   { path: 'terms', component: TermsComponent },
   { path: 'privacy', component: PrivacyComponent },
+  { path: 'admin', component: AdminComponent },
   { path: '**', redirectTo: '' }
 ];
