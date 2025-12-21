@@ -1,21 +1,6 @@
 <?php
 require_once 'config/cors.php';
 require_once 'config/database.php';
-require_once 'config/jwt.php';
-
-// Check admin authentication
-try {
-    $user = JWT::authenticate();
-    if ($user['email'] !== 'admin@totalfreelotto.com') {
-        http_response_code(403);
-        echo json_encode(['error' => 'Admin access required']);
-        exit;
-    }
-} catch (Exception $e) {
-    http_response_code(401);
-    echo json_encode(['error' => 'Authentication required']);
-    exit;
-}
 
 $database = new Database();
 $db = $database->getConnection();
@@ -43,7 +28,7 @@ try {
     }
     
     // Validate required fields
-    $required = ['lottery', 'drawDate', 'jackpot', 'winningNumbers', 'bonusNumbers', 'winners'];
+    $required = ['lottery', 'drawDate', 'jackpot', 'winners'];
     foreach ($required as $field) {
         if (!isset($input[$field])) {
             http_response_code(400);
@@ -52,16 +37,13 @@ try {
         }
     }
     
-    // Validate numbers
-    if (count($input['winningNumbers']) !== 5) {
-        http_response_code(400);
-        echo json_encode(['error' => 'Must have exactly 5 winning numbers']);
-        exit;
-    }
+    // Get numbers from input (filter out zeros)
+    $numbers = array_filter($input['numbers'] ?? [], function($n) { return $n > 0; });
+    $bonusNumbers = array_filter($input['bonusNumbers'] ?? [], function($n) { return $n > 0; });
     
-    if (count($input['bonusNumbers']) !== 2) {
+    if (count($numbers) < 3) {
         http_response_code(400);
-        echo json_encode(['error' => 'Must have exactly 2 bonus numbers']);
+        echo json_encode(['error' => 'Must have at least 3 winning numbers']);
         exit;
     }
     
@@ -74,26 +56,35 @@ try {
         bonus_numbers JSON NOT NULL,
         jackpot VARCHAR(20) NOT NULL,
         winners INT DEFAULT 0,
+        status VARCHAR(20) DEFAULT 'published',
+        notes TEXT,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     )";
     $db->exec($createTable);
     
+    // Format jackpot
+    $jackpot = '$' . number_format(floatval($input['jackpot']), 2) . 'M';
+    
     // Insert result
-    $query = "INSERT INTO results (lottery, draw_date, winning_numbers, bonus_numbers, jackpot, winners) 
-              VALUES (?, ?, ?, ?, ?, ?)";
+    $query = "INSERT INTO results (lottery, draw_date, winning_numbers, bonus_numbers, jackpot, winners, status, notes) 
+              VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
     $stmt = $db->prepare($query);
+    
+    $status = $input['publishNow'] ? 'published' : 'draft';
     
     $success = $stmt->execute([
         $input['lottery'],
-        $input['drawDate'],
-        json_encode($input['winningNumbers']),
-        json_encode($input['bonusNumbers']),
-        $input['jackpot'],
-        $input['winners']
+        date('Y-m-d', strtotime($input['drawDate'])),
+        json_encode(array_values($numbers)),
+        json_encode(array_values($bonusNumbers)),
+        $jackpot,
+        $input['winners'],
+        $status,
+        $input['notes'] ?? ''
     ]);
     
     if ($success) {
-        echo json_encode(['success' => true, 'message' => 'Result uploaded successfully']);
+        echo json_encode(['success' => true, 'message' => 'Result uploaded successfully', 'id' => $db->lastInsertId()]);
     } else {
         http_response_code(500);
         echo json_encode(['error' => 'Failed to save result']);

@@ -53,6 +53,7 @@ export class AdminComponent implements OnInit, OnDestroy {
   
   isUploading = false;
   winningNumbers: number[] = [0, 0, 0, 0, 0, 0];
+  bonusNumbers: number[] = [0, 0];
   recentUploads: any[] = [];
   
   systemStatus = 'online';
@@ -76,6 +77,16 @@ export class AdminComponent implements OnInit, OnDestroy {
   
   analyticsRange = '30d';
   topLotteries: any[] = [];
+  
+  // User Management
+  users: any[] = [];
+  totalUsersCount = 0;
+  usersCurrentPage = 1;
+  usersTotalPages = 1;
+  usersSearchQuery = '';
+  editingUser: any = null;
+  userForm: FormGroup;
+  showUploadModal = false;
   
   siteSettings = {
     name: 'Total Free Lotto',
@@ -118,6 +129,14 @@ export class AdminComponent implements OnInit, OnDestroy {
       lottery: ['', Validators.required],
       drawDate: ['', Validators.required],
       jackpot: ['', Validators.required]
+    });
+
+    this.userForm = this.fb.group({
+      id: [''],
+      full_name: ['', Validators.required],
+      email: ['', [Validators.required, Validators.email]],
+      phone: [''],
+      is_active: [true]
     });
   }
 
@@ -277,6 +296,9 @@ export class AdminComponent implements OnInit, OnDestroy {
       case 'analytics':
         this.loadAnalytics();
         break;
+      case 'users':
+        this.loadUsers();
+        break;
     }
   }
 
@@ -318,22 +340,36 @@ export class AdminComponent implements OnInit, OnDestroy {
     this.isUploading = true;
     const formData = {
       ...this.uploadForm.value,
-      numbers: this.winningNumbers.filter(n => n > 0)
+      numbers: this.winningNumbers.filter(n => n > 0),
+      bonusNumbers: this.bonusNumbers.filter(n => n > 0)
     };
+    
+    console.log('Uploading data:', formData);
     
     this.lotteryService.createResult(formData)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (result) => {
           console.log('Result uploaded successfully:', result);
-          this.uploadForm.reset();
+          this.uploadForm.reset({
+            lottery: '',
+            drawDate: '',
+            jackpot: '',
+            winners: 0,
+            notes: '',
+            publishNow: true
+          });
           this.winningNumbers = [0, 0, 0, 0, 0, 0];
+          this.bonusNumbers = [0, 0];
           this.loadResults();
           this.isUploading = false;
+          this.showUploadModal = false;
+          alert('Result uploaded successfully!');
         },
         error: (error) => {
           console.error('Error uploading result:', error);
           this.isUploading = false;
+          alert('Network error. Check if API is accessible.');
         }
       });
   }
@@ -451,8 +487,59 @@ export class AdminComponent implements OnInit, OnDestroy {
     this.winningNumbers = [0, 0, 0, 0, 0, 0];
   }
 
+  addBonusNumber() {
+    if (this.bonusNumbers.length < 4) {
+      this.bonusNumbers.push(0);
+    }
+  }
+
+  clearBonusNumbers() {
+    this.bonusNumbers = [0, 0];
+  }
+
+  validateNumber(event: any, index: number, type: 'winning' | 'bonus') {
+    const value = parseInt(event.target.value);
+    if (value > 75) {
+      if (type === 'winning') {
+        this.winningNumbers[index] = 75;
+      } else {
+        this.bonusNumbers[index] = 75;
+      }
+      event.target.value = 75;
+    } else if (value < 1 && value !== 0) {
+      if (type === 'winning') {
+        this.winningNumbers[index] = 1;
+      } else {
+        this.bonusNumbers[index] = 1;
+      }
+      event.target.value = 1;
+    }
+  }
+
   saveDraft() {
-    // Save as draft functionality
+    if (this.uploadForm.invalid) return;
+    
+    this.isUploading = true;
+    const formData = {
+      ...this.uploadForm.value,
+      numbers: this.winningNumbers.filter(n => n > 0),
+      publishNow: false
+    };
+    
+    this.lotteryService.createResult(formData)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (result) => {
+          console.log('Draft saved successfully:', result);
+          alert('Draft saved successfully!');
+          this.isUploading = false;
+        },
+        error: (error) => {
+          console.error('Error saving draft:', error);
+          this.isUploading = false;
+          alert('Error saving draft. Please try again.');
+        }
+      });
   }
 
   // Placeholder methods for manage section
@@ -587,5 +674,104 @@ export class AdminComponent implements OnInit, OnDestroy {
 
   generateApiKey() {
     // Generate API key logic
+  }
+
+  // User Management Methods
+  loadUsers() {
+    this.lotteryService.getUsers(this.usersCurrentPage, this.itemsPerPage, this.usersSearchQuery)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (response) => {
+          this.users = response.users;
+          this.totalUsersCount = response.total;
+          this.usersTotalPages = response.totalPages;
+        },
+        error: (error) => {
+          console.error('Error loading users:', error);
+        }
+      });
+  }
+
+  searchUsers() {
+    this.usersCurrentPage = 1;
+    this.loadUsers();
+  }
+
+  addUser() {
+    this.editingUser = { id: null };
+    this.userForm.reset({
+      id: null,
+      full_name: '',
+      email: '',
+      phone: '',
+      is_active: true
+    });
+  }
+
+  editUser(user: any) {
+    this.editingUser = user;
+    this.userForm.patchValue({
+      id: user.id,
+      full_name: user.full_name,
+      email: user.email,
+      phone: user.phone,
+      is_active: user.is_active
+    });
+  }
+
+  saveUser() {
+    if (this.userForm.invalid) return;
+    
+    const userData = this.userForm.value;
+    const isEditing = userData.id;
+    
+    const request = isEditing 
+      ? this.lotteryService.updateUser(userData)
+      : this.lotteryService.createUser(userData);
+    
+    request.pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: () => {
+          this.loadUsers();
+          this.cancelEditUser();
+        },
+        error: (error) => {
+          console.error('Error saving user:', error);
+        }
+      });
+  }
+
+  deleteUser(id: number) {
+    if (confirm('Are you sure you want to delete this user?')) {
+      this.lotteryService.deleteUser(id)
+        .pipe(takeUntil(this.destroy$))
+        .subscribe({
+          next: () => {
+            this.loadUsers();
+          },
+          error: (error) => {
+            console.error('Error deleting user:', error);
+          }
+        });
+    }
+  }
+
+  cancelEditUser() {
+    this.editingUser = null;
+    this.userForm.reset();
+  }
+
+  prevUsersPage() {
+    if (this.usersCurrentPage > 1) {
+      this.usersCurrentPage--;
+      this.loadUsers();
+    }
+  }
+
+  nextUsersPage() {
+    if (this.usersCurrentPage < this.usersTotalPages) {
+      this.usersCurrentPage++;
+      this.loadUsers();
+    }
   }
 }

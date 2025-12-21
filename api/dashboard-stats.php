@@ -30,10 +30,16 @@ try {
     $pendingStmt->execute();
     $pendingActions = $pendingStmt->fetch(PDO::FETCH_ASSOC)['pending_actions'];
     
+    // Get unread notifications count (placeholder - you can implement actual notification system)
+    $unreadNotifications = 0; // Default to 0 for now
+    
     $stats = [
         'totalUsers' => (int)$userCount,
         'activeLotteries' => (int)$activeLotteries,
-        'pendingActions' => (int)$pendingActions
+        'pendingActions' => (int)$pendingActions,
+        'unreadNotifications' => (int)$unreadNotifications,
+        'resultsGrowth' => 12, // Placeholder - calculate actual growth
+        'usersGrowth' => -2    // Placeholder - calculate actual growth
     ];
     
     echo json_encode($stats);

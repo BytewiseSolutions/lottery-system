@@ -25,10 +25,13 @@ try {
             'id' => $result['id'],
             'lottery' => $result['lottery'],
             'drawDate' => $result['draw_date'],
-            'winningNumbers' => json_decode($result['winning_numbers']),
+            'numbers' => json_decode($result['winning_numbers']),
             'bonusNumbers' => json_decode($result['bonus_numbers']),
             'jackpot' => $result['jackpot'],
-            'winners' => $result['winners']
+            'winners' => $result['winners'],
+            'status' => $result['status'] ?? 'published',
+            'notes' => $result['notes'] ?? '',
+            'updatedAt' => $result['created_at']
         ];
     }
     

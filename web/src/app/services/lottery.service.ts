@@ -37,7 +37,29 @@ export class LotteryService {
   }
 
   getDashboardStats(): Observable<any> {
-    return this.http.get<any>(`${this.apiUrl}/stats.php`);
+    return this.http.get<any>(`${this.apiUrl}/dashboard-stats.php`);
+  }
+
+  // User Management
+  getUsers(page: number = 1, limit: number = 10, search: string = ''): Observable<any> {
+    return this.http.get<any>(`${this.apiUrl}/users.php?page=${page}&limit=${limit}&search=${search}`);
+  }
+
+  createUser(user: any): Observable<any> {
+    return this.http.post<any>(`${this.apiUrl}/users.php`, user);
+  }
+
+  updateUser(user: any): Observable<any> {
+    return this.http.put<any>(`${this.apiUrl}/users.php`, user);
+  }
+
+  deleteUser(id: number): Observable<any> {
+    return this.http.delete<any>(`${this.apiUrl}/users.php`, { body: { id } });
+  }
+
+  // Analytics
+  getAnalyticsData(range: string = '7d'): Observable<any> {
+    return this.http.get<any>(`${this.apiUrl}/analytics-data.php?range=${range}`);
   }
 
   getDraws(): Observable<Draw[]> {
