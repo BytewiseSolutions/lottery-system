@@ -1,0 +1,85 @@
+<aside class="sidebar">
+  <div class="sidebar-header">
+    <div class="logo">
+      <i class="fas fa-crown"></i>
+      <div class="logo-text">
+        <h2>Admin Panel</h2>
+      </div>
+    </div>
+    <div class="connection-status" [class.connected]="isConnected">
+      <i class="fas fa-circle"></i>
+      {{ isConnected ? 'Connected' : 'Offline' }}
+    </div>
+  </div>
+
+  <nav class="sidebar-nav">
+    <ul class="nav-menu">
+      <li>
+        <a (click)="onSectionClick('dashboard')" [class.active]="activeSection === 'dashboard'">
+          <div class="nav-item-content">
+            <i class="fas fa-tachometer-alt"></i>
+            <span>Dashboard</span>
+          </div>
+        </a>
+      </li>
+      <li>
+        <a (click)="onSectionClick('analytics')" [class.active]="activeSection === 'analytics'">
+          <div class="nav-item-content">
+            <i class="fas fa-chart-line"></i>
+            <span>Analytics</span>
+          </div>
+        </a>
+      </li>
+      <li>
+        <a (click)="onSectionClick('manage')" [class.active]="activeSection === 'manage'">
+          <div class="nav-item-content">
+            <i class="fas fa-list"></i>
+            <span>Manage Results</span>
+          </div>
+          <span class="badge">{{ totalResults }}</span>
+        </a>
+      </li>
+      <li>
+        <a (click)="onSectionClick('users')" [class.active]="activeSection === 'users'">
+          <div class="nav-item-content">
+            <i class="fas fa-users"></i>
+            <span>User Management</span>
+          </div>
+        </a>
+      </li>
+      <li>
+        <a (click)="onSectionClick('logs')" [class.active]="activeSection === 'logs'">
+          <div class="nav-item-content">
+            <i class="fas fa-file-alt"></i>
+            <span>Activity Logs</span>
+          </div>
+        </a>
+      </li>
+      <li>
+        <a (click)="onSectionClick('settings')" [class.active]="activeSection === 'settings'">
+          <div class="nav-item-content">
+            <i class="fas fa-cog"></i>
+            <span>Settings</span>
+          </div>
+        </a>
+      </li>
+    </ul>
+  </nav>
+
+  <div class="sidebar-footer">
+    <div class="user-profile">
+      <div class="user-avatar">
+        <i class="fas fa-user-shield"></i>
+      </div>
+      <div class="user-info">
+        <strong>Administrator</strong>
+        <small>Last login: {{ lastLogin }}</small>
+      </div>
+      <div class="user-actions">
+        <button class="btn-icon" (click)="onLogout()" title="Logout">
+          <i class="fas fa-sign-out-alt"></i>
+        </button>
+      </div>
+    </div>
+  </div>
+</aside>

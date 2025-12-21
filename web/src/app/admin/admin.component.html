@@ -1,0 +1,748 @@
+<div class="admin-container">
+  <div class="mobile-sidebar-overlay" [class.active]="isMobileSidebarOpen" (click)="closeMobileSidebar()"></div>
+    
+    <div class="admin-dashboard">
+      <div class="sidebar" [class.mobile-open]="isMobileSidebarOpen">
+        <app-admin-sidebar 
+          [activeSection]="activeSection"
+          [totalResults]="totalResults"
+          [isConnected]="isConnected"
+          [storageUsed]="storageUsed"
+          [storageTotal]="storageTotal"
+          [storagePercentage]="storagePercentage"
+          [memoryUsage]="memoryUsage"
+          [lastLogin]="lastLogin"
+          (sectionChange)="onSectionChange($event); closeMobileSidebar()"
+          (logoutClick)="onSidebarLogout()">
+        </app-admin-sidebar>
+      </div>
+
+      <main class="main-content">
+
+        <header class="top-bar">
+          <div class="breadcrumb">
+            <button class="mobile-sidebar-toggle" (click)="toggleMobileSidebar()">
+              <i class="fas fa-bars"></i>
+            </button>
+            <a (click)="goHome()">Home</a>
+            <i class="fas fa-chevron-right"></i>
+            <span>{{ getPageTitle() }}</span>
+          </div>
+          
+          <div class="top-bar-actions">
+            <div class="search-box">
+              <i class="fas fa-search"></i>
+              <input 
+                type="text" 
+                placeholder="Search..." 
+                [(ngModel)]="searchQuery"
+                (input)="onSearch()">
+            </div>
+            <button class="btn-icon" (click)="refreshData()" title="Refresh">
+              <i class="fas fa-sync-alt" [class.spin]="isRefreshing"></i>
+            </button>
+          </div>
+        </header>
+
+        <!-- Dashboard Section -->
+        @if (activeSection === 'dashboard') {
+          <section class="dashboard-section">
+            <div class="stats-grid">
+              <div class="stat-card primary">
+                <div class="stat-icon">
+                  <i class="fas fa-ticket-alt"></i>
+                </div>
+                <div class="stat-content">
+                  <h3>{{ totalResults }}</h3>
+                  <p>Total Results</p>
+                  <span class="stat-trend positive">
+                    <i class="fas fa-arrow-up"></i> {{ resultsGrowth }}% this month
+                  </span>
+                </div>
+              </div>
+              
+              <div class="stat-card success">
+                <div class="stat-icon">
+                  <i class="fas fa-calendar-check"></i>
+                </div>
+                <div class="stat-content">
+                  <h3>{{ activeLotteries }}</h3>
+                  <p>Active Lotteries</p>
+                  <span class="stat-trend positive">
+                    <i class="fas fa-arrow-up"></i> All running
+                  </span>
+                </div>
+              </div>
+              
+              <div class="stat-card warning">
+                <div class="stat-icon">
+                  <i class="fas fa-users"></i>
+                </div>
+                <div class="stat-content">
+                  <h3>{{ totalUsers }}</h3>
+                  <p>Total Users</p>
+                  <span class="stat-trend negative">
+                    <i class="fas fa-arrow-down"></i> {{ usersGrowth }}% this week
+                  </span>
+                </div>
+              </div>
+              
+              <div class="stat-card danger">
+                <div class="stat-icon">
+                  <i class="fas fa-exclamation-triangle"></i>
+                </div>
+                <div class="stat-content">
+                  <h3>{{ pendingActions }}</h3>
+                  <p>Pending Actions</p>
+                  <span class="stat-trend neutral">
+                    <i class="fas fa-minus"></i> Needs attention
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <div class="card">
+              <div class="card-header">
+                <h3>Upcoming Draws</h3>
+              </div>
+              <div class="table-responsive">
+                <table class="data-table">
+                  <thead>
+                    <tr>
+                      <th>Lottery</th>
+                      <th>Draw Date</th>
+                      <th>Jackpot</th>
+                      <th>Status</th>
+                      <th>Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    @for (draw of upcomingDraws; track draw.id) {
+                      <tr>
+                        <td>{{ draw.lottery }}</td>
+                        <td>
+                          <input 
+                            type="datetime-local" 
+                            [value]="formatDateTimeForInput(draw.drawDate)"
+                            (change)="updateDrawTime(draw, $event)"
+                            class="form-control form-control-sm"
+                            style="min-width: 180px;">
+                        </td>
+                        <td>{{ draw.jackpot }}</td>
+                        <td>
+                          <span class="status-badge" [class]="draw.status">
+                            {{ draw.status }}
+                          </span>
+                        </td>
+                        <td>
+                          <div class="table-actions">
+                            <button class="btn-icon" title="Edit Draw Time" (click)="editDrawTime(draw)">
+                              <i class="fas fa-edit"></i>
+                            </button>
+                            <button class="btn-icon danger" title="Delete Draw" (click)="deleteDraw(draw.id)">
+                              <i class="fas fa-trash"></i>
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    }
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </section>
+        }
+
+        <!-- Upload Results Section -->
+        @if (activeSection === 'upload') {
+          <section class="upload-section">
+            <div class="upload-header">
+              <div class="header-content">
+                <div class="header-icon">
+                  <i class="fas fa-cloud-upload-alt"></i>
+                </div>
+                <div class="header-text">
+                  <h2>Upload New Result</h2>
+                  <p>Add new lottery results to the system</p>
+                </div>
+              </div>
+            </div>
+            
+            <div class="upload-form-card">
+              <form [formGroup]="uploadForm" (ngSubmit)="uploadResult()" class="upload-form">
+                <div class="form-row">
+                  <div class="form-group">
+                    <label for="lottery">Lottery Type <span class="required">*</span></label>
+                    <div class="select-wrapper">
+                      <select id="lottery" formControlName="lottery" class="form-control enhanced" required>
+                        <option value="" disabled>Choose a lottery type...</option>
+                        <option value="Monday Lotto">Monday Lotto</option>
+                        <option value="Wednesday Lotto">Wednesday Lotto</option>
+                        <option value="Friday Lotto">Friday Lotto</option>
+                      </select>
+                      <i class="fas fa-trophy select-icon"></i>
+                    </div>
+                    @if (uploadForm.get('lottery')?.invalid && uploadForm.get('lottery')?.touched) {
+                      <div class="error-message">Please select a lottery type</div>
+                    }
+                  </div>
+                  
+                  <div class="form-group">
+                    <label for="drawDate">Draw Date <span class="required">*</span></label>
+                    <input 
+                      type="datetime-local" 
+                      id="drawDate"
+                      formControlName="drawDate" 
+                      class="form-control enhanced" 
+                      required>
+                    @if (uploadForm.get('drawDate')?.invalid && uploadForm.get('drawDate')?.touched) {
+                      <div class="error-message">Please select a valid draw date</div>
+                    }
+                  </div>
+                </div>
+
+                <div class="form-row">
+                  <div class="form-group">
+                    <label for="jackpot">Jackpot Amount <span class="required">*</span></label>
+                    <div class="currency-wrapper">
+                      <span class="currency-symbol">$</span>
+                      <input 
+                        type="text" 
+                        id="jackpot"
+                        formControlName="jackpot" 
+                        class="form-control enhanced currency-input" 
+                        placeholder="0.00"
+                        required>
+                      <span class="currency-suffix">Million</span>
+                    </div>
+                    <small class="help-text">Enter amount in millions (e.g., 15.50 for $15.50M)</small>
+                    @if (uploadForm.get('jackpot')?.invalid && uploadForm.get('jackpot')?.touched) {
+                      <div class="error-message">
+                        @if (uploadForm.get('jackpot')?.errors?.['required']) {
+                          Jackpot amount is required
+                        }
+                        @if (uploadForm.get('jackpot')?.errors?.['pattern']) {
+                          Please enter a valid amount (e.g., 15.50)
+                        }
+                      </div>
+                    }
+                  </div>
+                  
+                  <div class="form-group">
+                    <label for="winners">Number of Winners <span class="required">*</span></label>
+                    <input 
+                      type="number" 
+                      id="winners"
+                      formControlName="winners" 
+                      class="form-control enhanced" 
+                      min="0" 
+                      max="1000"
+                      placeholder="0"
+                      required>
+                    @if (uploadForm.get('winners')?.invalid && uploadForm.get('winners')?.touched) {
+                      <div class="error-message">
+                        @if (uploadForm.get('winners')?.errors?.['required']) {
+                          Number of winners is required
+                        }
+                        @if (uploadForm.get('winners')?.errors?.['min']) {
+                          Minimum value is 0
+                        }
+                        @if (uploadForm.get('winners')?.errors?.['max']) {
+                          Maximum value is 1000
+                        }
+                      </div>
+                    }
+                  </div>
+                </div>
+
+                <div class="form-group">
+                  <label>Winning Numbers</label>
+                  <div class="numbers-input">
+                    @for (num of winningNumbers; track $index; let i = $index) {
+                      <input 
+                        type="number" 
+                        [(ngModel)]="winningNumbers[i]" 
+                        [ngModelOptions]="{standalone: true}"
+                        class="number-input" 
+                        min="1" 
+                        max="99"
+                        placeholder="{{i + 1}}">
+                    }
+                    <button type="button" class="btn btn-sm btn-outline" (click)="addNumber()">
+                      <i class="fas fa-plus"></i> Add
+                    </button>
+                    <button type="button" class="btn btn-sm btn-outline" (click)="clearNumbers()">
+                      <i class="fas fa-times"></i> Clear
+                    </button>
+                  </div>
+                </div>
+
+                <div class="form-group">
+                  <label>Additional Notes</label>
+                  <textarea 
+                    formControlName="notes" 
+                    class="form-control" 
+                    rows="3"
+                    placeholder="Any additional information about this result..."></textarea>
+                </div>
+
+                <div class="form-actions">
+                  <div class="form-check">
+                    <input 
+                      type="checkbox" 
+                      id="publishNow" 
+                      formControlName="publishNow"
+                      class="form-check-input">
+                    <label for="publishNow" class="form-check-label">
+                      Publish immediately
+                    </label>
+                  </div>
+                  
+                  <div class="buttons-group">
+                    <button 
+                      type="button" 
+                      class="btn btn-outline"
+                      (click)="saveDraft()"
+                      [disabled]="uploadForm.invalid">
+                      <i class="fas fa-save"></i> Save as Draft
+                    </button>
+                    <button 
+                      type="submit" 
+                      class="btn btn-primary"
+                      [disabled]="uploadForm.invalid || isUploading">
+                      @if (isUploading) {
+                        <i class="fas fa-spinner fa-spin"></i> Uploading...
+                      } @else {
+                        <i class="fas fa-upload"></i> Upload Result
+                      }
+                    </button>
+                  </div>
+                </div>
+              </form>
+            </div>
+          </section>
+        }
+
+        <!-- Manage Results Section -->
+        @if (activeSection === 'manage') {
+          <section class="manage-section">
+            @if (results.length === 0) {
+              <div class="empty-results-state">
+                <div class="empty-icon">
+                  <i class="fas fa-inbox"></i>
+                </div>
+                <h3>No Results Yet</h3>
+                <p>Start by uploading your first lottery result to see it here.</p>
+                <button class="btn btn-primary" (click)="showSection('upload')">
+                  <i class="fas fa-plus"></i> Upload First Result
+                </button>
+              </div>
+            } @else {
+              <div class="card">
+                <div class="card-header">
+                  <h3><i class="fas fa-list"></i> Manage Results</h3>
+                  <div class="header-actions">
+                    <div class="filters">
+                      <select [(ngModel)]="filterStatus" (change)="applyFilters()" class="form-control-sm">
+                        <option value="">All Status</option>
+                        <option value="published">Published</option>
+                        <option value="draft">Draft</option>
+                        <option value="scheduled">Scheduled</option>
+                      </select>
+                      <select [(ngModel)]="filterLottery" (change)="applyFilters()" class="form-control-sm">
+                        <option value="">All Lotteries</option>
+                        @for (lottery of lotteryTypes; track lottery) {
+                          <option [value]="lottery">{{ lottery }}</option>
+                        }
+                      </select>
+                      <input 
+                        type="date" 
+                        [(ngModel)]="filterDateFrom" 
+                        (change)="applyFilters()"
+                        class="form-control-sm"
+                        placeholder="From Date">
+                      <input 
+                        type="date" 
+                        [(ngModel)]="filterDateTo" 
+                        (change)="applyFilters()"
+                        class="form-control-sm"
+                        placeholder="To Date">
+                    </div>
+                    <button class="btn btn-primary" (click)="exportResults()">
+                      <i class="fas fa-download"></i> Export
+                    </button>
+                  </div>
+                </div>
+
+                <div class="table-responsive">
+                  <table class="data-table">
+                    <thead>
+                      <tr>
+                        <th width="40">
+                          <input type="checkbox" (change)="toggleSelectAll($event)">
+                        </th>
+                        <th>Lottery</th>
+                        <th>Draw Date</th>
+                        <th>Numbers</th>
+                        <th>Jackpot</th>
+                        <th>Winners</th>
+                        <th>Status</th>
+                        <th>Last Updated</th>
+                        <th>Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      @for (result of filteredResults; track result.id) {
+                        <tr [class.selected]="selectedResults.has(result.id)">
+                          <td data-label="Select">
+                            <input 
+                              type="checkbox" 
+                              [checked]="selectedResults.has(result.id)"
+                              (change)="toggleSelectResult(result.id)">
+                          </td>
+                          <td data-label="Lottery">
+                            <div class="lottery-info">
+                              <i class="fas fa-ticket-alt"></i>
+                              <span>{{ result.lottery }}</span>
+                            </div>
+                          </td>
+                          <td data-label="Draw Date">{{ result.drawDate | date:'medium' }}</td>
+                          <td data-label="Numbers">
+                            <div class="winning-numbers">
+                              @for (num of result.numbers; track $index) {
+                                <span class="number-badge">{{ num }}</span>
+                              }
+                            </div>
+                          </td>
+                          <td data-label="Jackpot"><strong>{{ result.jackpot }}</strong></td>
+                          <td data-label="Winners">
+                            <span class="winners-count">{{ result.winners }}</span>
+                          </td>
+                          <td data-label="Status">
+                            <span class="status-badge" [class]="result.status">
+                              {{ result.status }}
+                            </span>
+                          </td>
+                          <td data-label="Last Updated">
+                            <span class="timestamp">{{ result.updatedAt | date:'short' }}</span>
+                          </td>
+                          <td data-label="Actions">
+                            <div class="table-actions">
+                              <button class="btn-icon" (click)="viewResult(result)" title="View">
+                                <i class="fas fa-eye"></i>
+                              </button>
+                              <button class="btn-icon" (click)="editResult(result)" title="Edit">
+                                <i class="fas fa-edit"></i>
+                              </button>
+                              <button 
+                                class="btn-icon" 
+                                (click)="toggleResultStatus(result)"
+                                [title]="result.status === 'published' ? 'Unpublish' : 'Publish'">
+                                <i 
+                                  class="fas" 
+                                  [class.fa-eye-slash]="result.status === 'published'"
+                                  [class.fa-eye]="result.status !== 'published'">
+                                </i>
+                              </button>
+                              <button 
+                                class="btn-icon danger" 
+                                (click)="deleteResult(result.id)"
+                                title="Delete">
+                                <i class="fas fa-trash"></i>
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      }
+                    </tbody>
+                  </table>
+                </div>
+
+                @if (filteredResults.length > 0) {
+                  <div class="table-footer">
+                    <div class="table-info">
+                      Showing {{ filteredResults.length }} of {{ totalResults }} results
+                      @if (selectedResults.size > 0) {
+                        <span class="selected-count">
+                          ({{ selectedResults.size }} selected)
+                        </span>
+                      }
+                    </div>
+                    @if (selectedResults.size > 0) {
+                      <div class="bulk-actions">
+                        <select [(ngModel)]="bulkAction" class="form-control-sm">
+                          <option value="">Bulk Actions</option>
+                          <option value="publish">Publish Selected</option>
+                          <option value="unpublish">Unpublish Selected</option>
+                          <option value="delete">Delete Selected</option>
+                          <option value="export">Export Selected</option>
+                        </select>
+                        <button 
+                          class="btn btn-sm btn-primary"
+                          (click)="applyBulkAction()"
+                          [disabled]="!bulkAction">
+                          Apply
+                        </button>
+                      </div>
+                    }
+                    <div class="pagination">
+                      <button 
+                        class="btn-icon" 
+                        (click)="prevPage()"
+                        [disabled]="currentPage === 1">
+                        <i class="fas fa-chevron-left"></i>
+                      </button>
+                      <span class="page-info">
+                        Page {{ currentPage }} of {{ totalPages }}
+                      </span>
+                      <button 
+                        class="btn-icon" 
+                        (click)="nextPage()"
+                        [disabled]="currentPage === totalPages">
+                        <i class="fas fa-chevron-right"></i>
+                      </button>
+                    </div>
+                  </div>
+                }
+              </div>
+            }
+          </section>
+        }
+
+        <!-- Other sections (scheduled, analytics, users, logs, settings) -->
+        @if (activeSection === 'scheduled') {
+          <section class="scheduled-section">
+            <div class="empty-scheduled-state">
+              <div class="empty-icon">
+                <i class="fas fa-clock"></i>
+              </div>
+              <h3>No Scheduled Uploads</h3>
+              <p>Schedule lottery results to be automatically published at specific times.</p>
+              <button class="btn btn-primary" (click)="showSection('upload')">
+                <i class="fas fa-calendar-plus"></i> Schedule Upload
+              </button>
+            </div>
+          </section>
+        }
+
+        @if (activeSection === 'analytics') {
+          <section class="analytics-section">
+            <div class="analytics-header">
+              <h2><i class="fas fa-chart-pie"></i> Analytics Dashboard</h2>
+              <div class="date-range">
+                <button class="btn btn-sm" [class.active]="analyticsRange === '7d'" (click)="setAnalyticsRange('7d')">
+                  Last 7 Days
+                </button>
+                <button class="btn btn-sm" [class.active]="analyticsRange === '30d'" (click)="setAnalyticsRange('30d')">
+                  Last 30 Days
+                </button>
+                <button class="btn btn-sm" [class.active]="analyticsRange === '90d'" (click)="setAnalyticsRange('90d')">
+                  Last 90 Days
+                </button>
+                <button class="btn btn-sm" [class.active]="analyticsRange === 'custom'" (click)="openDateRangePicker()">
+                  Custom Range
+                </button>
+              </div>
+            </div>
+
+            <div class="analytics-grid">
+              <div class="card">
+                <div class="card-header">
+                  <h4>Results by Lottery Type</h4>
+                </div>
+                <div class="chart-container pie">
+                  <canvas #lotteryChart></canvas>
+                </div>
+              </div>
+
+              <div class="card">
+                <div class="card-header">
+                  <h4>User Engagement</h4>
+                </div>
+                <div class="chart-container">
+                  <canvas #engagementChart></canvas>
+                </div>
+              </div>
+
+              <div class="card">
+                <div class="card-header">
+                  <h4>Top Performing Lotteries</h4>
+                </div>
+                <div class="top-performers">
+                  @for (lottery of topLotteries; track lottery.id) {
+                    <div class="performer-item">
+                      <div class="performer-info">
+                        <i class="fas fa-trophy"></i>
+                        <span>{{ lottery.name }}</span>
+                      </div>
+                      <div class="performer-stats">
+                        <span class="stat">{{ lottery.results }} results</span>
+                        <span class="growth positive">
+                          <i class="fas fa-arrow-up"></i> {{ lottery.growth }}%
+                        </span>
+                      </div>
+                    </div>
+                  }
+                </div>
+              </div>
+            </div>
+          </section>
+        }
+
+        @if (activeSection === 'users') {
+          <section class="users-section">
+            <div class="empty-users-state">
+              <div class="empty-icon">
+                <i class="fas fa-users"></i>
+              </div>
+              <h3>User Management</h3>
+              <p>Manage user accounts, roles, and permissions for the lottery system.</p>
+              <button class="btn btn-primary" disabled>
+                <i class="fas fa-user-plus"></i> Coming Soon
+              </button>
+            </div>
+          </section>
+        }
+
+        @if (activeSection === 'logs') {
+          <section class="logs-section">
+            <div class="empty-logs-state">
+              <div class="empty-icon">
+                <i class="fas fa-file-alt"></i>
+              </div>
+              <h3>Activity Logs</h3>
+              <p>View system activity logs and audit trails for all admin actions.</p>
+              <button class="btn btn-primary" disabled>
+                <i class="fas fa-history"></i> Coming Soon
+              </button>
+            </div>
+          </section>
+        }
+
+        @if (activeSection === 'settings') {
+          <section class="settings-section">
+            <div class="settings-tabs">
+              <div class="tab-header">
+                <button 
+                  class="tab-btn" 
+                  [class.active]="settingsTab === 'general'"
+                  (click)="settingsTab = 'general'">
+                  <i class="fas fa-cog"></i> General
+                </button>
+                <button 
+                  class="tab-btn" 
+                  [class.active]="settingsTab === 'api'"
+                  (click)="settingsTab = 'api'">
+                  <i class="fas fa-code"></i> API Settings
+                </button>
+                <button 
+                  class="tab-btn" 
+                  [class.active]="settingsTab === 'security'"
+                  (click)="settingsTab = 'security'">
+                  <i class="fas fa-shield-alt"></i> Security
+                </button>
+                <button 
+                  class="tab-btn" 
+                  [class.active]="settingsTab === 'notifications'"
+                  (click)="settingsTab = 'notifications'">
+                  <i class="fas fa-bell"></i> Notifications
+                </button>
+              </div>
+
+              <div class="tab-content">
+                @if (settingsTab === 'general') {
+                  <div class="settings-form">
+                    <div class="form-group">
+                      <label>Site Name</label>
+                      <input type="text" class="form-control" [(ngModel)]="siteSettings.name">
+                    </div>
+                    <div class="form-group">
+                      <label>Default Timezone</label>
+                      <select class="form-control" [(ngModel)]="siteSettings.timezone">
+                        @for (tz of timezones; track tz) {
+                          <option [value]="tz">{{ tz }}</option>
+                        }
+                      </select>
+                    </div>
+                    <div class="form-group">
+                      <label>Results per page</label>
+                      <input 
+                        type="number" 
+                        class="form-control" 
+                        [(ngModel)]="siteSettings.resultsPerPage"
+                        min="10" 
+                        max="100">
+                    </div>
+                    <button class="btn btn-primary" (click)="saveSettings()">
+                      Save Changes
+                    </button>
+                  </div>
+                }
+
+                @if (settingsTab === 'api') {
+                  <div class="api-settings">
+                    <div class="api-key-card">
+                      <h4>API Keys</h4>
+                      <div class="api-key-list">
+                        @for (key of apiKeys; track key.id) {
+                          <div class="api-key-item">
+                            <div class="key-info">
+                              <strong>{{ key.name }}</strong>
+                              <code class="key-preview">{{ key.key.slice(0, 8) }}****</code>
+                            </div>
+                            <div class="key-actions">
+                              <button class="btn-icon" (click)="copyApiKey(key.key)">
+                                <i class="fas fa-copy"></i>
+                              </button>
+                              <button class="btn-icon" (click)="revokeApiKey(key.id)">
+                                <i class="fas fa-trash"></i>
+                              </button>
+                            </div>
+                          </div>
+                        }
+                      </div>
+                      <button class="btn btn-primary" (click)="generateApiKey()">
+                        <i class="fas fa-plus"></i> Generate New Key
+                      </button>
+                    </div>
+                  </div>
+                }
+              </div>
+            </div>
+          </section>
+        }
+
+        <!-- Edit Draw Modal -->
+        @if (editingDraw) {
+          <div class="modal-overlay" (click)="cancelEditDraw()">
+            <div class="modal-content" (click)="$event.stopPropagation()">
+              <div class="modal-header">
+                <h3>Edit Draw</h3>
+                <button class="btn-close" (click)="cancelEditDraw()">
+                  <i class="fas fa-times"></i>
+                </button>
+              </div>
+              <form [formGroup]="editDrawForm" (ngSubmit)="saveDrawTime()" class="modal-form">
+                <div class="form-group">
+                  <label for="editLottery">Lottery Type</label>
+                  <input type="text" id="editLottery" formControlName="lottery" class="form-control" readonly>
+                </div>
+                <div class="form-group">
+                  <label for="editDrawDate">Draw Date & Time</label>
+                  <input type="datetime-local" id="editDrawDate" formControlName="drawDate" class="form-control" required>
+                </div>
+                <div class="form-group">
+                  <label for="editJackpot">Jackpot Amount</label>
+                  <input type="number" id="editJackpot" formControlName="jackpot" class="form-control" step="0.01" required>
+                </div>
+                <div class="modal-actions">
+                  <button type="button" class="btn btn-outline" (click)="cancelEditDraw()">Cancel</button>
+                  <button type="submit" class="btn btn-primary" [disabled]="editDrawForm.invalid">Save Changes</button>
+                </div>
+              </form>
+            </div>
+          </div>
+        }
+      </main>
+    </div>
+</div>
