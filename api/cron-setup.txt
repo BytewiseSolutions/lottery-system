@@ -1,0 +1,18 @@
+# Cron Job Setup for Automatic Draw Management
+
+# Add this line to your crontab to run daily at 1:00 AM
+# Run: crontab -e
+# Add this line:
+
+0 1 * * * php /path/to/your/api/auto-populate-draws.php
+
+# Or if you want to run it every hour:
+0 * * * * php /path/to/your/api/auto-populate-draws.php
+
+# What happens automatically:
+# 1. Past draws (draw_date < NOW()) are moved from upcoming_draws to past_draws
+# 2. New upcoming draws are added for future dates
+# 3. Duplicate draws are prevented
+
+# Manual execution for testing:
+# php auto-populate-draws.php

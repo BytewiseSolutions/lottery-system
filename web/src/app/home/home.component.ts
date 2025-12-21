@@ -85,7 +85,8 @@ export class HomeComponent implements OnInit {
     return pools[lottery] || '$0.00';
   }
 
-  formatDate(dateString: string): string {
+  formatDate(dateString: string | undefined): string {
+    if (!dateString) return 'TBA';
     const date = new Date(dateString);
     return date.toLocaleDateString('en-US', { 
       weekday: 'long', 
@@ -95,14 +96,16 @@ export class HomeComponent implements OnInit {
     });
   }
 
-  getLotteryCode(name: string): string {
+  getLotteryCode(name: string | undefined): string {
+    if (!name) return 'mon';
     if (name.includes('Mon')) return 'mon';
     if (name.includes('Wed')) return 'wed';
     if (name.includes('Fri')) return 'fri';
     return 'mon';
   }
 
-  getCountdown(targetDate: string): string {
+  getCountdown(targetDate: string | undefined): string {
+    if (!targetDate) return '00 Days 00:00:00';
     const now = new Date().getTime();
     const target = new Date(targetDate).getTime();
     const distance = target - now;

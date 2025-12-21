@@ -48,6 +48,13 @@ export class LoginComponent {
       if (result.success) {
         localStorage.setItem('token', result.token);
         localStorage.setItem('user', JSON.stringify(result.user));
+        
+        // Check if admin and redirect to admin dashboard
+        if (result.user.email === 'admin@totalfreelotto.com') {
+          window.location.href = '/admin';
+          return;
+        }
+        
         this.loginSuccess.emit(result.user);
         this.close();
       } else {

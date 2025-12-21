@@ -26,14 +26,6 @@ export class LotteriesComponent implements OnInit {
       this.draws = draws;
       this.cdr.detectChanges();
     });
-    
-    // Listen for refresh triggers
-    this.lotteryService['refreshTrigger'].subscribe(() => {
-      this.lotteryService.getDraws().subscribe(draws => {
-        this.draws = draws;
-        this.cdr.detectChanges();
-      });
-    });
   }
 
   private addWeekToDate(dateString: string): string {
