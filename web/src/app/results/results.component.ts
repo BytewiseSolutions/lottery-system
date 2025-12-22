@@ -20,13 +20,23 @@ export class ResultsComponent implements OnInit {
   async loadResults() {
     try {
       const response = await fetch(`${environment.apiUrl}/results.php`);
-      this.results = await response.json();
+      const data = await response.json();
+      this.results = data.map((result: any) => ({
+        id: result.id,
+        game: result.lottery || 'Unknown Lottery',
+        date: result.drawDate,
+        numbers: result.numbers || [],
+        bonusNumbers: result.bonusNumbers || [],
+        poolMoney: result.jackpot || '$0.00'
+      }));
     } catch (error) {
       console.error('Error loading results:', error);
+      this.results = [];
     }
   }
 
-  formatDate(dateString: string): string {
+  formatDate(dateString: string | undefined): string {
+    if (!dateString) return 'TBA';
     return new Date(dateString).toLocaleDateString('en-US', {
       weekday: 'long',
       year: 'numeric',
@@ -35,7 +45,8 @@ export class ResultsComponent implements OnInit {
     });
   }
 
-  getLotteryCode(lottery: string): string {
+  getLotteryCode(lottery: string | undefined): string {
+    if (!lottery || typeof lottery !== 'string') return 'mon';
     if (lottery.includes('Mon')) return 'mon';
     if (lottery.includes('Wed')) return 'wed';
     if (lottery.includes('Fri')) return 'fri';

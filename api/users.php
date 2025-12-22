@@ -14,10 +14,24 @@ if (!$db) {
 $method = $_SERVER['REQUEST_METHOD'];
 
 try {
+    // Create users table if it doesn't exist
+    $createTable = "CREATE TABLE IF NOT EXISTS users (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        full_name VARCHAR(100) NOT NULL,
+        email VARCHAR(100) UNIQUE NOT NULL,
+        phone VARCHAR(20),
+        password VARCHAR(255) NOT NULL,
+        email_verified BOOLEAN DEFAULT FALSE,
+        phone_verified BOOLEAN DEFAULT FALSE,
+        is_active BOOLEAN DEFAULT TRUE,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    )";
+    $db->exec($createTable);
+    
     switch ($method) {
         case 'GET':
-            $page = $_GET['page'] ?? 1;
-            $limit = $_GET['limit'] ?? 10;
+            $page = (int)($_GET['page'] ?? 1);
+            $limit = (int)($_GET['limit'] ?? 10);
             $search = $_GET['search'] ?? '';
             $offset = ($page - 1) * $limit;
             
@@ -37,9 +51,9 @@ try {
                 FROM users 
                 $whereClause 
                 ORDER BY created_at DESC 
-                LIMIT ? OFFSET ?
+                LIMIT $limit OFFSET $offset
             ");
-            $stmt->execute([...$params, $limit, $offset]);
+            $stmt->execute($params);
             $users = $stmt->fetchAll(PDO::FETCH_ASSOC);
             
             // Get total count
@@ -106,6 +120,6 @@ try {
     
 } catch (Exception $e) {
     http_response_code(500);
-    echo json_encode(['error' => 'Operation failed']);
+    echo json_encode(['error' => $e->getMessage()]);
 }
 ?>
