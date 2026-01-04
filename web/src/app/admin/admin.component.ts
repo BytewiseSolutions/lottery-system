@@ -188,20 +188,24 @@ export class AdminComponent implements OnInit, OnDestroy {
   }
 
   checkAuth() {
-    const token = localStorage.getItem('adminToken');
-    const user = localStorage.getItem('adminUser');
+    const token = localStorage.getItem('token');
+    const user = localStorage.getItem('user');
     
-    if (!token && !user) {
-      this.isAuthenticated = true;
-      localStorage.setItem('adminToken', 'demo-token-12345');
-      localStorage.setItem('adminUser', JSON.stringify({
-        email: 'admin@totalfreelotto.com',
-        name: 'Administrator',
-        role: 'admin'
-      }));
-    } else if (token && user) {
+    if (!token || !user) {
+      this.isAuthenticated = false;
+      return;
+    }
+    
+    try {
       const userData = JSON.parse(user);
-      this.isAuthenticated = userData.role === 'admin';
+      this.isAuthenticated = userData.role === 'admin' || userData.email === 'admin@totalfreelotto.com';
+      
+      if (!this.isAuthenticated) {
+        this.router.navigate(['/']);
+      }
+    } catch (error) {
+      this.isAuthenticated = false;
+      this.router.navigate(['/']);
     }
   }
 
@@ -212,30 +216,29 @@ export class AdminComponent implements OnInit, OnDestroy {
     this.loginError = '';
     
     try {
-      const { email, password, rememberMe } = this.loginForm.value;
+      const { email, password } = this.loginForm.value;
       
-      if (email === 'admin@totalfreelotto.com' && password === 'admin123') {
-        const userData = {
-          email: email,
-          name: 'Administrator',
-          role: 'admin',
-          lastLogin: new Date().toISOString()
-        };
-        
-        localStorage.setItem('adminToken', 'secure-token-' + Date.now());
-        localStorage.setItem('adminUser', JSON.stringify(userData));
-        
-        if (rememberMe) {
-          localStorage.setItem('rememberMe', 'true');
-        }
+      const response = await fetch('https://totalfreelotto.com/api/login.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ identifier: email, password: password })
+      });
+      
+      const result = await response.json();
+      
+      if (result.success && (result.user.role === 'admin' || result.user.email === 'admin@totalfreelotto.com')) {
+        localStorage.setItem('token', result.token);
+        localStorage.setItem('user', JSON.stringify(result.user));
         
         this.isAuthenticated = true;
         this.initializeDashboard();
+      } else if (result.success) {
+        this.loginError = 'Access denied. Admin privileges required.';
       } else {
-        this.loginError = 'Invalid email or password. Try admin@totalfreelotto.com / admin123';
+        this.loginError = result.error || 'Invalid credentials';
       }
     } catch (error) {
-      this.loginError = 'An error occurred. Please try again.';
+      this.loginError = 'Network error. Please try again.';
       console.error('Login error:', error);
     } finally {
       this.isLoading = false;
@@ -247,8 +250,8 @@ export class AdminComponent implements OnInit, OnDestroy {
   }
 
   logout() {
-    localStorage.removeItem('adminToken');
-    localStorage.removeItem('adminUser');
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
     this.isAuthenticated = false;
     this.router.navigate(['/']);
   }
@@ -424,13 +427,12 @@ export class AdminComponent implements OnInit, OnDestroy {
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (draws) => {
-          // Map the API response to match the expected format
           this.upcomingDraws = draws.map(draw => ({
             id: draw.id,
-            lottery: draw.name,
-            drawDate: draw.nextDraw,
+            lottery: draw.lottery || draw.name,
+            drawDate: draw.drawDate || draw.nextDraw,
             jackpot: draw.jackpot,
-            status: 'scheduled'
+            status: draw.status || 'scheduled'
           }));
         },
         error: (error) => {

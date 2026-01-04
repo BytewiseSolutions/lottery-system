@@ -10,6 +10,7 @@ import { PlayLotteryComponent } from './play-lottery/play-lottery.component';
 import { TermsComponent } from './terms/terms.component';
 import { PrivacyComponent } from './privacy/privacy.component';
 import { AdminComponent } from './admin/admin.component';
+import { adminGuard } from './guards/admin.guard';
 
 export const routes: Routes = [
   { path: '', component: HomeComponent },
@@ -23,6 +24,7 @@ export const routes: Routes = [
   { path: 'play-lottery', component: PlayLotteryComponent },
   { path: 'terms', component: TermsComponent },
   { path: 'privacy', component: PrivacyComponent },
-  { path: 'dashboard', component: AdminComponent },
+  { path: 'admin', component: AdminComponent, canActivate: [adminGuard] },
+  { path: 'dashboard', component: AdminComponent, canActivate: [adminGuard] },
   { path: '**', redirectTo: '' }
 ];

@@ -50,7 +50,7 @@ export class HomeComponent implements OnInit {
         winningNumbers: result.numbers || [],
         poolMoney: result.jackpot || '$0.00',
         nextDraw: this.getNextDrawDate(result.lottery),
-        currentPool: this.getCurrentPool(result.lottery)
+        currentPool: this.getCurrentPoolFromDraws(result.lottery)
       }));
     } catch (error) {
       console.error('Error loading results:', error);

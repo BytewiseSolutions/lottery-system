@@ -68,7 +68,7 @@ export class LoginComponent {
         
         // Check if admin and redirect to admin dashboard
         if (result.user.role === 'admin' || result.user.email === 'admin@totalfreelotto.com') {
-          window.location.href = '/admin';
+          window.location.href = '/app/#/dashboard';
           return;
         }
         
