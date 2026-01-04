@@ -18,12 +18,16 @@ export class LoginComponent {
   identifier = '';
   password = '';
   showPassword = false;
+  isLoading = false;
+  errorMessage = '';
 
   close() {
+    this.clearForm();
     this.closeModal.emit();
   }
 
   switchToSignup() {
+    this.clearForm();
     this.switchToSignupEvent.emit();
   }
 
@@ -31,10 +35,21 @@ export class LoginComponent {
     this.showPassword = !this.showPassword;
   }
 
+  clearForm() {
+    this.identifier = '';
+    this.password = '';
+    this.showPassword = false;
+    this.errorMessage = '';
+  }
+
   async onLogin() {
     if (!this.identifier || !this.password) {
+      this.errorMessage = 'Please enter both email/phone and password';
       return;
     }
+
+    this.isLoading = true;
+    this.errorMessage = '';
 
     try {
       const response = await fetch(`${environment.apiUrl}/login.php`, {
@@ -49,8 +64,10 @@ export class LoginComponent {
         localStorage.setItem('token', result.token);
         localStorage.setItem('user', JSON.stringify(result.user));
         
+        this.clearForm();
+        
         // Check if admin and redirect to admin dashboard
-        if (result.user.email === 'admin@totalfreelotto.com') {
+        if (result.user.role === 'admin' || result.user.email === 'admin@totalfreelotto.com') {
           window.location.href = '/admin';
           return;
         }
@@ -58,10 +75,12 @@ export class LoginComponent {
         this.loginSuccess.emit(result.user);
         this.close();
       } else {
-        // Error handled by toast service in parent
+        this.errorMessage = result.error || 'Login failed. Please try again.';
       }
     } catch (error) {
-      // Error handled by toast service in parent
+      this.errorMessage = 'Network error. Please check your connection.';
+    } finally {
+      this.isLoading = false;
     }
   }
 }

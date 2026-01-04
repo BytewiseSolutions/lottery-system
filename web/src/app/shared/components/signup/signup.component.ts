@@ -24,6 +24,7 @@ export class SignupComponent {
   password = '';
   confirmPassword = '';
   agreeTerms = false;
+  isLoading = false;
   
   // Password visibility
   showPassword = false;
@@ -40,13 +41,30 @@ export class SignupComponent {
   emailVerified = false;
   phoneVerified = false;
   allVerified = false;
+  isVerifying = false;
 
   close() {
+    this.clearForm();
     this.closeModal.emit();
   }
 
   switchToLogin() {
+    this.clearForm();
     this.switchToLoginEvent.emit();
+  }
+
+  clearForm() {
+    this.fullName = '';
+    this.email = '';
+    this.phone = '';
+    this.password = '';
+    this.confirmPassword = '';
+    this.agreeTerms = false;
+    this.showPassword = false;
+    this.showConfirmPassword = false;
+    this.showOtpVerification = false;
+    this.emailOtp = '';
+    this.phoneOtp = '';
   }
 
   async onSignup() {
@@ -64,6 +82,8 @@ export class SignupComponent {
       this.toastService.showError('Please agree to the terms and conditions');
       return;
     }
+
+    this.isLoading = true;
     
     try {
       const response = await fetch(`${environment.apiUrl}/register.php`, {
@@ -86,13 +106,20 @@ export class SignupComponent {
         this.requiresPhoneVerification = result.requiresVerification.includes('phone');
         this.selectedVerificationMethod = this.requiresEmailVerification ? 'email' : 'phone';
         this.showOtpVerification = true;
+        
+        // Clear sensitive data
+        this.password = '';
+        this.confirmPassword = '';
+        
         this.toastService.showSuccess(result.message);
       } else {
         this.toastService.showError(result.error);
       }
     } catch (error) {
       console.error('Registration error:', error);
-      this.toastService.showError('Registration failed');
+      this.toastService.showError('Network error. Please check your connection.');
+    } finally {
+      this.isLoading = false;
     }
   }
   
@@ -111,6 +138,8 @@ export class SignupComponent {
       this.toastService.showError('Please enter a valid 6-digit OTP');
       return;
     }
+
+    this.isVerifying = true;
     
     try {
       const response = await fetch(`${environment.apiUrl}/verify-otp.php`, {
@@ -129,9 +158,11 @@ export class SignupComponent {
         if (type === 'email') {
           this.emailVerified = true;
           this.requiresEmailVerification = false;
+          this.emailOtp = '';
         } else {
           this.phoneVerified = true;
           this.requiresPhoneVerification = false;
+          this.phoneOtp = '';
         }
         
         this.allVerified = result.fullyVerified;
@@ -148,7 +179,9 @@ export class SignupComponent {
         this.toastService.showError(result.error);
       }
     } catch (error) {
-      this.toastService.showError('Verification failed');
+      this.toastService.showError('Network error. Please try again.');
+    } finally {
+      this.isVerifying = false;
     }
   }
   
@@ -170,7 +203,7 @@ export class SignupComponent {
         this.toastService.showError(result.error);
       }
     } catch (error) {
-      this.toastService.showError('Failed to resend OTP');
+      this.toastService.showError('Network error. Please try again.');
     }
   }
 }
