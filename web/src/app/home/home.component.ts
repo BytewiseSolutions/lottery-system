@@ -45,12 +45,12 @@ export class HomeComponent implements OnInit {
       const data = await response.json();
       this.results = data.slice(0, 1).map((result: any) => ({
         id: result.id,
-        name: result.game,
-        drawDate: result.date,
-        winningNumbers: [...result.numbers, ...result.bonusNumbers],
-        poolMoney: result.poolMoney,
-        nextDraw: this.getNextDrawDate(result.game),
-        currentPool: this.getCurrentPoolFromDraws(result.game)
+        name: result.lottery || 'Unknown Lottery',
+        drawDate: result.drawDate,
+        winningNumbers: result.numbers || [],
+        poolMoney: result.jackpot || '$0.00',
+        nextDraw: this.getNextDrawDate(result.lottery),
+        currentPool: this.getCurrentPool(result.lottery)
       }));
     } catch (error) {
       console.error('Error loading results:', error);
@@ -93,7 +93,7 @@ export class HomeComponent implements OnInit {
   }
 
   getLotteryCode(name: string | undefined): string {
-    if (!name) return 'mon';
+    if (!name || typeof name !== 'string') return 'mon';
     if (name.includes('Mon')) return 'mon';
     if (name.includes('Wed')) return 'wed';
     if (name.includes('Fri')) return 'fri';

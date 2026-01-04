@@ -79,7 +79,7 @@ export class LotteryService {
   }
 
   deleteResult(id: number): Observable<any> {
-    return this.http.delete<any>(`${this.apiUrl}/admin-delete-result.php?id=${id}`);
+    return this.http.post<any>(`${this.apiUrl}/admin-delete-result.php`, { id });
   }
 
   updateDrawTime(id: number, draw: any): Observable<any> {

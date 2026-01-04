@@ -63,7 +63,7 @@ try {
     $db->exec($createTable);
     
     // Format jackpot
-    $jackpot = '$' . number_format(floatval($input['jackpot']), 2) . 'M';
+    $jackpot = '$' . number_format(floatval($input['jackpot']), 2);
     
     // Insert result
     $query = "INSERT INTO results (lottery, draw_date, winning_numbers, bonus_numbers, jackpot, winners, status, notes) 

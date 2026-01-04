@@ -30,6 +30,12 @@ try {
     $pendingStmt->execute();
     $pendingActions = $pendingStmt->fetch(PDO::FETCH_ASSOC)['pending_actions'];
     
+    // Get total pool money from entries
+    $poolQuery = "SELECT COALESCE(SUM(amount), 0) as total_pool_money FROM entries";
+    $poolStmt = $db->prepare($poolQuery);
+    $poolStmt->execute();
+    $totalPoolMoney = $poolStmt->fetch(PDO::FETCH_ASSOC)['total_pool_money'];
+    
     // Get unread notifications count (placeholder - you can implement actual notification system)
     $unreadNotifications = 0; // Default to 0 for now
     
@@ -38,6 +44,7 @@ try {
         'activeLotteries' => (int)$activeLotteries,
         'pendingActions' => (int)$pendingActions,
         'unreadNotifications' => (int)$unreadNotifications,
+        'totalPoolMoney' => (float)$totalPoolMoney,
         'resultsGrowth' => 12, // Placeholder - calculate actual growth
         'usersGrowth' => -2    // Placeholder - calculate actual growth
     ];

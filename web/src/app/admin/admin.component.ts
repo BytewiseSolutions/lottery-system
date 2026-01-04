@@ -381,9 +381,11 @@ export class AdminComponent implements OnInit, OnDestroy {
         .subscribe({
           next: () => {
             this.loadResults();
+            alert('Result deleted successfully!');
           },
           error: (error) => {
             console.error('Error deleting result:', error);
+            alert('Failed to delete result.');
           }
         });
     }
@@ -394,9 +396,19 @@ export class AdminComponent implements OnInit, OnDestroy {
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (results) => {
-          this.results = results;
-          this.filteredResults = results;
-          this.totalResults = results.length;
+          this.results = results.map(result => ({
+            id: result.id,
+            lottery: result.lottery || 'Unknown',
+            drawDate: result.drawDate || result.draw_date,
+            numbers: result.numbers || [],
+            bonusNumbers: result.bonusNumbers || [],
+            jackpot: result.jackpot || '$0.00',
+            winners: result.winners || 0,
+            status: result.status || 'published',
+            updatedAt: result.updatedAt || result.created_at
+          }));
+          this.filteredResults = this.results;
+          this.totalResults = this.results.length;
         },
         error: (error) => {
           console.error('Error loading results:', error);
@@ -545,14 +557,51 @@ export class AdminComponent implements OnInit, OnDestroy {
   // Placeholder methods for manage section
   applyFilters() {}
   exportResults() {}
-  toggleSelectAll(event: any) {}
-  toggleSelectResult(id: number) {}
-  viewResult(result: any) {}
-  editResult(result: any) {}
-  toggleResultStatus(result: any) {}
-  applyBulkAction() {}
-  prevPage() {}
-  nextPage() {}
+  toggleSelectAll(event: any) {
+    if (event.target.checked) {
+      this.results.forEach(result => this.selectedResults.add(result.id));
+    } else {
+      this.selectedResults.clear();
+    }
+  }
+  toggleSelectResult(id: number) {
+    if (this.selectedResults.has(id)) {
+      this.selectedResults.delete(id);
+    } else {
+      this.selectedResults.add(id);
+    }
+  }
+  viewResult(result: any) {
+    const numbers = result.numbers ? result.numbers.join(', ') : 'N/A';
+    const bonusNumbers = result.bonusNumbers ? result.bonusNumbers.join(', ') : 'N/A';
+    alert(`Result Details:\n\nLottery: ${result.lottery}\nDraw Date: ${result.drawDate}\nWinning Numbers: ${numbers}\nBonus Numbers: ${bonusNumbers}\nJackpot: ${result.jackpot}\nWinners: ${result.winners}\nStatus: ${result.status}`);
+  }
+  editResult(result: any) {
+    alert(`Edit functionality coming soon for: ${result.lottery}`);
+  }
+  toggleResultStatus(result: any) {
+    const newStatus = result.status === 'published' ? 'draft' : 'published';
+    alert(`Status change functionality coming soon. Would change to: ${newStatus}`);
+  }
+  applyBulkAction() {
+    if (this.selectedResults.size === 0) {
+      alert('Please select results first');
+      return;
+    }
+    alert(`Applying ${this.bulkAction} to ${this.selectedResults.size} results`);
+  }
+  prevPage() {
+    if (this.currentPage > 1) {
+      this.currentPage--;
+      this.loadResults();
+    }
+  }
+  nextPage() {
+    if (this.currentPage < this.totalPages) {
+      this.currentPage++;
+      this.loadResults();
+    }
+  }
   
   // Mobile sidebar methods
   toggleMobileSidebar() {
@@ -594,7 +643,12 @@ export class AdminComponent implements OnInit, OnDestroy {
   }
 
   formatDateTimeForInput(dateString: string): string {
-    return new Date(dateString).toISOString().slice(0, 16);
+    if (!dateString) return '';
+    try {
+      return new Date(dateString).toISOString().slice(0, 16);
+    } catch (error) {
+      return '';
+    }
   }
 
   updateDrawTime(draw: any, event: any) {

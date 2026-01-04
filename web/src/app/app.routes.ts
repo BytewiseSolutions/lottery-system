@@ -23,6 +23,6 @@ export const routes: Routes = [
   { path: 'play-lottery', component: PlayLotteryComponent },
   { path: 'terms', component: TermsComponent },
   { path: 'privacy', component: PrivacyComponent },
-  { path: 'admin', component: AdminComponent },
+  { path: 'dashboard', component: AdminComponent },
   { path: '**', redirectTo: '' }
 ];
