@@ -1,7 +1,6 @@
 <?php
-// Load allowed origins from environment
 $allowedOrigins = [
-    'http://localhost:4200',
+    'http://localhost:4200',  
     'https://totalfreelotto.com',
     'https://www.totalfreelotto.com'
 ];
@@ -19,7 +18,6 @@ header("Access-Control-Allow-Headers: Content-Type, Authorization");
 header("Access-Control-Allow-Credentials: true");
 header("Content-Type: application/json; charset=UTF-8");
 
-// Handle preflight requests
 if ($_SERVER['REQUEST_METHOD'] == 'OPTIONS') {
     exit(0);
 }

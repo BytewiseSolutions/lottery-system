@@ -12,7 +12,7 @@ CREATE TABLE IF NOT EXISTS rate_limits (
 
 -- Create admin user (password: Admin@2024!)
 INSERT INTO users (full_name, email, phone, password, role, is_active, email_verified) 
-VALUES ('Administrator', 'admin@totalfreelotto.com', NULL, '$2y$10$YourHashedPasswordHere', 'admin', TRUE, TRUE)
+VALUES ('Administrator', 'admin@totalfreelotto.com', NULL, '$2y$10$$2y$10$L8eJMPyX8PPgUuqojEdEyupKFSI3pjY0n2u8dIJfZ93eK5gY5U0dq', 'admin', TRUE, TRUE)
 ON DUPLICATE KEY UPDATE role = 'admin';
 
 -- Note: Run this command to generate the admin password hash:
