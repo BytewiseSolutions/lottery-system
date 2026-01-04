@@ -28,6 +28,7 @@ export class PlayLotteryComponent implements OnInit {
   humanVerified = false;
   captchaVerified = false;
   showSuccessPopup = false;
+  isLoading = false;
 
   constructor(private route: ActivatedRoute, private router: Router, private lotteryService: LotteryService, private toastService: ToastService) {}
 
@@ -134,6 +135,8 @@ export class PlayLotteryComponent implements OnInit {
     }
     
     if (this.selectedNumbers.length === 5 && this.selectedBonusNumbers.length === 2) {
+      this.isLoading = true;
+      
       try {
         const response = await fetch(`${environment.apiUrl}/play.php`, {
           method: 'POST',
@@ -170,7 +173,9 @@ export class PlayLotteryComponent implements OnInit {
           this.toastService.showError(result.error || 'Failed to submit entry');
         }
       } catch (error) {
-        this.toastService.showError('Failed to submit entry. Please try again.');
+        this.toastService.showError('Network error. Please check your connection.');
+      } finally {
+        this.isLoading = false;
       }
     }
   }

@@ -76,13 +76,9 @@ export class HomeComponent implements OnInit {
     return nextDate.toISOString().split('T')[0];
   }
 
-  private getCurrentPool(lottery: string): string {
-    const pools: {[key: string]: string} = {
-      'Monday Lotto': '$1,990.12',
-      'Wednesday Lotto': '$2,902.77',
-      'Friday Lotto': '$98,943.09'
-    };
-    return pools[lottery] || '$0.00';
+  private getCurrentPoolFromDraws(lottery: string): string {
+    const draw = this.draws.find(d => d.name === lottery);
+    return draw?.jackpot || '$10.00';
   }
 
   formatDate(dateString: string | undefined): string {
