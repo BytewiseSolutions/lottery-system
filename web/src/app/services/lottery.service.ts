@@ -89,4 +89,12 @@ export class LotteryService {
   deleteDraw(id: number): Observable<any> {
     return this.http.delete<any>(`${this.apiUrl}/delete-draw.php?id=${id}`);
   }
+
+  announceWinners(drawId: number, winningNumbers: number[], bonusNumbers: number[]): Observable<any> {
+    return this.http.post<any>(`${this.apiUrl}/announce-winners.php`, {
+      drawId,
+      winningNumbers,
+      bonusNumbers
+    });
+  }
 }

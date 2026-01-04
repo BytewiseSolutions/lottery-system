@@ -104,6 +104,10 @@ export class AdminComponent implements OnInit, OnDestroy {
 
   editingDraw: any = null;
   editDrawForm: FormGroup;
+  announcingWinner: any = null;
+  announceWinnerForm: FormGroup;
+  winnerNumbers: number[] = [0, 0, 0, 0, 0];
+  winnerBonusNumbers: number[] = [0, 0];
 
   constructor(
     private router: Router,
@@ -129,6 +133,10 @@ export class AdminComponent implements OnInit, OnDestroy {
       lottery: ['', Validators.required],
       drawDate: ['', Validators.required],
       jackpot: ['', Validators.required]
+    });
+
+    this.announceWinnerForm = this.fb.group({
+      drawId: ['', Validators.required]
     });
 
     this.userForm = this.fb.group({
@@ -828,6 +836,64 @@ export class AdminComponent implements OnInit, OnDestroy {
     if (this.usersCurrentPage < this.usersTotalPages) {
       this.usersCurrentPage++;
       this.loadUsers();
+    }
+  }
+
+  announceWinner(draw: any) {
+    this.announcingWinner = draw;
+    this.winnerNumbers = [0, 0, 0, 0, 0];
+    this.winnerBonusNumbers = [0, 0];
+    this.announceWinnerForm.patchValue({ drawId: draw.id });
+  }
+
+  submitWinners() {
+    if (this.winnerNumbers.filter(n => n > 0).length !== 5 || this.winnerBonusNumbers.filter(n => n > 0).length !== 2) {
+      alert('Please enter 5 winning numbers and 2 bonus numbers');
+      return;
+    }
+
+    const winningNums = this.winnerNumbers.filter(n => n > 0);
+    const bonusNums = this.winnerBonusNumbers.filter(n => n > 0);
+
+    this.lotteryService.announceWinners(this.announcingWinner.id, winningNums, bonusNums)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (result) => {
+          alert(`Winners Announced!\n\nTotal Entries: ${result.totalEntries}\nTotal Winners: ${result.totalWinners}\nPrize Pool: ${result.prizePool}\nPrize Per Winner: ${result.prizePerWinner}`);
+          this.cancelAnnounceWinner();
+          this.loadUpcomingDraws();
+          this.loadResults();
+        },
+        error: (error) => {
+          console.error('Error announcing winners:', error);
+          alert('Failed to announce winners');
+        }
+      });
+  }
+
+  cancelAnnounceWinner() {
+    this.announcingWinner = null;
+    this.winnerNumbers = [0, 0, 0, 0, 0];
+    this.winnerBonusNumbers = [0, 0];
+    this.announceWinnerForm.reset();
+  }
+
+  validateWinnerNumber(event: any, index: number, type: 'winning' | 'bonus') {
+    const value = parseInt(event.target.value);
+    if (value > 75) {
+      if (type === 'winning') {
+        this.winnerNumbers[index] = 75;
+      } else {
+        this.winnerBonusNumbers[index] = 75;
+      }
+      event.target.value = 75;
+    } else if (value < 1 && value !== 0) {
+      if (type === 'winning') {
+        this.winnerNumbers[index] = 1;
+      } else {
+        this.winnerBonusNumbers[index] = 1;
+      }
+      event.target.value = 1;
     }
   }
 }

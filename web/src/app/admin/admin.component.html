@@ -136,6 +136,9 @@
                         </td>
                         <td>
                           <div class="table-actions">
+                            <button class="btn-icon success" title="Announce Winners" (click)="announceWinner(draw)">
+                              <i class="fas fa-trophy"></i>
+                            </button>
                             <button class="btn-icon" title="Edit Draw Time" (click)="editDrawTime(draw)">
                               <i class="fas fa-edit"></i>
                             </button>
@@ -840,6 +843,67 @@
                 <div class="modal-actions">
                   <button type="button" class="btn btn-outline" (click)="cancelEditUser()">Cancel</button>
                   <button type="submit" class="btn btn-primary" [disabled]="userForm.invalid">Save Changes</button>
+                </div>
+              </form>
+            </div>
+          </div>
+        }
+
+        <!-- Announce Winner Modal -->
+        @if (announcingWinner) {
+          <div class="modal-overlay" (click)="cancelAnnounceWinner()">
+            <div class="modal-content" (click)="$event.stopPropagation()">
+              <div class="modal-header">
+                <h3><i class="fas fa-trophy"></i> Announce Winners - {{ announcingWinner.lottery }}</h3>
+                <button class="btn-close" (click)="cancelAnnounceWinner()">
+                  <i class="fas fa-times"></i>
+                </button>
+              </div>
+              <form [formGroup]="announceWinnerForm" (ngSubmit)="submitWinners()" class="modal-form">
+                <div class="form-info">
+                  <p><strong>Draw Date:</strong> {{ announcingWinner.drawDate | date:'medium' }}</p>
+                  <p><strong>Jackpot:</strong> {{ announcingWinner.jackpot }}</p>
+                </div>
+
+                <div class="numbers-section">
+                  <label>Winning Numbers (5 numbers)</label>
+                  <div class="numbers-grid">
+                    @for (num of winnerNumbers; track $index; let i = $index) {
+                      <input 
+                        type="number" 
+                        [(ngModel)]="winnerNumbers[i]" 
+                        [ngModelOptions]="{standalone: true}"
+                        class="number-ball" 
+                        min="1" 
+                        max="75"
+                        (input)="validateWinnerNumber($event, i, 'winning')"
+                        placeholder="{{ i + 1 }}">
+                    }
+                  </div>
+                </div>
+
+                <div class="numbers-section">
+                  <label>Bonus Numbers (2 numbers)</label>
+                  <div class="numbers-grid bonus-grid">
+                    @for (num of winnerBonusNumbers; track $index; let i = $index) {
+                      <input 
+                        type="number" 
+                        [(ngModel)]="winnerBonusNumbers[i]" 
+                        [ngModelOptions]="{standalone: true}"
+                        class="number-ball bonus-ball" 
+                        min="1" 
+                        max="75"
+                        (input)="validateWinnerNumber($event, i, 'bonus')"
+                        placeholder="B{{ i + 1 }}">
+                    }
+                  </div>
+                </div>
+
+                <div class="modal-actions">
+                  <button type="button" class="btn btn-outline" (click)="cancelAnnounceWinner()">Cancel</button>
+                  <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-trophy"></i> Announce Winners
+                  </button>
                 </div>
               </form>
             </div>

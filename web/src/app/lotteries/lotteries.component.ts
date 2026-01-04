@@ -22,9 +22,15 @@ export class LotteriesComponent implements OnInit {
   }
 
   private loadDraws() {
-    this.lotteryService.getDraws().subscribe(draws => {
-      this.draws = draws;
-      this.cdr.detectChanges();
+    this.lotteryService.getDraws().subscribe({
+      next: (draws) => {
+        console.log('Loaded draws:', draws); // Debug log
+        this.draws = draws;
+        this.cdr.detectChanges();
+      },
+      error: (error) => {
+        console.error('Error loading draws:', error);
+      }
     });
   }
 
@@ -45,6 +51,8 @@ export class LotteriesComponent implements OnInit {
   }
 
   getLotteryCode(name: string, date?: string): string {
+    if (!name) return 'mon'; // Default fallback
+    
     const baseCode = name.includes('Monday') ? 'mon' : 
                     name.includes('Wednesday') ? 'wed' : 'fri';
     return date ? `${baseCode}-${date}` : baseCode;

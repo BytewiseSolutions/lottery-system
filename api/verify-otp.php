@@ -9,7 +9,11 @@ $otpHandler = new OTP($db);
 
 $data = json_decode(file_get_contents("php://input"));
 
-if (!$data->userId || !$data->otpCode || !$data->otpType) {
+// Debug logging
+error_log("OTP Verification Request: " . json_encode($data));
+
+if (!$data || !isset($data->userId) || !isset($data->otpCode) || !isset($data->otpType)) {
+    error_log("Missing required fields: userId=" . ($data->userId ?? 'null') . ", otpCode=" . ($data->otpCode ?? 'null') . ", otpType=" . ($data->otpType ?? 'null'));
     http_response_code(400);
     echo json_encode(['error' => 'User ID, OTP code, and type are required']);
     exit;
@@ -52,6 +56,7 @@ try {
     }
     
 } catch(PDOException $exception) {
+    error_log("OTP Verification error: " . $exception->getMessage());
     http_response_code(500);
     echo json_encode(['error' => 'Verification failed']);
 }
