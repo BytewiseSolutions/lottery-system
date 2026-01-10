@@ -164,11 +164,11 @@ export class PlayLotteryComponent implements OnInit {
         
         if (result.success) {
           this.showSuccessPopup = true;
-          // Hide popup and redirect after 6 seconds
+          // Hide popup and redirect after 15 seconds (improved for mobile)
           setTimeout(() => {
             this.showSuccessPopup = false;
             window.location.href = '/lotteries';
-          }, 6000);
+          }, 15000);
         } else {
           this.toastService.showError(result.error || 'Failed to submit entry');
         }
@@ -188,5 +188,10 @@ export class PlayLotteryComponent implements OnInit {
 
   onCloseHumanVerification() {
     this.showHumanVerification = false;
+  }
+
+  dismissSuccessPopup() {
+    this.showSuccessPopup = false;
+    window.location.href = '/lotteries';
   }
 }

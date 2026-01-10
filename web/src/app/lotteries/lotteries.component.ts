@@ -42,7 +42,15 @@ export class LotteriesComponent implements OnInit {
 
   formatDate(dateString: string): string {
     if (!dateString) return 'TBA';
+    
     const date = new Date(dateString);
+    
+    // Check if date is valid
+    if (isNaN(date.getTime())) {
+      console.warn('Invalid date string:', dateString);
+      return 'TBA';
+    }
+    
     return date.toLocaleDateString('en-US', { 
       weekday: 'long', 
       year: 'numeric', 
@@ -59,12 +67,30 @@ export class LotteriesComponent implements OnInit {
     return date ? `${baseCode}-${date}` : baseCode;
   }
 
+  getDateOnly(dateString: string): string {
+    if (!dateString) return '';
+    try {
+      return dateString.split('T')[0];
+    } catch (error) {
+      console.warn('Error splitting date:', dateString);
+      return '';
+    }
+  }
+
   getCountdown(targetDate: string): string {
     if (!targetDate) return '00 Days 00:00:00';
     
+    const target = new Date(targetDate);
+    
+    // Check if date is valid
+    if (isNaN(target.getTime())) {
+      console.warn('Invalid target date:', targetDate);
+      return '00 Days 00:00:00';
+    }
+    
     const now = new Date().getTime();
-    const target = new Date(targetDate).getTime();
-    const distance = target - now;
+    const targetTime = target.getTime();
+    const distance = targetTime - now;
 
     if (distance < 0) return '00 Days 00:00:00';
 

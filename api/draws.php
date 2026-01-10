@@ -30,7 +30,8 @@ function getNextDrawDate($dayName) {
     }
     $nextDate->setTime(20, 0, 0);
     
-    return $nextDate->format('c');
+    // Return ISO 8601 format for consistent parsing
+    return $nextDate->format('Y-m-d\TH:i:s\Z');
 }
 
 $database = new Database();

@@ -37,7 +37,16 @@ export class ResultsComponent implements OnInit {
 
   formatDate(dateString: string | undefined): string {
     if (!dateString) return 'TBA';
-    return new Date(dateString).toLocaleDateString('en-US', {
+    
+    const date = new Date(dateString);
+    
+    // Check if date is valid
+    if (isNaN(date.getTime())) {
+      console.warn('Invalid date string:', dateString);
+      return 'TBA';
+    }
+    
+    return date.toLocaleDateString('en-US', {
       weekday: 'long',
       year: 'numeric',
       month: 'long',
