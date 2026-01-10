@@ -138,7 +138,7 @@ export class PlayLotteryComponent implements OnInit {
       this.isLoading = true;
       
       try {
-        const response = await fetch(`${environment.apiUrl}/play.php`, {
+        const response = await fetch(`${environment.apiUrl}/play`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',

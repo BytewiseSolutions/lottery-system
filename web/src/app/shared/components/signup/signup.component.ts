@@ -12,6 +12,8 @@ import { environment } from '../../../../environments/environment';
 })
 export class SignupComponent {
   @Input() isVisible = false;
+  @Input() verificationMode = false;
+  @Input() passwordRecoveryMode = false;
   @Output() signupSuccess = new EventEmitter<any>();
   @Output() closeModal = new EventEmitter<void>();
   @Output() switchToLoginEvent = new EventEmitter<void>();
@@ -42,6 +44,9 @@ export class SignupComponent {
   phoneVerified = false;
   allVerified = false;
   isVerifying = false;
+  errorMessage = '';
+  identifier = ''; // For verification mode
+  showSuccessMessage = false;
 
   close() {
     this.clearForm();
@@ -65,6 +70,72 @@ export class SignupComponent {
     this.showOtpVerification = false;
     this.emailOtp = '';
     this.phoneOtp = '';
+    this.errorMessage = '';
+    this.verificationMode = false;
+  }
+
+  switchToRegularSignup() {
+    this.verificationMode = false;
+    this.errorMessage = '';
+  }
+
+  updateOtpCode(event: any) {
+    const value = event.target.value;
+    if (this.selectedVerificationMethod === 'email') {
+      this.emailOtp = value;
+    } else {
+      this.phoneOtp = value;
+    }
+  }
+
+  async verifyAccountByIdentifier() {
+    if (!this.identifier) {
+      this.errorMessage = 'Please enter your email or phone number';
+      return;
+    }
+    
+    const otpCode = this.selectedVerificationMethod === 'email' ? this.emailOtp : this.phoneOtp;
+    if (!otpCode || otpCode.length !== 6) {
+      this.errorMessage = 'Please enter a valid 6-digit OTP';
+      return;
+    }
+
+    // First, find the user ID by email/phone
+    // For now, we'll use a placeholder - this would need an API endpoint to find user by identifier
+    // You can use the existing OTP codes with known user IDs for testing
+    this.userId = 1; // Temporary - should be fetched from API
+    
+    // Then verify the OTP
+    await this.verifyOtp(this.selectedVerificationMethod);
+  }
+
+  async sendPasswordReset() {
+    if (!this.identifier) {
+      this.errorMessage = 'Please enter your email or phone number';
+      return;
+    }
+
+    this.isLoading = true;
+    this.errorMessage = '';
+
+    try {
+      // This would call a password reset API endpoint
+      // For now, just show a success message
+      this.errorMessage = '';
+      
+      // Show success state instead of toast
+      this.showSuccessMessage = true;
+      
+      // Auto-redirect to login after 3 seconds
+      setTimeout(() => {
+        this.close();
+        this.switchToLogin();
+      }, 3000);
+    } catch (error) {
+      this.errorMessage = 'Failed to send reset instructions. Please try again.';
+    } finally {
+      this.isLoading = false;
+    }
   }
 
   async onSignup() {
@@ -86,7 +157,7 @@ export class SignupComponent {
     this.isLoading = true;
     
     try {
-      const response = await fetch(`${environment.apiUrl}/register.php`, {
+      const response = await fetch(`${environment.apiUrl}/register`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -135,14 +206,15 @@ export class SignupComponent {
     const otpCode = type === 'email' ? this.emailOtp : this.phoneOtp;
     
     if (!otpCode || otpCode.length !== 6) {
-      this.toastService.showError('Please enter a valid 6-digit OTP');
+      this.errorMessage = 'Please enter a valid 6-digit OTP';
       return;
     }
 
     this.isVerifying = true;
+    this.errorMessage = '';
     
     try {
-      const response = await fetch(`${environment.apiUrl}/verify-otp.php`, {
+      const response = await fetch(`${environment.apiUrl}/verify-otp`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -154,7 +226,7 @@ export class SignupComponent {
 
       const result = await response.json();
 
-      if (result.success) {
+      if (response.ok && result.success) {
         if (type === 'email') {
           this.emailVerified = true;
           this.requiresEmailVerification = false;
@@ -176,10 +248,10 @@ export class SignupComponent {
           }, 1500);
         }
       } else {
-        this.toastService.showError(result.error);
+        this.errorMessage = result.error || 'Invalid or expired OTP. Please try again.';
       }
     } catch (error) {
-      this.toastService.showError('Network error. Please try again.');
+      this.errorMessage = 'Network error. Please try again.';
     } finally {
       this.isVerifying = false;
     }
@@ -187,7 +259,7 @@ export class SignupComponent {
   
   async resendOtp(type: 'email' | 'phone') {
     try {
-      const response = await fetch(`${environment.apiUrl}/resend-otp.php`, {
+      const response = await fetch(`${environment.apiUrl}/resend-otp`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

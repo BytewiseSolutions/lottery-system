@@ -6,6 +6,7 @@ import { HttpClientModule } from '@angular/common/http';
 import { Subject, takeUntil, interval } from 'rxjs';
 import { AdminSidebarComponent } from './sidebar/admin-sidebar.component';
 import { LotteryService } from '../services/lottery.service';
+import { environment } from '../../environments/environment';
 
 @Component({
   selector: 'app-admin',
@@ -226,7 +227,7 @@ export class AdminComponent implements OnInit, OnDestroy {
     try {
       const { email, password } = this.loginForm.value;
       
-      const response = await fetch('https://totalfreelotto.com/api/login.php', {
+      const response = await fetch(`${environment.apiUrl}/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ identifier: email, password: password })

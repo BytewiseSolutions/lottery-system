@@ -14,6 +14,8 @@ export class LoginComponent {
   @Output() loginSuccess = new EventEmitter<any>();
   @Output() closeModal = new EventEmitter<void>();
   @Output() switchToSignupEvent = new EventEmitter<void>();
+  @Output() switchToVerificationEvent = new EventEmitter<void>();
+  @Output() switchToPasswordRecoveryEvent = new EventEmitter<void>();
 
   identifier = '';
   password = '';
@@ -31,6 +33,16 @@ export class LoginComponent {
     this.switchToSignupEvent.emit();
   }
 
+  switchToVerification() {
+    this.clearForm();
+    this.switchToVerificationEvent.emit();
+  }
+
+  switchToPasswordRecovery() {
+    this.clearForm();
+    this.switchToPasswordRecoveryEvent.emit();
+  }
+
   togglePasswordVisibility() {
     this.showPassword = !this.showPassword;
   }
@@ -40,6 +52,7 @@ export class LoginComponent {
     this.password = '';
     this.showPassword = false;
     this.errorMessage = '';
+    this.isLoading = false;
   }
 
   async onLogin() {
@@ -52,15 +65,28 @@ export class LoginComponent {
     this.errorMessage = '';
 
     try {
-      const response = await fetch(`${environment.apiUrl}/login.php`, {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
+      
+      const response = await fetch(`${environment.apiUrl}/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ identifier: this.identifier, password: this.password })
+        body: JSON.stringify({ identifier: this.identifier, password: this.password }),
+        signal: controller.signal
       });
+      
+      clearTimeout(timeoutId);
+      
+      let result;
+      try {
+        result = await response.json();
+      } catch (parseError) {
+        this.errorMessage = 'Server error. Please try again later.';
+        this.isLoading = false;
+        return;
+      }
 
-      const result = await response.json();
-
-      if (result.success) {
+      if (response.ok && result.success) {
         localStorage.setItem('token', result.token);
         localStorage.setItem('user', JSON.stringify(result.user));
         
@@ -75,10 +101,23 @@ export class LoginComponent {
         this.loginSuccess.emit(result.user);
         this.close();
       } else {
-        this.errorMessage = result.error || 'Login failed. Please try again.';
+        // Handle different HTTP status codes
+        if (response.status === 400) {
+          this.errorMessage = result?.error || 'Invalid credentials. Please check your email/phone and password.';
+        } else if (response.status === 429) {
+          this.errorMessage = 'Too many login attempts. Please try again later.';
+        } else if (response.status === 500) {
+          this.errorMessage = 'Server error. Please try again later.';
+        } else {
+          this.errorMessage = result?.error || 'Login failed. Please try again.';
+        }
       }
-    } catch (error) {
-      this.errorMessage = 'Network error. Please check your connection.';
+    } catch (error: any) {
+      if (error.name === 'AbortError') {
+        this.errorMessage = 'Request timeout. Please try again.';
+      } else {
+        this.errorMessage = 'Network error. Please check your connection and try again.';
+      }
     } finally {
       this.isLoading = false;
     }

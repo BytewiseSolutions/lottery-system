@@ -53,11 +53,15 @@
   [isVisible]="showLoginModal"
   (loginSuccess)="onLoginSuccess($event)"
   (closeModal)="onCloseLogin()"
-  (switchToSignupEvent)="onSwitchToSignup()">
+  (switchToSignupEvent)="onSwitchToSignup()"
+  (switchToVerificationEvent)="onSwitchToVerification()"
+  (switchToPasswordRecoveryEvent)="onSwitchToPasswordRecovery()">
 </app-login>
 
 <app-signup 
   [isVisible]="showSignupModal"
+  [verificationMode]="verificationMode"
+  [passwordRecoveryMode]="passwordRecoveryMode"
   (signupSuccess)="onSignupSuccess($event)"
   (closeModal)="onCloseSignup()"
   (switchToLoginEvent)="onSwitchToLogin()">

@@ -19,7 +19,7 @@ export class ResultsComponent implements OnInit {
 
   async loadResults() {
     try {
-      const response = await fetch(`${environment.apiUrl}/results.php`);
+      const response = await fetch(`${environment.apiUrl}/results`);
       const data = await response.json();
       this.results = data.map((result: any) => ({
         id: result.id,

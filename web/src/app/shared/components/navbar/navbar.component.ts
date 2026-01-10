@@ -17,6 +17,8 @@ export class NavbarComponent implements OnInit {
   userEmail = '';
   showLoginModal = false;
   showSignupModal = false;
+  verificationMode = false;
+  passwordRecoveryMode = false;
   mobileMenuOpen = false;
   isLoading = true;
 
@@ -84,6 +86,21 @@ export class NavbarComponent implements OnInit {
   onSwitchToSignup() {
     this.showLoginModal = false;
     this.showSignupModal = true;
+    this.verificationMode = false;
+  }
+
+  onSwitchToVerification() {
+    this.showLoginModal = false;
+    this.showSignupModal = true;
+    this.verificationMode = true;
+    this.passwordRecoveryMode = false;
+  }
+
+  onSwitchToPasswordRecovery() {
+    this.showLoginModal = false;
+    this.showSignupModal = true;
+    this.verificationMode = false;
+    this.passwordRecoveryMode = true;
   }
 
   onSwitchToLogin() {

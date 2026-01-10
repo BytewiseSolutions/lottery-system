@@ -17,7 +17,7 @@ $data = json_decode(file_get_contents("php://input"));
 
 if (!$data->fullName || (!$data->email && !$data->phone) || !$data->password || !$data->confirmPassword) {
     http_response_code(400);
-    echo json_encode(['error' => 'Full name, email or phone, and password are required']);
+    echo json_encode(['error' => 'Please fill in all required fields: Full name, email or phone, and password']);
     exit;
 }
 
@@ -48,7 +48,7 @@ try {
     
     if ($stmt->rowCount() > 0) {
         http_response_code(400);
-        echo json_encode(['error' => 'User with this email or phone already exists']);
+        echo json_encode(['error' => 'An account with this email or phone number already exists. Please try logging in instead.']);
         exit;
     }
     
@@ -84,7 +84,7 @@ try {
     
     $response = [
         'success' => true,
-        'message' => 'Registration successful. Please verify your ' . implode(' and ', $otpSent),
+        'message' => 'Account created successfully! Please check your ' . implode(' and ', $otpSent) . ' for verification codes.',
         'userId' => $userId,
         'requiresVerification' => $otpSent
     ];
@@ -101,6 +101,6 @@ try {
 } catch(PDOException $exception) {
     error_log("Registration error: " . $exception->getMessage());
     http_response_code(500);
-    echo json_encode(['error' => 'Registration failed']);
+    echo json_encode(['error' => 'Registration failed. Please try again later.']);
 }
 ?>

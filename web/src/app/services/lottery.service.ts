@@ -29,69 +29,69 @@ export class LotteryService {
   constructor(private http: HttpClient) {}
 
   getResults(): Observable<any[]> {
-    return this.http.get<any[]>(`${this.apiUrl}/results.php`);
+    return this.http.get<any[]>(`${this.apiUrl}/results`);
   }
 
   getUpcomingDraws(): Observable<any[]> {
-    return this.http.get<any[]>(`${this.apiUrl}/upcoming-draws.php`);
+    return this.http.get<any[]>(`${this.apiUrl}/upcoming-draws`);
   }
 
   getDashboardStats(): Observable<any> {
-    return this.http.get<any>(`${this.apiUrl}/dashboard-stats.php`);
+    return this.http.get<any>(`${this.apiUrl}/dashboard-stats`);
   }
 
   // User Management
   getUsers(page: number = 1, limit: number = 10, search: string = ''): Observable<any> {
-    return this.http.get<any>(`${this.apiUrl}/users.php?page=${page}&limit=${limit}&search=${search}`);
+    return this.http.get<any>(`${this.apiUrl}/users?page=${page}&limit=${limit}&search=${search}`);
   }
 
   createUser(user: any): Observable<any> {
-    return this.http.post<any>(`${this.apiUrl}/users.php`, user);
+    return this.http.post<any>(`${this.apiUrl}/users`, user);
   }
 
   updateUser(user: any): Observable<any> {
-    return this.http.put<any>(`${this.apiUrl}/users.php`, user);
+    return this.http.put<any>(`${this.apiUrl}/users`, user);
   }
 
   deleteUser(id: number): Observable<any> {
-    return this.http.delete<any>(`${this.apiUrl}/users.php`, { body: { id } });
+    return this.http.delete<any>(`${this.apiUrl}/users`, { body: { id } });
   }
 
   // Analytics
   getAnalyticsData(range: string = '7d'): Observable<any> {
-    return this.http.get<any>(`${this.apiUrl}/analytics-data.php?range=${range}`);
+    return this.http.get<any>(`${this.apiUrl}/analytics-data?range=${range}`);
   }
 
   getDraws(): Observable<Draw[]> {
-    return this.http.get<Draw[]>(`${this.apiUrl}/draws.php`);
+    return this.http.get<Draw[]>(`${this.apiUrl}/draws`);
   }
 
   getStats(): Observable<Stats> {
-    return this.http.get<Stats>(`${this.apiUrl}/stats.php`);
+    return this.http.get<Stats>(`${this.apiUrl}/stats`);
   }
 
   createResult(result: any): Observable<any> {
-    return this.http.post<any>(`${this.apiUrl}/admin-upload-result.php`, result);
+    return this.http.post<any>(`${this.apiUrl}/admin-upload-result`, result);
   }
 
   updateResult(id: number, result: any): Observable<any> {
-    return this.http.put<any>(`${this.apiUrl}/results.php?id=${id}`, result);
+    return this.http.put<any>(`${this.apiUrl}/results?id=${id}`, result);
   }
 
   deleteResult(id: number): Observable<any> {
-    return this.http.post<any>(`${this.apiUrl}/admin-delete-result.php`, { id });
+    return this.http.post<any>(`${this.apiUrl}/admin-delete-result`, { id });
   }
 
   updateDrawTime(id: number, draw: any): Observable<any> {
-    return this.http.put<any>(`${this.apiUrl}/update-draw-time.php`, { id, ...draw });
+    return this.http.put<any>(`${this.apiUrl}/update-draw-time`, { id, ...draw });
   }
 
   deleteDraw(id: number): Observable<any> {
-    return this.http.delete<any>(`${this.apiUrl}/delete-draw.php?id=${id}`);
+    return this.http.delete<any>(`${this.apiUrl}/delete-draw?id=${id}`);
   }
 
   announceWinners(drawId: number, winningNumbers: number[], bonusNumbers: number[]): Observable<any> {
-    return this.http.post<any>(`${this.apiUrl}/announce-winners.php`, {
+    return this.http.post<any>(`${this.apiUrl}/announce-winners`, {
       drawId,
       winningNumbers,
       bonusNumbers

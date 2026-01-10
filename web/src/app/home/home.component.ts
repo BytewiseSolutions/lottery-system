@@ -19,10 +19,13 @@ export class HomeComponent implements OnInit {
 
   ngOnInit() {
     this.loadData();
-    setInterval(() => {
-      this.loadData();
-      this.cdr.detectChanges();
-    }, 30000);
+    // Use setTimeout to avoid change detection issues
+    setTimeout(() => {
+      setInterval(() => {
+        this.loadData();
+        this.cdr.detectChanges();
+      }, 30000);
+    }, 0);
   }
 
   private loadData() {
@@ -41,17 +44,23 @@ export class HomeComponent implements OnInit {
 
   private async loadResults() {
     try {
-      const response = await fetch(`${environment.apiUrl}/results.php`);
+      const response = await fetch(`${environment.apiUrl}/results`);
       const data = await response.json();
-      this.results = data.slice(0, 1).map((result: any) => ({
-        id: result.id,
-        name: result.lottery || 'Unknown Lottery',
-        drawDate: result.drawDate,
-        winningNumbers: result.numbers || [],
-        poolMoney: result.jackpot || '$0.00',
-        nextDraw: this.getNextDrawDate(result.lottery),
-        currentPool: this.getCurrentPoolFromDraws(result.lottery)
-      }));
+      
+      // Ensure data is an array before using slice
+      if (Array.isArray(data)) {
+        this.results = data.slice(0, 1).map((result: any) => ({
+          id: result.id,
+          name: result.lottery || 'Unknown Lottery',
+          drawDate: result.drawDate,
+          winningNumbers: result.numbers || [],
+          poolMoney: result.jackpot || '$0.00',
+          nextDraw: this.getNextDrawDate(result.lottery),
+          currentPool: this.getCurrentPoolFromDraws(result.lottery)
+        }));
+      } else {
+        this.results = [];
+      }
     } catch (error) {
       console.error('Error loading results:', error);
       this.results = [];

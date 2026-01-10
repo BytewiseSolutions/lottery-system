@@ -53,7 +53,7 @@ export class HistoryComponent implements OnInit {
   async loadHistory() {
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch(`${environment.apiUrl}/entries.php`, {
+      const response = await fetch(`${environment.apiUrl}/entries`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }

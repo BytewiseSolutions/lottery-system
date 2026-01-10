@@ -1,4 +1,7 @@
 <?php
+// Include CORS headers for all requests
+require_once 'config/cors.php';
+
 // Router for PHP built-in server
 $request = $_SERVER['REQUEST_URI'];
 $path = parse_url($request, PHP_URL_PATH);

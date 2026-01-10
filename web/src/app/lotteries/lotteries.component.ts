@@ -41,6 +41,7 @@ export class LotteriesComponent implements OnInit {
   }
 
   formatDate(dateString: string): string {
+    if (!dateString) return 'TBA';
     const date = new Date(dateString);
     return date.toLocaleDateString('en-US', { 
       weekday: 'long', 
@@ -59,6 +60,8 @@ export class LotteriesComponent implements OnInit {
   }
 
   getCountdown(targetDate: string): string {
+    if (!targetDate) return '00 Days 00:00:00';
+    
     const now = new Date().getTime();
     const target = new Date(targetDate).getTime();
     const distance = target - now;
