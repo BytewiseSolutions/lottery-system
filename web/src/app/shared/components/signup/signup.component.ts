@@ -242,8 +242,10 @@ export class SignupComponent {
         
         // Immediate redirect to login when fully verified
         if (this.allVerified) {
-          this.close();
-          this.switchToLogin();
+          setTimeout(() => {
+            this.close();
+            this.switchToLogin();
+          }, 500); // Small delay to show success message
         }
       } else {
         this.errorMessage = result.error || 'Invalid or expired OTP. Please try again.';
