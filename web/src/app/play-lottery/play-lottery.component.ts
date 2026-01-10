@@ -18,7 +18,7 @@ export class PlayLotteryComponent implements OnInit {
   numbers: number[] = [];
   selectedNumbers: number[] = [];
   selectedBonusNumbers: number[] = [];
-  lotteryType = 'mon';
+  lotteryType = 'monday';
   drawDate = '';
   currentSection = 1;
   isLoggedIn = false;
@@ -34,7 +34,7 @@ export class PlayLotteryComponent implements OnInit {
 
   ngOnInit() {
     this.route.queryParams.subscribe(params => {
-      this.lotteryType = params['lottery'] || 'mon';
+      this.lotteryType = params['lottery'] || 'monday';
       this.drawDate = params['drawDate'] || new Date().toISOString().split('T')[0];
     });
     
@@ -50,6 +50,14 @@ export class PlayLotteryComponent implements OnInit {
     (window as any).onCaptchaSuccess = () => {
       this.captchaVerified = true;
     };
+    
+    // Scroll to banner section on play-lottery page
+    setTimeout(() => {
+      const bannerSection = document.querySelector('.banner-section');
+      if (bannerSection) {
+        bannerSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    }, 100);
   }
 
   toggleNumber(num: number) {
@@ -87,6 +95,12 @@ export class PlayLotteryComponent implements OnInit {
       const playSection = document.querySelector('.play-section');
       if (playSection) {
         playSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        // Different scroll offset for section 3 (review) to show full content
+        if (this.currentSection === 3) {
+          window.scrollBy(0, -250);
+        } else {
+          window.scrollBy(0, -200);
+        }
       }
     }, 100);
   }
@@ -164,11 +178,11 @@ export class PlayLotteryComponent implements OnInit {
         
         if (result.success) {
           this.showSuccessPopup = true;
-          // Hide popup and redirect after 15 seconds (improved for mobile)
+          // Hide popup and redirect after 30 seconds
           setTimeout(() => {
             this.showSuccessPopup = false;
             window.location.href = '/lotteries';
-          }, 15000);
+          }, 30000);
         } else {
           this.toastService.showError(result.error || 'Failed to submit entry');
         }
@@ -192,9 +206,12 @@ export class PlayLotteryComponent implements OnInit {
 
   getLotteryName(): string {
     switch(this.lotteryType) {
-      case 'mon': return 'Monday Lotto';
-      case 'wed': return 'Wednesday Lotto';
-      case 'fri': return 'Friday Lotto';
+      case 'mon':
+      case 'monday': return 'Monday Lotto';
+      case 'wed':
+      case 'wednesday': return 'Wednesday Lotto';
+      case 'fri':
+      case 'friday': return 'Friday Lotto';
       default: return 'Monday Lotto';
     }
   }

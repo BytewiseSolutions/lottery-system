@@ -60,10 +60,10 @@ export class LotteriesComponent implements OnInit {
   }
 
   getLotteryCode(name: string, date?: string): string {
-    if (!name) return 'mon'; // Default fallback
+    if (!name) return 'monday'; // Default fallback
     
-    const baseCode = name.includes('Monday') ? 'mon' : 
-                    name.includes('Wednesday') ? 'wed' : 'fri';
+    const baseCode = name.includes('Monday') ? 'monday' : 
+                    name.includes('Wednesday') ? 'wednesday' : 'friday';
     return date ? `${baseCode}-${date}` : baseCode;
   }
 

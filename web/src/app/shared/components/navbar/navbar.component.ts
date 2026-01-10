@@ -1,9 +1,10 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterLink, RouterLinkActive } from '@angular/router';
+import { RouterLink, RouterLinkActive, Router, NavigationEnd } from '@angular/router';
 import { LotteryService } from '../../../services/lottery.service';
 import { LoginComponent } from '../login/login.component';
 import { SignupComponent } from '../signup/signup.component';
+import { filter } from 'rxjs/operators';
 
 @Component({
   selector: 'app-navbar',
@@ -22,13 +23,25 @@ export class NavbarComponent implements OnInit {
   mobileMenuOpen = false;
   isLoading = true;
 
-  constructor(private lotteryService: LotteryService) {}
+  isPlayLotteryPage = false;
+
+  constructor(private lotteryService: LotteryService, private router: Router) {}
 
   ngOnInit() {
     this.checkAuthStatus();
     this.updatePoolMoney();
     setInterval(() => this.updatePoolMoney(), 60000);
     this.initStickyHeader();
+    
+    // Check current route
+    this.router.events.pipe(
+      filter(event => event instanceof NavigationEnd)
+    ).subscribe((event: NavigationEnd) => {
+      this.isPlayLotteryPage = event.url.includes('/play-lottery');
+    });
+    
+    // Check initial route
+    this.isPlayLotteryPage = this.router.url.includes('/play-lottery');
   }
 
   private initStickyHeader() {

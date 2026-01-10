@@ -16,8 +16,10 @@
       <div class="col-lg-8">
         <!-- Section One: Pick 5 Numbers -->
         <div *ngIf="currentSection === 1" class="play-section">
-          <h3>Pick 5 Numbers</h3>
-          <h4>Section One</h4>
+          <div class="section-header">
+            <h3>Pick 5 Numbers</h3>
+            <h4>Section 1</h4>
+          </div>
           <div class="numbers-grid mobile-grid" style="display: grid; grid-template-columns: repeat(10, 1fr); gap: 10px; margin: 20px 0;">
             <button *ngFor="let num of numbers" 
                     class="number-btn" 
@@ -34,8 +36,10 @@
 
         <!-- Section Two: Pick 2 Bonus Numbers -->
         <div *ngIf="currentSection === 2" class="play-section">
-          <h3>Pick 2 bonus numbers</h3>
-          <h4>Section Two</h4>
+          <div class="section-header">
+            <h3>Pick 2 Bonus Numbers</h3>
+            <h4>Section 2</h4>
+          </div>
           <div class="numbers-grid mobile-grid" style="display: grid; grid-template-columns: repeat(10, 1fr); gap: 10px; margin: 20px 0;">
             <button *ngFor="let num of numbers" 
                     class="bonus-number-btn" 
@@ -52,14 +56,19 @@
 
         <!-- Section Three: Review -->
         <div *ngIf="currentSection === 3" class="play-section">
-          <h3>How you are about to play</h3>
-          <h4>Section One</h4>
-          <div style="margin: 20px 0;">
-            <span *ngFor="let num of selectedNumbers" class="preview-number">{{num}}</span>
+          <div class="section-header">
+            <h3>How You Are About To Play</h3>
+            <h4>Review Your Selection</h4>
           </div>
-          <h4>Section Two</h4>
-          <div style="margin: 20px 0;">
-            <span *ngFor="let num of selectedBonusNumbers" class="preview-number">{{num}}</span>
+          <div class="review-section">
+            <h5>Section 1 - Main Numbers</h5>
+            <div style="margin: 20px 0;">
+              <span *ngFor="let num of selectedNumbers" class="preview-number">{{num}}</span>
+            </div>
+            <h5>Section 2 - Bonus Numbers</h5>
+            <div style="margin: 20px 0;">
+              <span *ngFor="let num of selectedBonusNumbers" class="preview-number">{{num}}</span>
+            </div>
           </div>
           <div class="button-group" style="margin: 20px 0; display: flex; gap: 15px; flex-wrap: wrap;">
             <button *ngIf="isLoggedIn" class="custom-button2" (click)="submitEntry()">Submit ($0.01)</button>
@@ -132,7 +141,7 @@
       <div>Bonus Numbers: <span *ngFor="let num of selectedBonusNumbers" class="success-number">{{num}}</span></div>
     </div>
     <button class="custom-button2" (click)="dismissSuccessPopup()" style="margin-top: 20px;">Continue</button>
-    <p style="font-size: 12px; color: #666; margin-top: 10px;">Auto-redirecting in 15 seconds...</p>
+    <p style="font-size: 12px; color: #666; margin-top: 10px;">Auto-redirecting in 30 seconds...</p>
   </div>
 </div>
 
@@ -159,19 +168,43 @@
   margin-bottom: 30px;
 }
 
+.section-header {
+  position: sticky;
+  top: 80px;
+  background: white;
+  z-index: 10;
+  padding: 15px 0;
+  border-bottom: 2px solid #f0f0f0;
+  margin-bottom: 20px;
+}
+
 .play-section h3 {
   font-size: 28px;
   font-weight: bold;
   color: #5949b3;
-  margin-bottom: 10px;
+  margin-bottom: 5px;
   text-align: center;
 }
 
 .play-section h4 {
-  font-size: 20px;
+  font-size: 18px;
   color: #666;
-  margin-bottom: 20px;
+  margin-bottom: 10px;
   text-align: center;
+}
+
+.play-section h5 {
+  font-size: 16px;
+  color: #5949b3;
+  margin: 15px 0 10px 0;
+  font-weight: 600;
+}
+
+.review-section {
+  background: #f8f9fa;
+  padding: 20px;
+  border-radius: 10px;
+  margin: 20px 0;
 }
 
 .number-btn, .bonus-number-btn {
@@ -422,7 +455,7 @@
   border-radius: 15px;
   text-align: center;
   max-width: 90%;
-  width: 400px;
+  width: 600px;
   position: relative;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
 }

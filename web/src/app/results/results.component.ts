@@ -55,10 +55,10 @@ export class ResultsComponent implements OnInit {
   }
 
   getLotteryCode(lottery: string | undefined): string {
-    if (!lottery || typeof lottery !== 'string') return 'mon';
-    if (lottery.includes('Mon')) return 'mon';
-    if (lottery.includes('Wed')) return 'wed';
-    if (lottery.includes('Fri')) return 'fri';
-    return 'mon';
+    if (!lottery || typeof lottery !== 'string') return 'monday';
+    if (lottery.includes('Mon')) return 'monday';
+    if (lottery.includes('Wed')) return 'wednesday';
+    if (lottery.includes('Fri')) return 'friday';
+    return 'monday';
   }
 }

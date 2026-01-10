@@ -46,8 +46,16 @@ foreach ($data->bonusNumbers as $num) {
 
 try {
     // Convert lottery code to full name
-    $lotteryName = $data->lottery === 'mon' ? 'Monday Lotto' : 
-                   ($data->lottery === 'wed' ? 'Wednesday Lotto' : 'Friday Lotto');
+    $lotteryName = '';
+    if ($data->lottery === 'mon' || $data->lottery === 'monday') {
+        $lotteryName = 'Monday Lotto';
+    } elseif ($data->lottery === 'wed' || $data->lottery === 'wednesday') {
+        $lotteryName = 'Wednesday Lotto';
+    } elseif ($data->lottery === 'fri' || $data->lottery === 'friday') {
+        $lotteryName = 'Friday Lotto';
+    } else {
+        $lotteryName = 'Monday Lotto'; // Default fallback
+    }
     
     // Check how many times user played today
     $query = "SELECT COUNT(*) as play_count FROM entries WHERE user_id = ? AND DATE(created_at) = DATE(NOW())";

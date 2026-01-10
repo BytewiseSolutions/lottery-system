@@ -111,11 +111,11 @@ export class HomeComponent implements OnInit {
   }
 
   getLotteryCode(name: string | undefined): string {
-    if (!name || typeof name !== 'string') return 'mon';
-    if (name.includes('Mon')) return 'mon';
-    if (name.includes('Wed')) return 'wed';
-    if (name.includes('Fri')) return 'fri';
-    return 'mon';
+    if (!name || typeof name !== 'string') return 'monday';
+    if (name.includes('Mon')) return 'monday';
+    if (name.includes('Wed')) return 'wednesday';
+    if (name.includes('Fri')) return 'friday';
+    return 'monday';
   }
 
   getDateOnly(dateString: string | undefined): string {
