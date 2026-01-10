@@ -1,5 +1,5 @@
-CREATE DATABASE IF NOT EXISTS lottery_db;
-USE lottery_db;
+-- Production Database Setup for Hostinger
+-- Database: u606331557_lottery_db
 
 -- Drop existing tables if they exist
 DROP TABLE IF EXISTS entries;

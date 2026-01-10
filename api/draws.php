@@ -11,15 +11,15 @@ function getNextDrawDate($dayName) {
     
     $daysUntilNext = $targetDay - $currentDay;
     
-    // If it's the same day but after 8 PM, move to next week
-    if ($daysUntilNext === 0 && $currentHour >= 20) {
+    // If it's the same day but after 7 PM, move to next week
+    if ($daysUntilNext === 0 && $currentHour >= 19) {
         $daysUntilNext = 7;
     } 
     // If the target day has passed this week, move to next week
     elseif ($daysUntilNext < 0) {
         $daysUntilNext += 7;
     }
-    // If it's the same day and before 8 PM, it's today
+    // If it's the same day and before 7 PM, it's today
     elseif ($daysUntilNext === 0) {
         $daysUntilNext = 0;
     }
@@ -28,9 +28,10 @@ function getNextDrawDate($dayName) {
     if ($daysUntilNext > 0) {
         $nextDate->add(new DateInterval('P' . $daysUntilNext . 'D'));
     }
-    $nextDate->setTime(20, 0, 0);
+    $nextDate->setTime(19, 0, 0);
     
-    return $nextDate->format('c');
+    // Return simple ISO format without Z suffix for better JS parsing
+    return $nextDate->format('Y-m-d\TH:i:s');
 }
 
 $database = new Database();
@@ -43,6 +44,25 @@ if (!$db) {
 }
 
 try {
+    // Auto-populate upcoming_draws table if empty
+    $checkUpcoming = "SELECT COUNT(*) FROM upcoming_draws";
+    $checkStmt = $db->prepare($checkUpcoming);
+    $checkStmt->execute();
+    $upcomingCount = $checkStmt->fetchColumn();
+    
+    if ($upcomingCount == 0) {
+        $sampleData = [
+            ['Monday Lotto', date('Y-m-d H:i:s', strtotime('next Monday 19:00')), '$10.00'],
+            ['Wednesday Lotto', date('Y-m-d H:i:s', strtotime('next Wednesday 19:00')), '$10.00'],
+            ['Friday Lotto', date('Y-m-d H:i:s', strtotime('next Friday 19:00')), '$10.00']
+        ];
+        
+        $insertStmt = $db->prepare("INSERT INTO upcoming_draws (lottery, draw_date, jackpot) VALUES (?, ?, ?)");
+        foreach ($sampleData as $data) {
+            $insertStmt->execute($data);
+        }
+    }
+    
     // Initialize balances with $10 base amount
     $balances = ['Monday Lotto' => 10, 'Wednesday Lotto' => 10, 'Friday Lotto' => 10];
     
@@ -55,20 +75,20 @@ try {
         $drawDateOnly = date('Y-m-d', strtotime($nextDrawDate));
         
         // Count entries for this specific draw date (only future/current draws)
-        $query = "SELECT COUNT(*) * 0.01 as pool_amount FROM entries WHERE (lottery = ? OR lottery = ?) AND draw_date >= CURDATE()";
+        $query = "SELECT COUNT(*) * 0.01 as pool_amount FROM entries WHERE (lottery = ? OR lottery = ?) AND draw_date = ?";
         $stmt = $db->prepare($query);
         $oldName = str_replace(' Lotto', ' Lotto', $lottery);
         if ($lottery === 'Monday Lotto') $oldName = 'Mon Lotto';
         if ($lottery === 'Wednesday Lotto') $oldName = 'Wed Lotto';
         if ($lottery === 'Friday Lotto') $oldName = 'Fri Lotto';
         
-        $stmt->execute([$lottery, $oldName]);
+        $stmt->execute([$lottery, $oldName, $drawDateOnly]);
         $result = $stmt->fetch(PDO::FETCH_ASSOC);
         
-        // Debug: Add the exact count for this lottery type (current/future only)
-        $debugQuery = "SELECT COUNT(*) as entry_count FROM entries WHERE (lottery = ? OR lottery = ?) AND draw_date >= CURDATE()";
+        // Debug: Add the exact count for this lottery type (specific draw date only)
+        $debugQuery = "SELECT COUNT(*) as entry_count FROM entries WHERE (lottery = ? OR lottery = ?) AND draw_date = ?";
         $debugStmt = $db->prepare($debugQuery);
-        $debugStmt->execute([$lottery, $oldName]);
+        $debugStmt->execute([$lottery, $oldName, $drawDateOnly]);
         $debugResult = $debugStmt->fetch(PDO::FETCH_ASSOC);
         
         if ($result && $result['pool_amount']) {
@@ -92,23 +112,18 @@ try {
         $draws[] = [
             'id' => $index + 1,
             'name' => $lottery,
+            'lottery' => $lottery,
             'jackpot' => '$' . number_format($balances[$lottery], 2),
             'nextDraw' => $nextDraw,
-            'sortDate' => new DateTime($nextDraw),
-            'debug_entries' => $debugResult['entry_count'] ?? 0,
-            'debug_date' => $drawDateOnly
+            'drawDate' => $nextDraw,
+            'status' => 'scheduled'
         ];
     }
     
     // Sort by next draw date (soonest first)
     usort($draws, function($a, $b) {
-        return $a['sortDate'] <=> $b['sortDate'];
+        return strtotime($a['nextDraw']) <=> strtotime($b['nextDraw']);
     });
-    
-    // Remove sortDate before sending response
-    foreach ($draws as &$draw) {
-        unset($draw['sortDate']);
-    }
     
     echo json_encode($draws);
     

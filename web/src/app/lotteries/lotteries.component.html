@@ -20,17 +20,17 @@
             <img [src]="'assets/images/d' + draw.id + '.png'" alt>
           </div>
           <h4 style="text-align: center;">
-            {{ draw.lottery }}<br>
-            {{ formatDate(draw.drawDate) }}<br>
+            {{ draw.lottery || draw.name }}<br>
+            {{ formatDate(draw.drawDate || draw.nextDraw || '') }}<br>
             {{ draw.jackpot }}
           </h4>
-          <a routerLink="/play-lottery" [queryParams]="{lottery: getLotteryCode(draw.lottery), drawDate: draw.drawDate.split('T')[0]}" 
+          <a routerLink="/play-lottery" [queryParams]="{lottery: getLotteryCode(draw.lottery || draw.name || ''), drawDate: getDateOnly(draw.drawDate || draw.nextDraw || '')}" 
              [class]="draw.id === 2 ? 'custom-button2' : 'custom-button1'">Play</a>
           <div class="next-draw">
             <span class="text">Next Draw :</span>
             <div class="time">
               <img src="assets/images/time.png" alt>
-              <h6>{{ getCountdown(draw.drawDate) }}</h6>
+              <h6>{{ getCountdown(draw.drawDate || draw.nextDraw || '') }}</h6>
             </div>
           </div>
         </div>

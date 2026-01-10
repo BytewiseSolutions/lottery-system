@@ -21,18 +21,25 @@
                   <label class="custom-control-label" for="showPasswordLogin">Show Password</label>
                 </div>
               </div>
+              <!-- Error Message Display -->
+              <div *ngIf="errorMessage" class="alert alert-danger" style="margin-bottom: 15px; padding: 10px; background-color: #f8d7da; border: 1px solid #f5c6cb; border-radius: 4px; color: #721c24;">
+                {{ errorMessage }}
+              </div>
+              
               <p class="f-pass">
-                Forgot your password? <a href="#">recover password</a>
+                Forgot your password? <a href="javascript:void(0)" (click)="switchToPasswordRecovery()">recover password</a><br>
+                Need to verify your account? <a href="javascript:void(0)" (click)="switchToVerification()">Enter verification code</a>
               </p>
               <div class="button-wrapper">
-                <button type="submit" class="custom-button2">Sign In</button>
+                <button type="submit" class="custom-button2" [disabled]="isLoading">
+                  <span *ngIf="isLoading">Signing In...</span>
+                  <span *ngIf="!isLoading">Sign In</span>
+                </button>
               </div>
               <div class="or log">
                 <p>OR</p>
               </div>
               <div class="or-content">
-                <p>Sign up with your email</p>
-                <a href="#" class="or-btn"><img src="assets/images/google.png" alt> Sign Up with Google</a>
                 <p class="or-signup">
                   Don't have an account? <a href="#" (click)="switchToSignup()">Sign up here</a>
                 </p>

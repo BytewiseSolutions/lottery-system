@@ -19,7 +19,7 @@ export class ResultsComponent implements OnInit {
 
   async loadResults() {
     try {
-      const response = await fetch(`${environment.apiUrl}/results.php`);
+      const response = await fetch(`${environment.apiUrl}/results`);
       const data = await response.json();
       this.results = data.map((result: any) => ({
         id: result.id,
@@ -37,7 +37,16 @@ export class ResultsComponent implements OnInit {
 
   formatDate(dateString: string | undefined): string {
     if (!dateString) return 'TBA';
-    return new Date(dateString).toLocaleDateString('en-US', {
+    
+    const date = new Date(dateString);
+    
+    // Check if date is valid
+    if (isNaN(date.getTime())) {
+      console.warn('Invalid date string:', dateString);
+      return 'TBA';
+    }
+    
+    return date.toLocaleDateString('en-US', {
       weekday: 'long',
       year: 'numeric',
       month: 'long',
@@ -46,10 +55,10 @@ export class ResultsComponent implements OnInit {
   }
 
   getLotteryCode(lottery: string | undefined): string {
-    if (!lottery || typeof lottery !== 'string') return 'mon';
-    if (lottery.includes('Mon')) return 'mon';
-    if (lottery.includes('Wed')) return 'wed';
-    if (lottery.includes('Fri')) return 'fri';
-    return 'mon';
+    if (!lottery || typeof lottery !== 'string') return 'monday';
+    if (lottery.includes('Mon')) return 'monday';
+    if (lottery.includes('Wed')) return 'wednesday';
+    if (lottery.includes('Fri')) return 'friday';
+    return 'monday';
   }
 }

@@ -14,6 +14,31 @@
   opacity: 0.1;
 }
 
+/* Lottery number styling */
+.numbers .main-number {
+  background: #007bff;
+  color: white;
+  padding: 8px 12px;
+  margin: 2px;
+  border-radius: 50%;
+  display: inline-block;
+  min-width: 35px;
+  text-align: center;
+  font-weight: bold;
+}
+
+.numbers .bonus-number {
+  background: #28a745;
+  color: white;
+  padding: 8px 12px;
+  margin: 2px;
+  border-radius: 50%;
+  display: inline-block;
+  min-width: 35px;
+  text-align: center;
+  font-weight: bold;
+}
+
 .lottery-balls {
   position: absolute;
   top: 0;

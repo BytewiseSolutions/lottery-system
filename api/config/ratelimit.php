@@ -22,8 +22,8 @@ class RateLimit {
         }
         
         // Log this request
-        $stmt = $this->db->prepare("INSERT INTO rate_limits (ip_address, endpoint) VALUES (?, ?)");
-        $stmt->execute([$ip, $endpoint]);
+        $stmt = $this->db->prepare("INSERT INTO rate_limits (ip_address, action_type, endpoint) VALUES (?, ?, ?)");
+        $stmt->execute([$ip, $endpoint, $endpoint]);
     }
 }
 ?>

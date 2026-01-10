@@ -11,7 +11,7 @@ class OTP {
     }
     
     public function saveOTP($userId, $otpCode, $otpType) {
-        $expiresAt = date('Y-m-d H:i:s', time() + 60); 
+        $expiresAt = date('Y-m-d H:i:s', time() + 600); // 10 minutes instead of 60 seconds
         
         $query = "INSERT INTO otp_verifications (user_id, otp_code, otp_type, expires_at) VALUES (?, ?, ?, ?)";
         $stmt = $this->db->prepare($query);
@@ -76,7 +76,7 @@ class OTP {
         
         // Use native PHP mail() - works with Hostinger
         $subject = "Your Lottery Verification Code";
-        $message = "Your verification code is: $otpCode\n\nThis code expires in 60 seconds.\n\nIf you didn't request this code, please ignore this email.";
+        $message = "Your verification code is: $otpCode\n\nThis code expires in 10 minutes.\n\nIf you didn't request this code, please ignore this email.";
         $headers = "From: noreply@lottery-system.com\r\n";
         $headers .= "Reply-To: noreply@lottery-system.com\r\n";
         $headers .= "Content-Type: text/plain; charset=UTF-8\r\n";

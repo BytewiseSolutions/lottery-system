@@ -19,10 +19,13 @@ export class HomeComponent implements OnInit {
 
   ngOnInit() {
     this.loadData();
-    setInterval(() => {
-      this.loadData();
-      this.cdr.detectChanges();
-    }, 30000);
+    // Use setTimeout to avoid change detection issues
+    setTimeout(() => {
+      setInterval(() => {
+        this.loadData();
+        this.cdr.detectChanges();
+      }, 30000);
+    }, 0);
   }
 
   private loadData() {
@@ -41,17 +44,24 @@ export class HomeComponent implements OnInit {
 
   private async loadResults() {
     try {
-      const response = await fetch(`${environment.apiUrl}/results.php`);
+      const response = await fetch(`${environment.apiUrl}/results`);
       const data = await response.json();
-      this.results = data.slice(0, 1).map((result: any) => ({
-        id: result.id,
-        name: result.lottery || 'Unknown Lottery',
-        drawDate: result.drawDate,
-        winningNumbers: result.numbers || [],
-        poolMoney: result.jackpot || '$0.00',
-        nextDraw: this.getNextDrawDate(result.lottery),
-        currentPool: this.getCurrentPoolFromDraws(result.lottery)
-      }));
+      
+      // Ensure data is an array before using slice
+      if (Array.isArray(data)) {
+        this.results = data.slice(0, 1).map((result: any) => ({
+          id: result.id,
+          name: result.lottery || 'Unknown Lottery',
+          drawDate: result.drawDate,
+          winningNumbers: result.numbers || [],
+          bonusNumbers: result.bonusNumbers || [],
+          poolMoney: result.jackpot || '$0.00',
+          nextDraw: this.getNextDrawDate(result.lottery),
+          currentPool: this.getCurrentPoolFromDraws(result.lottery)
+        }));
+      } else {
+        this.results = [];
+      }
     } catch (error) {
       console.error('Error loading results:', error);
       this.results = [];
@@ -83,7 +93,15 @@ export class HomeComponent implements OnInit {
 
   formatDate(dateString: string | undefined): string {
     if (!dateString) return 'TBA';
+    
     const date = new Date(dateString);
+    
+    // Check if date is valid
+    if (isNaN(date.getTime())) {
+      console.warn('Invalid date string:', dateString);
+      return 'TBA';
+    }
+    
     return date.toLocaleDateString('en-US', { 
       weekday: 'long', 
       year: 'numeric', 
@@ -93,18 +111,37 @@ export class HomeComponent implements OnInit {
   }
 
   getLotteryCode(name: string | undefined): string {
-    if (!name || typeof name !== 'string') return 'mon';
-    if (name.includes('Mon')) return 'mon';
-    if (name.includes('Wed')) return 'wed';
-    if (name.includes('Fri')) return 'fri';
-    return 'mon';
+    if (!name || typeof name !== 'string') return 'monday';
+    if (name.includes('Mon')) return 'monday';
+    if (name.includes('Wed')) return 'wednesday';
+    if (name.includes('Fri')) return 'friday';
+    return 'monday';
+  }
+
+  getDateOnly(dateString: string | undefined): string {
+    if (!dateString) return '';
+    try {
+      return dateString.split('T')[0];
+    } catch (error) {
+      console.warn('Error splitting date:', dateString);
+      return '';
+    }
   }
 
   getCountdown(targetDate: string | undefined): string {
     if (!targetDate) return '00 Days 00:00:00';
+    
+    const target = new Date(targetDate);
+    
+    // Check if date is valid
+    if (isNaN(target.getTime())) {
+      console.warn('Invalid target date:', targetDate);
+      return '00 Days 00:00:00';
+    }
+    
     const now = new Date().getTime();
-    const target = new Date(targetDate).getTime();
-    const distance = target - now;
+    const targetTime = target.getTime();
+    const distance = targetTime - now;
 
     if (distance < 0) return '00 Days 00:00:00';
 
