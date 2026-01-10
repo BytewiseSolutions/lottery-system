@@ -9,9 +9,9 @@ $database = new Database();
 $db = $database->getConnection();
 $otpHandler = new OTP($db);
 
-// Rate limiting
+// Rate limiting - reduced for better UX
 $rateLimit = new RateLimit($db);
-$rateLimit->checkLimit($_SERVER['REMOTE_ADDR'], 'register', 3, 3600); // 3 attempts per hour
+$rateLimit->checkLimit($_SERVER['REMOTE_ADDR'], 'register', 5, 3600); // 5 attempts per hour
 
 $data = json_decode(file_get_contents("php://input"));
 

@@ -54,6 +54,7 @@ export class HomeComponent implements OnInit {
           name: result.lottery || 'Unknown Lottery',
           drawDate: result.drawDate,
           winningNumbers: result.numbers || [],
+          bonusNumbers: result.bonusNumbers || [],
           poolMoney: result.jackpot || '$0.00',
           nextDraw: this.getNextDrawDate(result.lottery),
           currentPool: this.getCurrentPoolFromDraws(result.lottery)
@@ -115,6 +116,16 @@ export class HomeComponent implements OnInit {
     if (name.includes('Wed')) return 'wed';
     if (name.includes('Fri')) return 'fri';
     return 'mon';
+  }
+
+  getDateOnly(dateString: string | undefined): string {
+    if (!dateString) return '';
+    try {
+      return dateString.split('T')[0];
+    } catch (error) {
+      console.warn('Error splitting date:', dateString);
+      return '';
+    }
   }
 
   getCountdown(targetDate: string | undefined): string {

@@ -39,7 +39,7 @@
                   For {{formatDate(draw.nextDraw)}}<br>
                   {{draw.jackpot}}
                 </h4>
-                <a routerLink="/play-lottery" [queryParams]="{lottery: getLotteryCode(draw.name)}" [class]="i % 2 === 0 ? 'custom-button1' : 'custom-button2'">Play</a>
+                <a routerLink="/play-lottery" [queryParams]="{lottery: getLotteryCode(draw.name), drawDate: getDateOnly(draw.nextDraw || draw.drawDate)}" [class]="i % 2 === 0 ? 'custom-button1' : 'custom-button2'">Play</a>
                 <div class="next-draw">
                   <span class="text">Next Draw :</span>
                   <div class="time">
@@ -128,7 +128,8 @@
                   <div class="left">
                     <p>Winning Numbers:</p>
                     <div class="numbers">
-                      <span *ngFor="let num of result.winningNumbers">{{num}}</span>
+                      <span *ngFor="let num of result.winningNumbers" class="main-number">{{num}}</span>
+                      <span *ngFor="let num of result.bonusNumbers" class="bonus-number">{{num}}</span>
                     </div>
                   </div>
                   <div class="right">

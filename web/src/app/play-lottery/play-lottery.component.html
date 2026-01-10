@@ -3,7 +3,7 @@
   <div class="container">
     <div class="row">
       <div class="col-12 text-center">
-        <h1 class="banner-title">{{lotteryType === 'mon' ? 'Mon' : lotteryType === 'wed' ? 'Wed' : 'Fri'}} Lotto</h1>
+        <h1 class="banner-title">{{getLotteryName()}}</h1>
         <p class="text">Only 3 easy steps: <strong>PICK</strong> → <strong>PLAY</strong> → <strong>$WIN</strong></p>
       </div>
     </div>
@@ -155,6 +155,25 @@
 </div>
 
 <style>
+.play-section {
+  margin-bottom: 30px;
+}
+
+.play-section h3 {
+  font-size: 28px;
+  font-weight: bold;
+  color: #5949b3;
+  margin-bottom: 10px;
+  text-align: center;
+}
+
+.play-section h4 {
+  font-size: 20px;
+  color: #666;
+  margin-bottom: 20px;
+  text-align: center;
+}
+
 .number-btn, .bonus-number-btn {
   background: #fff;
   border: 2px solid #ddd;

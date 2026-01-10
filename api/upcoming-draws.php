@@ -31,9 +31,9 @@ try {
     
     if ($count == 0) {
         $sampleData = [
-            ['Monday Lotto', date('Y-m-d H:i:s', strtotime('next Monday 20:00')), '$10.00'],
-            ['Wednesday Lotto', date('Y-m-d H:i:s', strtotime('next Wednesday 20:00')), '$10.00'],
-            ['Friday Lotto', date('Y-m-d H:i:s', strtotime('next Friday 20:00')), '$10.00']
+            ['Monday Lotto', date('Y-m-d H:i:s', strtotime('next Monday 19:00')), '$10.00'],
+            ['Wednesday Lotto', date('Y-m-d H:i:s', strtotime('next Wednesday 19:00')), '$10.00'],
+            ['Friday Lotto', date('Y-m-d H:i:s', strtotime('next Friday 19:00')), '$10.00']
         ];
         
         $insertStmt = $db->prepare("INSERT INTO upcoming_draws (lottery, draw_date, jackpot) VALUES (?, ?, ?)");
@@ -44,9 +44,9 @@ try {
     
     // Auto-update past draws to next week
     $updatePastDraws = "UPDATE upcoming_draws SET draw_date = CASE 
-        WHEN lottery = 'Monday Lotto' THEN DATE_ADD(CURDATE(), INTERVAL (7 - WEEKDAY(CURDATE()) + 0) DAY) + INTERVAL '20:00:00' HOUR_SECOND
-        WHEN lottery = 'Wednesday Lotto' THEN DATE_ADD(CURDATE(), INTERVAL (7 - WEEKDAY(CURDATE()) + 2) DAY) + INTERVAL '20:00:00' HOUR_SECOND
-        WHEN lottery = 'Friday Lotto' THEN DATE_ADD(CURDATE(), INTERVAL (7 - WEEKDAY(CURDATE()) + 4) DAY) + INTERVAL '20:00:00' HOUR_SECOND
+        WHEN lottery = 'Monday Lotto' THEN DATE_ADD(CURDATE(), INTERVAL (7 - WEEKDAY(CURDATE()) + 0) DAY) + INTERVAL '19:00:00' HOUR_SECOND
+        WHEN lottery = 'Wednesday Lotto' THEN DATE_ADD(CURDATE(), INTERVAL (7 - WEEKDAY(CURDATE()) + 2) DAY) + INTERVAL '19:00:00' HOUR_SECOND
+        WHEN lottery = 'Friday Lotto' THEN DATE_ADD(CURDATE(), INTERVAL (7 - WEEKDAY(CURDATE()) + 4) DAY) + INTERVAL '19:00:00' HOUR_SECOND
     END WHERE draw_date < NOW()";
     $db->exec($updatePastDraws);
     

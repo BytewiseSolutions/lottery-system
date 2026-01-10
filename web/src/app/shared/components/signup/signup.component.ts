@@ -126,11 +126,11 @@ export class SignupComponent {
       // Show success state instead of toast
       this.showSuccessMessage = true;
       
-      // Auto-redirect to login after 3 seconds
+      // Auto-redirect to login after 1 second
       setTimeout(() => {
         this.close();
         this.switchToLogin();
-      }, 3000);
+      }, 1000);
     } catch (error) {
       this.errorMessage = 'Failed to send reset instructions. Please try again.';
     } finally {
@@ -240,12 +240,10 @@ export class SignupComponent {
         this.allVerified = result.fullyVerified;
         this.toastService.showSuccess(result.message);
         
-        // Auto-redirect to login when fully verified
+        // Immediate redirect to login when fully verified
         if (this.allVerified) {
-          setTimeout(() => {
-            this.close();
-            this.switchToLogin();
-          }, 1500);
+          this.close();
+          this.switchToLogin();
         }
       } else {
         this.errorMessage = result.error || 'Invalid or expired OTP. Please try again.';

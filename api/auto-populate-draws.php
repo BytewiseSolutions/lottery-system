@@ -10,7 +10,7 @@ function getNextDrawDate($dayName) {
     
     $daysUntilNext = $targetDay - $currentDay;
     
-    if ($daysUntilNext === 0 && $currentHour >= 20) {
+    if ($daysUntilNext === 0 && $currentHour >= 19) {
         $daysUntilNext = 7;
     } elseif ($daysUntilNext < 0) {
         $daysUntilNext += 7;
@@ -22,7 +22,7 @@ function getNextDrawDate($dayName) {
     if ($daysUntilNext > 0) {
         $nextDate->add(new DateInterval('P' . $daysUntilNext . 'D'));
     }
-    $nextDate->setTime(20, 0, 0);
+    $nextDate->setTime(19, 0, 0);
     
     return $nextDate->format('Y-m-d H:i:s');
 }

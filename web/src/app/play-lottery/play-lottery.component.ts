@@ -190,6 +190,15 @@ export class PlayLotteryComponent implements OnInit {
     this.showHumanVerification = false;
   }
 
+  getLotteryName(): string {
+    switch(this.lotteryType) {
+      case 'mon': return 'Monday Lotto';
+      case 'wed': return 'Wednesday Lotto';
+      case 'fri': return 'Friday Lotto';
+      default: return 'Monday Lotto';
+    }
+  }
+
   dismissSuccessPopup() {
     this.showSuccessPopup = false;
     window.location.href = '/lotteries';
