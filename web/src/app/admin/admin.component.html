@@ -176,6 +176,111 @@
           </section>
         }
 
+        <!-- Confirmation Modal -->
+        @if (showConfirmModal && confirmModalData) {
+          <div class="modal-overlay" (click)="cancelAction()">
+            <div class="modal-content confirm-modal" (click)="$event.stopPropagation()">
+              <div class="modal-header">
+                <h3>{{ confirmModalData.title }}</h3>
+                <button class="btn-close" (click)="cancelAction()">
+                  <i class="fas fa-times"></i>
+                </button>
+              </div>
+              
+              <div class="modal-body">
+                <p>{{ confirmModalData.message }}</p>
+              </div>
+              
+              <div class="modal-actions">
+                <button class="btn btn-outline" (click)="cancelAction()">
+                  Cancel
+                </button>
+                <button class="btn btn-danger" (click)="confirmAction()">
+                  Confirm
+                </button>
+              </div>
+            </div>
+          </div>
+        }
+
+        <!-- Upload Success Modal -->
+        @if (showSuccessModal && uploadSuccessData) {
+          <div class="modal-overlay" (click)="showSuccessModal = false">
+            <div class="modal-content success-modal large-modal" (click)="$event.stopPropagation()">
+              <div class="modal-header success" [class.error]="uploadSuccessData.isError">
+                <div class="success-icon" [class.error-icon]="uploadSuccessData.isError">
+                  <i class="fas" [class.fa-check-circle]="!uploadSuccessData.isError" [class.fa-exclamation-circle]="uploadSuccessData.isError"></i>
+                </div>
+                <h3>{{ uploadSuccessData.isError ? 'Error' : (uploadSuccessData.message ? 'Success' : 'Result Uploaded Successfully!') }}</h3>
+                <button class="btn-close" (click)="showSuccessModal = false">
+                  <i class="fas fa-times"></i>
+                </button>
+              </div>
+              
+              <div class="modal-body">
+                @if (uploadSuccessData.message && !uploadSuccessData.lottery) {
+                  <p>{{ uploadSuccessData.message }}</p>
+                } @else {
+                  <div class="result-summary">
+                    <div class="summary-item">
+                      <label>Lottery:</label>
+                      <span>{{ uploadSuccessData.lottery }}</span>
+                    </div>
+                    <div class="summary-item">
+                      <label>Draw Date:</label>
+                      <span>{{ uploadSuccessData.drawDate | date:'medium' }}</span>
+                    </div>
+                    <div class="summary-item">
+                      <label>Jackpot:</label>
+                      <span>${{ uploadSuccessData.jackpot }}</span>
+                    </div>
+                  </div>
+
+                  <div class="numbers-display">
+                    <div class="winning-numbers-display">
+                      <label>Winning Numbers:</label>
+                      <div class="numbers-row horizontal">
+                        @for (num of uploadSuccessData.winningNumbers; track $index) {
+                          <span class="number-badge winning">{{ num }}</span>
+                        }
+                      </div>
+                    </div>
+                    
+                    <div class="bonus-numbers-display">
+                      <label>Bonus Numbers:</label>
+                      <div class="numbers-row horizontal">
+                        @for (num of uploadSuccessData.bonusNumbers; track $index) {
+                          <span class="number-badge bonus">{{ num }}</span>
+                        }
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="winners-summary">
+                    <div class="winners-count">
+                      <div class="count-display">
+                        <span class="count">{{ uploadSuccessData.winners }}</span>
+                        <span class="label">Winners Found</span>
+                      </div>
+                      @if (uploadSuccessData.totalEntries) {
+                        <div class="entries-info">
+                          <small>Out of {{ uploadSuccessData.totalEntries }} total entries</small>
+                        </div>
+                      }
+                    </div>
+                  </div>
+                }
+              </div>
+              
+              <div class="modal-actions">
+                <button class="btn btn-primary" (click)="showSuccessModal = false">
+                  <i class="fas fa-check"></i> Continue
+                </button>
+              </div>
+            </div>
+          </div>
+        }
+
         <!-- Upload Modal -->
         @if (showUploadModal) {
           <div class="modal-overlay" (click)="showUploadModal = false">
@@ -220,23 +325,10 @@
                       step="0.01"
                       required>
                   </div>
-                  
-                  <div class="form-group">
-                    <label for="winners">Winners</label>
-                    <input 
-                      type="number" 
-                      id="winners"
-                      formControlName="winners" 
-                      class="form-control" 
-                      min="0" 
-                      max="1000"
-                      placeholder="0"
-                      required>
-                  </div>
                 </div>
 
                 <div class="numbers-section">
-                  <label>Winning Numbers</label>
+                  <label>Winning Numbers (5 numbers required)</label>
                   <div class="numbers-grid">
                     @for (num of winningNumbers; track $index; let i = $index) {
                       <input 
@@ -247,13 +339,11 @@
                         min="1" 
                         max="75"
                         (input)="validateNumber($event, i, 'winning')"
-                        placeholder="{{ i + 1 }}">
+                        placeholder="{{ i + 1 }}"
+                        required>
                     }
                   </div>
                   <div class="numbers-actions">
-                    <button type="button" class="btn-secondary" (click)="addNumber()">
-                      <i class="fas fa-plus"></i> Add Number
-                    </button>
                     <button type="button" class="btn-secondary" (click)="clearNumbers()">
                       <i class="fas fa-refresh"></i> Clear All
                     </button>
@@ -261,7 +351,7 @@
                 </div>
 
                 <div class="numbers-section">
-                  <label>Bonus Numbers</label>
+                  <label>Bonus Numbers (2 numbers required)</label>
                   <div class="numbers-grid bonus-grid">
                     @for (num of bonusNumbers; track $index; let i = $index) {
                       <input 
@@ -272,13 +362,11 @@
                         min="1" 
                         max="75"
                         (input)="validateNumber($event, i, 'bonus')"
-                        placeholder="B{{ i + 1 }}">
+                        placeholder="B{{ i + 1 }}"
+                        required>
                     }
                   </div>
                   <div class="numbers-actions">
-                    <button type="button" class="btn-secondary" (click)="addBonusNumber()">
-                      <i class="fas fa-plus"></i> Add Bonus
-                    </button>
                     <button type="button" class="btn-secondary" (click)="clearBonusNumbers()">
                       <i class="fas fa-refresh"></i> Clear Bonus
                     </button>
@@ -330,7 +418,7 @@
                 </div>
                 <h3>No Results Yet</h3>
                 <p>Start by uploading your first lottery result to see it here.</p>
-                <button class="btn btn-primary" (click)="showSection('upload')">
+                <button class="btn btn-primary" (click)="showUploadModal = true">
                   <i class="fas fa-plus"></i> Upload First Result
                 </button>
               </div>
@@ -339,7 +427,10 @@
                 <div class="card-header">
                   <h3><i class="fas fa-list"></i> Manage Results</h3>
                   <div class="header-actions">
-                    <button class="btn btn-primary" (click)="exportResults()">
+                    <button class="btn btn-primary" (click)="showUploadModal = true">
+                      <i class="fas fa-plus"></i> Upload Results
+                    </button>
+                    <button class="btn btn-outline" (click)="exportResults()">
                       <i class="fas fa-download"></i> Export
                     </button>
                   </div>

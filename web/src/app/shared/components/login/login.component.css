@@ -42,3 +42,13 @@
   z-index: 10;
   color: #666;
 }
+.error-message {
+  color: #dc3545;
+  font-size: 12px;
+  margin-top: 5px;
+  display: block;
+}
+
+.form-group {
+  position: relative;
+}

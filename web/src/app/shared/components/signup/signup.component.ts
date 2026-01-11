@@ -18,6 +18,9 @@ export class SignupComponent {
   @Output() closeModal = new EventEmitter<void>();
   @Output() switchToLoginEvent = new EventEmitter<void>();
 
+  // Validation errors
+  validationErrors: any = {};
+
   constructor(private toastService: ToastService) {}
 
   fullName = '';
@@ -72,6 +75,13 @@ export class SignupComponent {
     this.phoneOtp = '';
     this.errorMessage = '';
     this.verificationMode = false;
+    this.validationErrors = {};
+    // Reset verification states
+    this.emailVerified = false;
+    this.phoneVerified = false;
+    this.allVerified = false;
+    this.requiresEmailVerification = false;
+    this.requiresPhoneVerification = false;
   }
 
   switchToRegularSignup() {
@@ -139,18 +149,35 @@ export class SignupComponent {
   }
 
   async onSignup() {
-    if (!this.fullName || !this.password || !this.confirmPassword) {
-      this.toastService.showError('Please fill in all required fields');
-      return;
+    this.validationErrors = {};
+    
+    // Validate fields
+    if (!this.fullName) {
+      this.validationErrors.fullName = 'Full name is required';
     }
     
     if (!this.email && !this.phone) {
-      this.toastService.showError('Please provide either email or phone number');
-      return;
+      this.validationErrors.contact = 'Please provide either email or phone number';
+    }
+    
+    if (!this.password) {
+      this.validationErrors.password = 'Password is required';
+    } else if (this.password.length < 6) {
+      this.validationErrors.password = 'Password must be at least 6 characters';
+    }
+    
+    if (!this.confirmPassword) {
+      this.validationErrors.confirmPassword = 'Please confirm your password';
+    } else if (this.password !== this.confirmPassword) {
+      this.validationErrors.confirmPassword = 'Passwords do not match';
     }
     
     if (!this.agreeTerms) {
-      this.toastService.showError('Please agree to the terms and conditions');
+      this.validationErrors.terms = 'Please agree to the terms and conditions';
+    }
+    
+    // If there are validation errors, don't proceed
+    if (Object.keys(this.validationErrors).length > 0) {
       return;
     }
 
@@ -173,9 +200,18 @@ export class SignupComponent {
 
       if (result.success) {
         this.userId = result.userId;
-        this.requiresEmailVerification = result.requiresVerification.includes('email');
-        this.requiresPhoneVerification = result.requiresVerification.includes('phone');
-        this.selectedVerificationMethod = this.requiresEmailVerification ? 'email' : 'phone';
+        
+        // Only require verification for one method - prioritize email if both are provided
+        if (this.email) {
+          this.requiresEmailVerification = true;
+          this.requiresPhoneVerification = false;
+          this.selectedVerificationMethod = 'email';
+        } else if (this.phone) {
+          this.requiresEmailVerification = false;
+          this.requiresPhoneVerification = true;
+          this.selectedVerificationMethod = 'phone';
+        }
+        
         this.showOtpVerification = true;
         
         // Clear sensitive data
@@ -237,16 +273,14 @@ export class SignupComponent {
           this.phoneOtp = '';
         }
         
-        this.allVerified = result.fullyVerified;
         this.toastService.showSuccess(result.message);
         
-        // Immediate redirect to login when fully verified
-        if (this.allVerified) {
-          setTimeout(() => {
-            this.close();
-            this.switchToLogin();
-          }, 500); // Small delay to show success message
-        }
+        // Redirect to login immediately after ANY verification (email OR phone)
+        this.clearForm();
+        setTimeout(() => {
+          this.close();
+          this.switchToLogin();
+        }, 1000); // Show success message briefly then redirect
       } else {
         this.errorMessage = result.error || 'Invalid or expired OTP. Please try again.';
       }

@@ -53,7 +53,7 @@ export class AdminComponent implements OnInit, OnDestroy {
   totalPages = 1;
   
   isUploading = false;
-  winningNumbers: number[] = [0, 0, 0, 0, 0, 0];
+  winningNumbers: number[] = [0, 0, 0, 0, 0];
   bonusNumbers: number[] = [0, 0];
   recentUploads: any[] = [];
   
@@ -88,6 +88,10 @@ export class AdminComponent implements OnInit, OnDestroy {
   editingUser: any = null;
   userForm: FormGroup;
   showUploadModal = false;
+  showSuccessModal = false;
+  showConfirmModal = false;
+  uploadSuccessData: any = null;
+  confirmModalData: any = null;
   
   siteSettings = {
     name: 'Total Free Lotto',
@@ -125,7 +129,6 @@ export class AdminComponent implements OnInit, OnDestroy {
       lottery: ['', Validators.required],
       drawDate: ['', Validators.required],
       jackpot: ['', [Validators.required, Validators.pattern(/^\d+(\.\d{1,2})?$/)]],
-      winners: [0, [Validators.required, Validators.min(0), Validators.max(1000)]],
       notes: [''],
       publishNow: [true]
     });
@@ -349,11 +352,25 @@ export class AdminComponent implements OnInit, OnDestroy {
   uploadResult() {
     if (this.uploadForm.invalid) return;
     
+    // Validate that all 5 winning numbers and 2 bonus numbers are filled
+    const validWinningNumbers = this.winningNumbers.filter(n => n > 0);
+    const validBonusNumbers = this.bonusNumbers.filter(n => n > 0);
+    
+    if (validWinningNumbers.length !== 5) {
+      alert('Please enter exactly 5 winning numbers (1-75)');
+      return;
+    }
+    
+    if (validBonusNumbers.length !== 2) {
+      alert('Please enter exactly 2 bonus numbers (1-75)');
+      return;
+    }
+    
     this.isUploading = true;
     const formData = {
       ...this.uploadForm.value,
-      numbers: this.winningNumbers.filter(n => n > 0),
-      bonusNumbers: this.bonusNumbers.filter(n => n > 0)
+      numbers: validWinningNumbers,
+      bonusNumbers: validBonusNumbers
     };
     
     console.log('Uploading data:', formData);
@@ -367,16 +384,26 @@ export class AdminComponent implements OnInit, OnDestroy {
             lottery: '',
             drawDate: '',
             jackpot: '',
-            winners: 0,
             notes: '',
             publishNow: true
           });
-          this.winningNumbers = [0, 0, 0, 0, 0, 0];
+          this.winningNumbers = [0, 0, 0, 0, 0];
           this.bonusNumbers = [0, 0];
           this.loadResults();
           this.isUploading = false;
           this.showUploadModal = false;
-          alert('Result uploaded successfully!');
+          
+          // Show success modal with details
+          this.uploadSuccessData = {
+            lottery: formData.lottery || this.uploadForm.value.lottery,
+            drawDate: formData.drawDate || this.uploadForm.value.drawDate,
+            jackpot: formData.jackpot || this.uploadForm.value.jackpot,
+            winningNumbers: formData.numbers,
+            bonusNumbers: formData.bonusNumbers,
+            winners: result.winners || 0,
+            totalEntries: result.totalEntries || 0
+          };
+          this.showSuccessModal = true;
         },
         error: (error) => {
           console.error('Error uploading result:', error);
@@ -387,20 +414,24 @@ export class AdminComponent implements OnInit, OnDestroy {
   }
 
   deleteResult(id: number) {
-    if (confirm('Are you sure you want to delete this result?')) {
-      this.lotteryService.deleteResult(id)
-        .pipe(takeUntil(this.destroy$))
-        .subscribe({
-          next: () => {
-            this.loadResults();
-            alert('Result deleted successfully!');
-          },
-          error: (error) => {
-            console.error('Error deleting result:', error);
-            alert('Failed to delete result.');
-          }
-        });
-    }
+    this.showConfirmDialog(
+      'Delete Result',
+      'Are you sure you want to delete this result?',
+      () => {
+        this.lotteryService.deleteResult(id)
+          .pipe(takeUntil(this.destroy$))
+          .subscribe({
+            next: () => {
+              this.loadResults();
+              this.showSuccessMessage('Result deleted successfully!');
+            },
+            error: (error) => {
+              console.error('Error deleting result:', error);
+              this.showErrorMessage('Failed to delete result.');
+            }
+          });
+      }
+    );
   }
 
   loadResults() {
@@ -435,12 +466,25 @@ export class AdminComponent implements OnInit, OnDestroy {
     this.lotteryService.getUpcomingDraws()
       .pipe(takeUntil(this.destroy$))
       .subscribe({
-        next: (draws) => {
+        next: (response: any) => {
+          console.log('Upcoming draws response:', response);
+          let draws: any[];
+          
+          // Handle different response formats
+          if (Array.isArray(response)) {
+            draws = response;
+          } else if (response && response.draws && Array.isArray(response.draws)) {
+            draws = response.draws;
+          } else {
+            console.warn('Invalid draws response format:', response);
+            draws = [];
+          }
+          
           this.upcomingDraws = draws.map(draw => ({
-            id: draw.id,
-            lottery: draw.lottery || draw.name,
-            drawDate: draw.drawDate || draw.nextDraw,
-            jackpot: draw.jackpot,
+            id: draw.id || Math.random(),
+            lottery: draw.lottery_type || draw.lottery || draw.name,
+            drawDate: draw.draw_date || draw.drawDate || draw.nextDraw,
+            jackpot: '$' + (draw.jackpot || '10.00'),
             status: draw.status || 'scheduled'
           }));
         },
@@ -455,9 +499,18 @@ export class AdminComponent implements OnInit, OnDestroy {
     this.lotteryService.getDashboardStats()
       .pipe(takeUntil(this.destroy$))
       .subscribe({
-        next: (stats) => {
+        next: (response: any) => {
+          let stats: any;
+          
+          // Handle different response formats
+          if (response && response.stats) {
+            stats = response.stats;
+          } else {
+            stats = response;
+          }
+          
           this.totalUsers = stats.totalUsers || 0;
-          this.activeLotteries = stats.activeLotteries || 0;
+          this.activeLotteries = stats.activeLotteries || 3; // Default to 3 lotteries
           this.pendingActions = stats.pendingActions || 0;
           this.resultsGrowth = stats.resultsGrowth || 12;
           this.usersGrowth = stats.usersGrowth || -2;
@@ -507,7 +560,7 @@ export class AdminComponent implements OnInit, OnDestroy {
   }
 
   clearNumbers() {
-    this.winningNumbers = [0, 0, 0, 0, 0, 0];
+    this.winningNumbers = [0, 0, 0, 0, 0];
   }
 
   addBonusNumber() {
@@ -585,21 +638,132 @@ export class AdminComponent implements OnInit, OnDestroy {
   viewResult(result: any) {
     const numbers = result.numbers ? result.numbers.join(', ') : 'N/A';
     const bonusNumbers = result.bonusNumbers ? result.bonusNumbers.join(', ') : 'N/A';
-    alert(`Result Details:\n\nLottery: ${result.lottery}\nDraw Date: ${result.drawDate}\nWinning Numbers: ${numbers}\nBonus Numbers: ${bonusNumbers}\nJackpot: ${result.jackpot}\nWinners: ${result.winners}\nStatus: ${result.status}`);
+    this.uploadSuccessData = {
+      message: `Result Details:\n\nLottery: ${result.lottery}\nDraw Date: ${result.drawDate}\nWinning Numbers: ${numbers}\nBonus Numbers: ${bonusNumbers}\nJackpot: ${result.jackpot}\nWinners: ${result.winners}\nStatus: ${result.status}`
+    };
+    this.showSuccessModal = true;
   }
   editResult(result: any) {
     alert(`Edit functionality coming soon for: ${result.lottery}`);
   }
   toggleResultStatus(result: any) {
     const newStatus = result.status === 'published' ? 'draft' : 'published';
-    alert(`Status change functionality coming soon. Would change to: ${newStatus}`);
+    const action = newStatus === 'published' ? 'publish' : 'unpublish';
+    
+    this.showConfirmDialog(
+      `${action.charAt(0).toUpperCase() + action.slice(1)} Result`,
+      `Are you sure you want to ${action} this result?`,
+      () => {
+        this.lotteryService.updateResultStatus(result.id, newStatus)
+          .pipe(takeUntil(this.destroy$))
+          .subscribe({
+            next: () => {
+              result.status = newStatus;
+              this.showSuccessMessage(`Result ${action}ed successfully!`);
+            },
+            error: (error) => {
+              console.error('Error updating status:', error);
+              this.showErrorMessage('Failed to update result status.');
+            }
+          });
+      }
+    );
   }
   applyBulkAction() {
     if (this.selectedResults.size === 0) {
-      alert('Please select results first');
+      this.showErrorMessage('Please select results first');
       return;
     }
-    alert(`Applying ${this.bulkAction} to ${this.selectedResults.size} results`);
+    
+    const selectedIds = Array.from(this.selectedResults);
+    
+    switch (this.bulkAction) {
+      case 'delete':
+        this.showConfirmDialog(
+          'Delete Results',
+          `Are you sure you want to delete ${selectedIds.length} selected results?`,
+          () => this.bulkDeleteResults(selectedIds)
+        );
+        break;
+      case 'publish':
+        this.bulkUpdateStatus(selectedIds, 'published');
+        break;
+      case 'unpublish':
+        this.bulkUpdateStatus(selectedIds, 'draft');
+        break;
+      default:
+        this.showErrorMessage(`${this.bulkAction} functionality coming soon`);
+    }
+  }
+  
+  bulkDeleteResults(ids: number[]) {
+    let completed = 0;
+    const total = ids.length;
+    
+    ids.forEach(id => {
+      this.lotteryService.deleteResult(id)
+        .pipe(takeUntil(this.destroy$))
+        .subscribe({
+          next: () => {
+            completed++;
+            if (completed === total) {
+              this.loadResults();
+              this.selectedResults.clear();
+              this.bulkAction = '';
+              alert(`Successfully deleted ${total} results`);
+            }
+          },
+          error: (error) => {
+            console.error('Error deleting result:', error);
+            completed++;
+            if (completed === total) {
+              this.loadResults();
+              this.selectedResults.clear();
+              this.bulkAction = '';
+              alert('Some results could not be deleted');
+            }
+          }
+        });
+    });
+  }
+  
+  bulkUpdateStatus(ids: number[], status: string) {
+    const action = status === 'published' ? 'publish' : 'unpublish';
+    
+    this.showConfirmDialog(
+      `${action.charAt(0).toUpperCase() + action.slice(1)} Results`,
+      `Are you sure you want to ${action} ${ids.length} selected results?`,
+      () => {
+        let completed = 0;
+        const total = ids.length;
+        
+        ids.forEach(id => {
+          this.lotteryService.updateResultStatus(id, status)
+            .pipe(takeUntil(this.destroy$))
+            .subscribe({
+              next: () => {
+                completed++;
+                if (completed === total) {
+                  this.loadResults();
+                  this.selectedResults.clear();
+                  this.bulkAction = '';
+                  this.showSuccessMessage(`Successfully ${action}ed ${total} results`);
+                }
+              },
+              error: (error) => {
+                console.error('Error updating status:', error);
+                completed++;
+                if (completed === total) {
+                  this.loadResults();
+                  this.selectedResults.clear();
+                  this.bulkAction = '';
+                  this.showErrorMessage('Some results could not be updated');
+                }
+              }
+            });
+        });
+      }
+    );
   }
   prevPage() {
     if (this.currentPage > 1) {
@@ -621,6 +785,34 @@ export class AdminComponent implements OnInit, OnDestroy {
 
   closeMobileSidebar() {
     this.isMobileSidebarOpen = false;
+  }
+
+  showConfirmDialog(title: string, message: string, onConfirm: () => void) {
+    this.confirmModalData = { title, message, onConfirm };
+    this.showConfirmModal = true;
+  }
+
+  confirmAction() {
+    if (this.confirmModalData?.onConfirm) {
+      this.confirmModalData.onConfirm();
+    }
+    this.showConfirmModal = false;
+    this.confirmModalData = null;
+  }
+
+  cancelAction() {
+    this.showConfirmModal = false;
+    this.confirmModalData = null;
+  }
+
+  showSuccessMessage(message: string) {
+    this.uploadSuccessData = { message };
+    this.showSuccessModal = true;
+  }
+
+  showErrorMessage(message: string) {
+    this.uploadSuccessData = { message, isError: true };
+    this.showSuccessModal = true;
   }
 
   refreshData() {

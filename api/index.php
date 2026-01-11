@@ -44,6 +44,21 @@ switch ($path) {
     case 'api/stats':
         require 'stats.php';
         break;
+    case 'api/dashboard-stats':
+        require 'dashboard-stats.php';
+        break;
+    case 'api/upcoming-draws':
+        require 'upcoming-draws.php';
+        break;
+    case 'api/admin-upload-result':
+        require 'admin-upload-result-enhanced.php';
+        break;
+    case 'api/admin-delete-result':
+        require 'admin-delete-result.php';
+        break;
+    case 'api/update-result-status':
+        require 'update-result-status.php';
+        break;
     default:
         http_response_code(404);
         echo json_encode(['error' => 'Endpoint not found']);

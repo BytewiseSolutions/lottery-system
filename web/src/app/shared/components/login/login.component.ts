@@ -23,6 +23,9 @@ export class LoginComponent {
   isLoading = false;
   errorMessage = '';
 
+  // Validation errors
+  validationErrors: any = {};
+
   close() {
     this.clearForm();
     this.closeModal.emit();
@@ -53,11 +56,23 @@ export class LoginComponent {
     this.showPassword = false;
     this.errorMessage = '';
     this.isLoading = false;
+    this.validationErrors = {};
   }
 
   async onLogin() {
-    if (!this.identifier || !this.password) {
-      this.errorMessage = 'Please enter both email/phone and password';
+    this.validationErrors = {};
+    
+    // Validate fields
+    if (!this.identifier) {
+      this.validationErrors.identifier = 'Email or phone number is required';
+    }
+    
+    if (!this.password) {
+      this.validationErrors.password = 'Password is required';
+    }
+    
+    // If there are validation errors, don't proceed
+    if (Object.keys(this.validationErrors).length > 0) {
       return;
     }
 

@@ -14,6 +14,7 @@
                 <div class="form-group half-width">
                   <label>Full Name</label>
                   <input type="text" class="my-form-control" [(ngModel)]="fullName" [ngModelOptions]="{standalone: true}" placeholder="Enter Your Full Name" required>
+                  <div *ngIf="validationErrors.fullName" class="error-message">{{ validationErrors.fullName }}</div>
                 </div>
                 <div class="form-group half-width">
                   <label>Phone Number</label>
@@ -23,15 +24,18 @@
               <div class="form-group full-width">
                 <label>Email</label>
                 <input type="email" class="my-form-control" [(ngModel)]="email" [ngModelOptions]="{standalone: true}" placeholder="Enter Your Email">
+                <div *ngIf="validationErrors.contact" class="error-message">{{ validationErrors.contact }}</div>
               </div>
               <div class="form-row">
                 <div class="form-group half-width">
                   <label>Password</label>
                   <input [type]="showPassword ? 'text' : 'password'" class="my-form-control" [(ngModel)]="password" [ngModelOptions]="{standalone: true}" placeholder="Enter Your Password" required>
+                  <div *ngIf="validationErrors.password" class="error-message">{{ validationErrors.password }}</div>
                 </div>
                 <div class="form-group half-width">
                   <label>Confirm Password</label>
                   <input [type]="showPassword ? 'text' : 'password'" class="my-form-control" [(ngModel)]="confirmPassword" [ngModelOptions]="{standalone: true}" placeholder="Enter Your Confirm Password" required>
+                  <div *ngIf="validationErrors.confirmPassword" class="error-message">{{ validationErrors.confirmPassword }}</div>
                 </div>
               </div>
               <div class="custom-control custom-checkbox">
@@ -44,9 +48,13 @@
                 <label class="custom-control-label" for="customCheck1">
                   I agree to the <a href="/#/terms" target="_blank" rel="noopener">Terms</a> and <a href="/#/privacy" target="_blank" rel="noopener">Privacy Policy</a>
                 </label>
+                <div *ngIf="validationErrors.terms" class="error-message">{{ validationErrors.terms }}</div>
               </div>
               <div class="button-wrapper">
-                <button type="submit" class="custom-button2">Register Now</button>
+                <button type="submit" class="custom-button2" [disabled]="!agreeTerms || isLoading">
+                  <span *ngIf="isLoading">Registering...</span>
+                  <span *ngIf="!isLoading">Register Now</span>
+                </button>
                 <p class="or-signup">
                   Already have an account? <a href="#" (click)="switchToLogin()">Login</a>
                 </p>

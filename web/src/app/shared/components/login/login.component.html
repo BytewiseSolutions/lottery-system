@@ -12,10 +12,12 @@
               <div class="form-group">
                 <label>Email or Phone Number</label>
                 <input type="text" class="my-form-control" [(ngModel)]="identifier" [ngModelOptions]="{standalone: true}" placeholder="Enter Your Email or Phone Number" required>
+                <div *ngIf="validationErrors.identifier" class="error-message">{{ validationErrors.identifier }}</div>
               </div>
               <div class="form-group">
                 <label>Password</label>
                 <input [type]="showPassword ? 'text' : 'password'" class="my-form-control" [(ngModel)]="password" [ngModelOptions]="{standalone: true}" placeholder="Enter Your Password" required>
+                <div *ngIf="validationErrors.password" class="error-message">{{ validationErrors.password }}</div>
                 <div class="custom-control custom-checkbox" style="margin-top: 5px;">
                   <input type="checkbox" class="custom-control-input" id="showPasswordLogin" [(ngModel)]="showPassword" [ngModelOptions]="{standalone: true}">
                   <label class="custom-control-label" for="showPasswordLogin">Show Password</label>
