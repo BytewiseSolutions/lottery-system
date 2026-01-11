@@ -68,37 +68,44 @@ try {
     // Send OTP verifications asynchronously for better performance
     $otpSent = [];
     
+    // Respond to client immediately before sending OTPs
+    $response = [
+        'success' => true,
+        'message' => 'Account created successfully! Verification codes are being sent.',
+        'userId' => $userId,
+        'requiresVerification' => []
+    ];
+    
+    if ($data->email) {
+        $response['requiresVerification'][] = 'email';
+        $otpSent[] = 'email';
+    }
+    
+    if ($data->phone) {
+        $response['requiresVerification'][] = 'phone';
+        $otpSent[] = 'phone';
+    }
+    
+    // Send response immediately
+    echo json_encode($response);
+    
+    // Finish the request to client
+    if (function_exists('fastcgi_finish_request')) {
+        fastcgi_finish_request();
+    }
+    
+    // Now send OTPs in background
     if ($data->email) {
         $emailOTP = $otpHandler->generateOTP();
         $otpHandler->saveOTP($userId, $emailOTP, 'email');
-        // Send email OTP in background for faster response
         $otpHandler->sendEmailOTP($data->email, $emailOTP);
-        $otpSent[] = 'email';
     }
     
     if ($data->phone) {
         $phoneOTP = $otpHandler->generateOTP();
         $otpHandler->saveOTP($userId, $phoneOTP, 'phone');
-        // Send SMS OTP in background for faster response
         $otpHandler->sendSMSOTP($data->phone, $phoneOTP);
-        $otpSent[] = 'phone';
     }
-    
-    $response = [
-        'success' => true,
-        'message' => 'Account created successfully! Please check your ' . implode(' and ', $otpSent) . ' for verification codes.',
-        'userId' => $userId,
-        'requiresVerification' => $otpSent
-    ];
-    
-    // Only include OTP codes in development environment
-    if (isset($_ENV['APP_ENV']) && $_ENV['APP_ENV'] === 'development') {
-        $response['otpCodes'] = [];
-        if ($data->email) $response['otpCodes']['email'] = $emailOTP;
-        if ($data->phone) $response['otpCodes']['phone'] = $phoneOTP;
-    }
-    
-    echo json_encode($response);
     
 } catch(PDOException $exception) {
     error_log("Registration error: " . $exception->getMessage());

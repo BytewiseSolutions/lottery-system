@@ -81,7 +81,7 @@ export class LoginComponent {
 
     try {
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 5000); // 5 second timeout
+      const timeoutId = setTimeout(() => controller.abort(), 10000); // Increased to 10 seconds
       
       const response = await fetch(`${environment.apiUrl}/login`, {
         method: 'POST',

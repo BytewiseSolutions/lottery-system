@@ -1,6 +1,7 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { Router } from '@angular/router';
 import { ToastService } from '../../../services/toast.service';
 import { environment } from '../../../../environments/environment';
 
@@ -21,7 +22,7 @@ export class SignupComponent {
   // Validation errors
   validationErrors: any = {};
 
-  constructor(private toastService: ToastService) {}
+  constructor(private toastService: ToastService, private router: Router) {}
 
   fullName = '';
   email = '';
@@ -275,11 +276,20 @@ export class SignupComponent {
         
         this.toastService.showSuccess(result.message);
         
-        // Redirect to login immediately after ANY verification (email OR phone)
+        // If token and user data are returned, auto-login the user
+        if (result.token && result.user) {
+          localStorage.setItem('token', result.token);
+          localStorage.setItem('user', JSON.stringify(result.user));
+          
+          // Emit login success to update navbar
+          this.signupSuccess.emit(result.user);
+        }
+        
         this.clearForm();
         setTimeout(() => {
           this.close();
-          this.switchToLogin();
+          // Redirect to lotteries page using Angular router
+          this.router.navigate(['/lotteries']);
         }, 1000); // Show success message briefly then redirect
       } else {
         this.errorMessage = result.error || 'Invalid or expired OTP. Please try again.';

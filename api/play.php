@@ -45,36 +45,12 @@ foreach ($data->bonusNumbers as $num) {
 }
 
 try {
-    // Simplified lottery name conversion
-    $lotteryName = 'Monday Lotto'; // Default
-    if (strpos($data->lottery, 'wed') !== false) {
-        $lotteryName = 'Wednesday Lotto';
-    } elseif (strpos($data->lottery, 'fri') !== false) {
-        $lotteryName = 'Friday Lotto';
-    } elseif (strpos($data->lottery, 'mon') !== false) {
-        $lotteryName = 'Monday Lotto';
-    }
-    
-    // Simplified play count check - skip for better performance
-    // $query = "SELECT COUNT(*) as play_count FROM entries WHERE user_id = ? AND DATE(created_at) = DATE(NOW())";
-    // $stmt = $db->prepare($query);
-    // $stmt->execute([$user['id']]);
-    // $playCount = $stmt->fetch(PDO::FETCH_ASSOC)['play_count'];
-    
-    // if ($playCount >= 2 && !isset($data->humanVerified)) {
-    //     echo json_encode([
-    //         'requireHumanVerification' => true,
-    //         'message' => 'Please verify you are human to continue playing'
-    //     ]);
-    //     exit;
-    // }
-    
-    // Insert entry
+    // Insert entry immediately - no complex processing
     $query = "INSERT INTO entries (user_id, lottery, numbers, bonus_numbers, draw_date) VALUES (?, ?, ?, ?, ?)";
     $stmt = $db->prepare($query);
     $stmt->execute([
         $user['id'],
-        $lotteryName,
+        $data->lottery,
         json_encode($data->numbers),
         json_encode($data->bonusNumbers),
         $data->drawDate
@@ -82,14 +58,15 @@ try {
     
     $entryId = $db->lastInsertId();
     
-    // Calculate new pool amount - simplified
-    $newPoolAmount = 0.01; // Default minimum
-    
+    // Send immediate response
     echo json_encode([
         'success' => true,
         'message' => 'Entry submitted successfully!',
-        'newPoolAmount' => '0.010',
-        'entryId' => $entryId
+        'entryId' => $entryId,
+        'numbers' => $data->numbers,
+        'bonusNumbers' => $data->bonusNumbers,
+        'lottery' => $data->lottery,
+        'drawDate' => $data->drawDate
     ]);
     
 } catch(PDOException $exception) {

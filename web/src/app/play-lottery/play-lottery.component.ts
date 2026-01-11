@@ -152,6 +152,9 @@ export class PlayLotteryComponent implements OnInit {
       this.isLoading = true;
       
       try {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 8000); // 8 second timeout
+        
         const response = await fetch(`${environment.apiUrl}/play`, {
           method: 'POST',
           headers: {
@@ -164,8 +167,11 @@ export class PlayLotteryComponent implements OnInit {
             bonusNumbers: this.selectedBonusNumbers,
             drawDate: this.drawDate,
             humanVerified: this.humanVerified
-          })
+          }),
+          signal: controller.signal
         });
+        
+        clearTimeout(timeoutId);
         
         const result = await response.json();
         
@@ -177,17 +183,24 @@ export class PlayLotteryComponent implements OnInit {
         }
         
         if (result.success) {
+          // Show immediate success feedback
+          this.toastService.showSuccess('Entry submitted successfully!');
           this.showSuccessPopup = true;
-          // Hide popup and redirect after 30 seconds
+          
+          // Redirect immediately after showing success
           setTimeout(() => {
             this.showSuccessPopup = false;
             window.location.href = '/lotteries';
-          }, 30000);
+          }, 3000); // Reduced from 30 seconds to 3 seconds
         } else {
           this.toastService.showError(result.error || 'Failed to submit entry');
         }
-      } catch (error) {
-        this.toastService.showError('Network error. Please check your connection.');
+      } catch (error: any) {
+        if (error.name === 'AbortError') {
+          this.toastService.showError('Request timeout. Please try again.');
+        } else {
+          this.toastService.showError('Network error. Please check your connection.');
+        }
       } finally {
         this.isLoading = false;
       }

@@ -74,6 +74,11 @@ class OTP {
             return true;
         }
         
+        // Send email asynchronously to avoid blocking the response
+        if (function_exists('fastcgi_finish_request')) {
+            fastcgi_finish_request();
+        }
+        
         // Use native PHP mail() - works with Hostinger
         $subject = "Your Lottery Verification Code";
         $message = "Your verification code is: $otpCode\n\nThis code expires in 10 minutes.\n\nIf you didn't request this code, please ignore this email.";

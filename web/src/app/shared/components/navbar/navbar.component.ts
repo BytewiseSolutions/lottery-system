@@ -60,7 +60,8 @@ export class NavbarComponent implements OnInit {
     const user = localStorage.getItem('user');
     if (token && user) {
       this.isLoggedIn = true;
-      this.userEmail = JSON.parse(user).email;
+      const userData = JSON.parse(user);
+      this.userEmail = userData.email || userData.phone || 'User';
     }
   }
 
@@ -84,7 +85,7 @@ export class NavbarComponent implements OnInit {
 
   onSignupSuccess(user: any) {
     this.isLoggedIn = true;
-    this.userEmail = user.email;
+    this.userEmail = user.email || user.phone || 'User';
     this.showSignupModal = false;
   }
 
