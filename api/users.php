@@ -1,125 +1,117 @@
 <?php
-require_once 'config/database.php';
-require_once 'config/cors.php';
+header('Content-Type: application/json');
+header('Access-Control-Allow-Origin: *');
+header('Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS');
+header('Access-Control-Allow-Headers: Content-Type, Authorization');
 
-$database = new Database();
-$db = $database->getConnection();
-
-if (!$db) {
-    http_response_code(500);
-    echo json_encode(['error' => 'Database connection failed']);
-    exit;
+if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
+    exit(0);
 }
 
-$method = $_SERVER['REQUEST_METHOD'];
+require_once 'config/database.php';
 
 try {
-    // Create users table if it doesn't exist
-    $createTable = "CREATE TABLE IF NOT EXISTS users (
-        id INT AUTO_INCREMENT PRIMARY KEY,
-        full_name VARCHAR(100) NOT NULL,
-        email VARCHAR(100) UNIQUE NOT NULL,
-        phone VARCHAR(20),
-        password VARCHAR(255) NOT NULL,
-        email_verified BOOLEAN DEFAULT FALSE,
-        phone_verified BOOLEAN DEFAULT FALSE,
-        is_active BOOLEAN DEFAULT TRUE,
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-    )";
-    $db->exec($createTable);
+    $database = new Database();
+    $db = $database->getConnection();
+    
+    $method = $_SERVER['REQUEST_METHOD'];
     
     switch ($method) {
         case 'GET':
-            $page = (int)($_GET['page'] ?? 1);
-            $limit = (int)($_GET['limit'] ?? 10);
+            // Get users with pagination and search
+            $page = $_GET['page'] ?? 1;
+            $limit = $_GET['limit'] ?? 10;
             $search = $_GET['search'] ?? '';
+            
             $offset = ($page - 1) * $limit;
             
-            $whereClause = '';
+            // Build search condition
+            $searchCondition = '';
             $params = [];
-            
-            if ($search) {
-                $whereClause = 'WHERE full_name LIKE ? OR email LIKE ? OR phone LIKE ?';
-                $searchTerm = "%$search%";
+            if (!empty($search)) {
+                $searchCondition = "WHERE full_name LIKE ? OR email LIKE ? OR phone LIKE ?";
+                $searchTerm = "%{$search}%";
                 $params = [$searchTerm, $searchTerm, $searchTerm];
             }
             
+            // Get total count
+            $countSql = "SELECT COUNT(*) as total FROM users " . $searchCondition;
+            $stmt = $db->prepare($countSql);
+            $stmt->execute($params);
+            $total = $stmt->fetch(PDO::FETCH_ASSOC)['total'];
+            
             // Get users
-            $stmt = $db->prepare("
-                SELECT id, full_name, email, phone, email_verified, phone_verified, 
-                       is_active, created_at 
-                FROM users 
-                $whereClause 
-                ORDER BY created_at DESC 
-                LIMIT $limit OFFSET $offset
-            ");
+            $sql = "SELECT id, full_name, email, phone, email_verified, phone_verified, 
+                           is_active, created_at FROM users " . $searchCondition . 
+                   " ORDER BY created_at DESC LIMIT ? OFFSET ?";
+            $params[] = (int)$limit;
+            $params[] = (int)$offset;
+            
+            $stmt = $db->prepare($sql);
             $stmt->execute($params);
             $users = $stmt->fetchAll(PDO::FETCH_ASSOC);
             
-            // Get total count
-            $stmt = $db->prepare("SELECT COUNT(*) FROM users $whereClause");
-            $stmt->execute($params);
-            $total = $stmt->fetchColumn();
-            
             echo json_encode([
+                'success' => true,
                 'users' => $users,
-                'total' => $total,
-                'page' => $page,
-                'totalPages' => ceil($total / $limit)
+                'total' => (int)$total,
+                'totalPages' => ceil($total / $limit),
+                'currentPage' => (int)$page
             ]);
             break;
             
         case 'POST':
-            $data = json_decode(file_get_contents('php://input'), true);
+            // Create new user
+            $input = json_decode(file_get_contents('php://input'), true);
             
-            $stmt = $db->prepare("
-                INSERT INTO users (full_name, email, phone, password, is_active) 
-                VALUES (?, ?, ?, ?, ?)
-            ");
+            $stmt = $db->prepare("INSERT INTO users (full_name, email, phone, is_active) VALUES (?, ?, ?, ?)");
             $stmt->execute([
-                $data['full_name'],
-                $data['email'],
-                $data['phone'] ?? null,
-                password_hash('defaultpass123', PASSWORD_DEFAULT),
-                $data['is_active'] ?? true
+                $input['full_name'],
+                $input['email'],
+                $input['phone'] ?? null,
+                $input['is_active'] ?? true
             ]);
             
             echo json_encode(['success' => true, 'id' => $db->lastInsertId()]);
             break;
             
         case 'PUT':
-            $data = json_decode(file_get_contents('php://input'), true);
-            $id = $data['id'];
+            // Update user
+            $input = json_decode(file_get_contents('php://input'), true);
             
-            $stmt = $db->prepare("
-                UPDATE users 
-                SET full_name = ?, email = ?, phone = ?, is_active = ? 
-                WHERE id = ?
-            ");
+            $stmt = $db->prepare("UPDATE users SET full_name = ?, email = ?, phone = ?, is_active = ? WHERE id = ?");
             $stmt->execute([
-                $data['full_name'],
-                $data['email'],
-                $data['phone'],
-                $data['is_active'],
-                $id
+                $input['full_name'],
+                $input['email'],
+                $input['phone'] ?? null,
+                $input['is_active'] ?? true,
+                $input['id']
             ]);
             
             echo json_encode(['success' => true]);
             break;
             
         case 'DELETE':
-            $data = json_decode(file_get_contents('php://input'), true);
-            $id = $data['id'];
+            // Delete user
+            $input = json_decode(file_get_contents('php://input'), true);
             
             $stmt = $db->prepare("DELETE FROM users WHERE id = ?");
-            $stmt->execute([$id]);
+            $stmt->execute([$input['id']]);
             
             echo json_encode(['success' => true]);
+            break;
+            
+        default:
+            http_response_code(405);
+            echo json_encode(['error' => 'Method not allowed']);
             break;
     }
     
 } catch (Exception $e) {
     http_response_code(500);
-    echo json_encode(['error' => $e->getMessage()]);
+    echo json_encode([
+        'success' => false,
+        'error' => 'Database error: ' . $e->getMessage()
+    ]);
 }
 ?>

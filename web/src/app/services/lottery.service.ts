@@ -58,6 +58,14 @@ export class LotteryService {
   }
 
   // Analytics
+  getAnalytics(range: string, dateFrom?: string, dateTo?: string): Observable<any> {
+    let url = `${this.apiUrl}/analytics?range=${range}`;
+    if (range === 'custom' && dateFrom && dateTo) {
+      url += `&dateFrom=${dateFrom}&dateTo=${dateTo}`;
+    }
+    return this.http.get<any>(url);
+  }
+
   getAnalyticsData(range: string = '7d'): Observable<any> {
     return this.http.get<any>(`${this.apiUrl}/analytics-data?range=${range}`);
   }

@@ -79,14 +79,29 @@ export class AdminComponent implements OnInit, OnDestroy {
   analyticsRange = '30d';
   topLotteries: any[] = [];
   
+  // Analytics data
+  analyticsData = {
+    totalPlays: 0,
+    totalRevenue: 0,
+    averagePlayersPerDraw: 0,
+    winnerRate: 0,
+    popularNumbers: [] as number[],
+    lotteryPerformance: [] as any[],
+    userEngagement: [] as any[],
+    revenueByMonth: [] as any[]
+  };
+  
   // User Management
   users: any[] = [];
   totalUsersCount = 0;
   usersCurrentPage = 1;
   usersTotalPages = 1;
   usersSearchQuery = '';
-  editingUser: any = null;
-  userForm: FormGroup;
+  paginatedResults: any[] = [];
+  editingResult: any = null;
+  editResultForm: FormGroup;
+  editWinningNumbers: number[] = [0, 0, 0, 0, 0];
+  editBonusNumbers: number[] = [0, 0];
   showUploadModal = false;
   showSuccessModal = false;
   showConfirmModal = false;
@@ -113,6 +128,11 @@ export class AdminComponent implements OnInit, OnDestroy {
   announceWinnerForm: FormGroup;
   winnerNumbers: number[] = [0, 0, 0, 0, 0];
   winnerBonusNumbers: number[] = [0, 0];
+  customDateFrom = '';
+  customDateTo = '';
+  showCustomDateModal = false;
+  editingUser: any = null;
+  userForm: FormGroup;
 
   constructor(
     private router: Router,
@@ -141,6 +161,14 @@ export class AdminComponent implements OnInit, OnDestroy {
 
     this.announceWinnerForm = this.fb.group({
       drawId: ['', Validators.required]
+    });
+
+    this.editResultForm = this.fb.group({
+      id: [''],
+      lottery: ['', Validators.required],
+      drawDate: ['', Validators.required],
+      jackpot: ['', Validators.required],
+      status: ['published']
     });
 
     this.userForm = this.fb.group({
@@ -452,6 +480,7 @@ export class AdminComponent implements OnInit, OnDestroy {
           }));
           this.filteredResults = this.results;
           this.totalResults = this.results.length;
+          this.applyFilters();
         },
         error: (error) => {
           console.error('Error loading results:', error);
@@ -542,15 +571,91 @@ export class AdminComponent implements OnInit, OnDestroy {
   }
 
   loadAnalytics() {
-    // Load analytics data
+    const dateFrom = this.analyticsRange === 'custom' ? this.customDateFrom : undefined;
+    const dateTo = this.analyticsRange === 'custom' ? this.customDateTo : undefined;
+    
+    this.lotteryService.getAnalytics(this.analyticsRange, dateFrom, dateTo)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (data) => {
+          this.analyticsData = {
+            totalPlays: data.totalPlays || 0,
+            totalRevenue: data.totalRevenue || 0,
+            averagePlayersPerDraw: data.averagePlayersPerDraw || 0,
+            winnerRate: data.winnerRate || 0,
+            popularNumbers: data.popularNumbers || [],
+            lotteryPerformance: data.lotteryPerformance || [],
+            userEngagement: data.userEngagement || [],
+            revenueByMonth: data.revenueByMonth || []
+          };
+          this.topLotteries = data.topLotteries || [];
+        },
+        error: (error) => {
+          console.error('Error loading analytics:', error);
+          this.analyticsData = {
+            totalPlays: 0,
+            totalRevenue: 0,
+            averagePlayersPerDraw: 0,
+            winnerRate: 0,
+            popularNumbers: [],
+            lotteryPerformance: [],
+            userEngagement: [],
+            revenueByMonth: []
+          };
+          this.topLotteries = [];
+        }
+      });
   }
 
   initializeCharts() {
-    // Initialize charts
+    // Charts removed
   }
 
   onSearch() {
-    // Search functionality
+    this.applyFilters();
+  }
+
+  applyFilters() {
+    let filtered = [...this.results];
+
+    // Search filter
+    if (this.searchQuery.trim()) {
+      const query = this.searchQuery.toLowerCase();
+      filtered = filtered.filter(result => 
+        result.lottery.toLowerCase().includes(query) ||
+        result.jackpot.toLowerCase().includes(query) ||
+        result.status.toLowerCase().includes(query)
+      );
+    }
+
+    // Status filter
+    if (this.filterStatus) {
+      filtered = filtered.filter(result => result.status === this.filterStatus);
+    }
+
+    // Lottery type filter
+    if (this.filterLottery) {
+      filtered = filtered.filter(result => result.lottery === this.filterLottery);
+    }
+
+    // Date range filter
+    if (this.filterDateFrom) {
+      filtered = filtered.filter(result => new Date(result.drawDate) >= new Date(this.filterDateFrom));
+    }
+    if (this.filterDateTo) {
+      filtered = filtered.filter(result => new Date(result.drawDate) <= new Date(this.filterDateTo));
+    }
+
+    this.filteredResults = filtered;
+    this.totalPages = Math.ceil(this.filteredResults.length / this.itemsPerPage);
+    this.currentPage = 1;
+    this.updatePaginatedResults();
+  }
+
+  updatePaginatedResults() {
+    const startIndex = (this.currentPage - 1) * this.itemsPerPage;
+    const endIndex = startIndex + this.itemsPerPage;
+    this.paginatedResults = this.filteredResults.slice(startIndex, endIndex);
   }
 
   addNumber() {
@@ -619,8 +724,43 @@ export class AdminComponent implements OnInit, OnDestroy {
   }
 
   // Placeholder methods for manage section
-  applyFilters() {}
-  exportResults() {}
+  exportResults() {
+    if (this.results.length === 0) {
+      this.showErrorMessage('No results to export');
+      return;
+    }
+
+    const csvData = this.convertToCSV(this.results);
+    const blob = new Blob([csvData], { type: 'text/csv' });
+    const url = window.URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `lottery-results-${new Date().toISOString().split('T')[0]}.csv`;
+    link.click();
+    window.URL.revokeObjectURL(url);
+  }
+
+  convertToCSV(data: any[]): string {
+    const headers = ['ID', 'Lottery', 'Draw Date', 'Winning Numbers', 'Bonus Numbers', 'Jackpot', 'Winners', 'Status', 'Last Updated'];
+    const csvRows = [headers.join(',')];
+
+    data.forEach(result => {
+      const row = [
+        result.id,
+        `"${result.lottery}"`,
+        `"${result.drawDate}"`,
+        `"${result.numbers ? result.numbers.join(', ') : 'N/A'}"`,
+        `"${result.bonusNumbers ? result.bonusNumbers.join(', ') : 'N/A'}"`,
+        `"${result.jackpot}"`,
+        result.winners,
+        `"${result.status}"`,
+        `"${result.updatedAt}"`
+      ];
+      csvRows.push(row.join(','));
+    });
+
+    return csvRows.join('\n');
+  }
   toggleSelectAll(event: any) {
     if (event.target.checked) {
       this.results.forEach(result => this.selectedResults.add(result.id));
@@ -639,12 +779,27 @@ export class AdminComponent implements OnInit, OnDestroy {
     const numbers = result.numbers ? result.numbers.join(', ') : 'N/A';
     const bonusNumbers = result.bonusNumbers ? result.bonusNumbers.join(', ') : 'N/A';
     this.uploadSuccessData = {
-      message: `Result Details:\n\nLottery: ${result.lottery}\nDraw Date: ${result.drawDate}\nWinning Numbers: ${numbers}\nBonus Numbers: ${bonusNumbers}\nJackpot: ${result.jackpot}\nWinners: ${result.winners}\nStatus: ${result.status}`
+      lottery: result.lottery,
+      drawDate: result.drawDate,
+      jackpot: result.jackpot,
+      winningNumbers: result.numbers || [],
+      bonusNumbers: result.bonusNumbers || [],
+      winners: result.winners,
+      status: result.status
     };
     this.showSuccessModal = true;
   }
   editResult(result: any) {
-    alert(`Edit functionality coming soon for: ${result.lottery}`);
+    this.editingResult = result;
+    this.editResultForm.patchValue({
+      id: result.id,
+      lottery: result.lottery,
+      drawDate: this.formatDateTimeForInput(result.drawDate),
+      jackpot: result.jackpot.replace('$', '').replace(',', ''),
+      status: result.status
+    });
+    this.editWinningNumbers = [...(result.numbers || [0, 0, 0, 0, 0])];
+    this.editBonusNumbers = [...(result.bonusNumbers || [0, 0])];
   }
   toggleResultStatus(result: any) {
     const newStatus = result.status === 'published' ? 'draft' : 'published';
@@ -768,13 +923,13 @@ export class AdminComponent implements OnInit, OnDestroy {
   prevPage() {
     if (this.currentPage > 1) {
       this.currentPage--;
-      this.loadResults();
+      this.updatePaginatedResults();
     }
   }
   nextPage() {
     if (this.currentPage < this.totalPages) {
       this.currentPage++;
-      this.loadResults();
+      this.updatePaginatedResults();
     }
   }
   
@@ -827,10 +982,25 @@ export class AdminComponent implements OnInit, OnDestroy {
 
   setAnalyticsRange(range: string) {
     this.analyticsRange = range;
+    this.loadAnalytics();
   }
 
   openDateRangePicker() {
-    // Open date range picker logic
+    this.showCustomDateModal = true;
+  }
+
+  applyCustomDateRange() {
+    if (this.customDateFrom && this.customDateTo) {
+      this.analyticsRange = 'custom';
+      this.loadAnalytics();
+      this.showCustomDateModal = false;
+    }
+  }
+
+  cancelCustomDateRange() {
+    this.showCustomDateModal = false;
+    this.customDateFrom = '';
+    this.customDateTo = '';
   }
 
   saveSettings() {
@@ -1089,4 +1259,132 @@ export class AdminComponent implements OnInit, OnDestroy {
       event.target.value = 1;
     }
   }
+
+  saveEditResult() {
+    if (this.editResultForm.invalid) return;
+    
+    const validWinningNumbers = this.editWinningNumbers.filter(n => n > 0);
+    const validBonusNumbers = this.editBonusNumbers.filter(n => n > 0);
+    
+    if (validWinningNumbers.length !== 5 || validBonusNumbers.length !== 2) {
+      this.showErrorMessage('Please enter exactly 5 winning numbers and 2 bonus numbers');
+      return;
+    }
+    
+    const formData = {
+      ...this.editResultForm.value,
+      numbers: validWinningNumbers,
+      bonusNumbers: validBonusNumbers
+    };
+    
+    this.lotteryService.updateResult(formData.id, formData)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: () => {
+          this.loadResults();
+          this.cancelEditResult();
+          this.showSuccessMessage('Result updated successfully!');
+        },
+        error: (error) => {
+          console.error('Error updating result:', error);
+          this.showErrorMessage('Failed to update result.');
+        }
+      });
+  }
+
+  cancelEditResult() {
+    this.editingResult = null;
+    this.editResultForm.reset();
+    this.editWinningNumbers = [0, 0, 0, 0, 0];
+    this.editBonusNumbers = [0, 0];
+  }
+
+  validateEditNumber(event: any, index: number, type: 'winning' | 'bonus') {
+    const value = parseInt(event.target.value);
+    if (value > 75) {
+      if (type === 'winning') {
+        this.editWinningNumbers[index] = 75;
+      } else {
+        this.editBonusNumbers[index] = 75;
+      }
+      event.target.value = 75;
+    } else if (value < 1 && value !== 0) {
+      if (type === 'winning') {
+        this.editWinningNumbers[index] = 1;
+      } else {
+        this.editBonusNumbers[index] = 1;
+      }
+      event.target.value = 1;
+    }
+  }
+
+  private loadMockAnalytics() {
+    const ranges = {
+      '7d': {
+        totalPlays: 2340,
+        totalRevenue: 11700,
+        averagePlayersPerDraw: 78,
+        winnerRate: 8.2
+      },
+      '30d': {
+        totalPlays: 9850,
+        totalRevenue: 49250,
+        averagePlayersPerDraw: 164,
+        winnerRate: 11.3
+      },
+      '90d': {
+        totalPlays: 28600,
+        totalRevenue: 143000,
+        averagePlayersPerDraw: 238,
+        winnerRate: 13.7
+      },
+      'custom': {
+        totalPlays: 15420,
+        totalRevenue: 77100,
+        averagePlayersPerDraw: 342,
+        winnerRate: 12.5
+      }
+    };
+    
+    const data = ranges[this.analyticsRange as keyof typeof ranges] || ranges['30d'];
+    
+    this.analyticsData = {
+      totalPlays: data.totalPlays,
+      totalRevenue: data.totalRevenue,
+      averagePlayersPerDraw: data.averagePlayersPerDraw,
+      winnerRate: data.winnerRate,
+      popularNumbers: [],
+      lotteryPerformance: [
+        { name: 'Monday Lotto', plays: Math.floor(data.totalPlays * 0.34), revenue: Math.floor(data.totalRevenue * 0.34) },
+        { name: 'Wednesday Lotto', plays: Math.floor(data.totalPlays * 0.31), revenue: Math.floor(data.totalRevenue * 0.31) },
+        { name: 'Friday Lotto', plays: Math.floor(data.totalPlays * 0.35), revenue: Math.floor(data.totalRevenue * 0.35) }
+      ],
+      userEngagement: [
+        { date: '2024-01-01', activeUsers: 120 },
+        { date: '2024-01-02', activeUsers: 145 },
+        { date: '2024-01-03', activeUsers: 132 },
+        { date: '2024-01-04', activeUsers: 167 },
+        { date: '2024-01-05', activeUsers: 189 },
+        { date: '2024-01-06', activeUsers: 201 },
+        { date: '2024-01-07', activeUsers: 178 }
+      ],
+      revenueByMonth: [
+        { month: 'Jan', revenue: 25000 },
+        { month: 'Feb', revenue: 28000 },
+        { month: 'Mar', revenue: 24000 }
+      ]
+    };
+    this.topLotteries = this.generateMockTopLotteries();
+    this.initializeCharts();
+  }
+
+  private generateMockTopLotteries() {
+    return [
+      { id: 1, name: 'Friday Lotto', results: 24, growth: 15.2 },
+      { id: 2, name: 'Monday Lotto', results: 22, growth: 8.7 },
+      { id: 3, name: 'Wednesday Lotto', results: 20, growth: 12.1 }
+    ];
+  }
+
 }
+

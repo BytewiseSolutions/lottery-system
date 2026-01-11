@@ -59,6 +59,12 @@ switch ($path) {
     case 'api/update-result-status':
         require 'update-result-status.php';
         break;
+    case 'api/analytics':
+        require 'analytics.php';
+        break;
+    case 'api/users':
+        require 'users.php';
+        break;
     default:
         http_response_code(404);
         echo json_encode(['error' => 'Endpoint not found']);

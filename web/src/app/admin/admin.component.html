@@ -222,17 +222,23 @@
                   <p>{{ uploadSuccessData.message }}</p>
                 } @else {
                   <div class="result-summary">
-                    <div class="summary-item">
-                      <label>Lottery:</label>
-                      <span>{{ uploadSuccessData.lottery }}</span>
-                    </div>
-                    <div class="summary-item">
-                      <label>Draw Date:</label>
-                      <span>{{ uploadSuccessData.drawDate | date:'medium' }}</span>
-                    </div>
-                    <div class="summary-item">
-                      <label>Jackpot:</label>
-                      <span>${{ uploadSuccessData.jackpot }}</span>
+                    <div class="summary-grid">
+                      <div class="summary-item">
+                        <label>Lottery:</label>
+                        <span>{{ uploadSuccessData.lottery }}</span>
+                      </div>
+                      <div class="summary-item">
+                        <label>Draw Date:</label>
+                        <span>{{ uploadSuccessData.drawDate | date:'medium' }}</span>
+                      </div>
+                      <div class="summary-item">
+                        <label>Jackpot:</label>
+                        <span>${{ uploadSuccessData.jackpot }}</span>
+                      </div>
+                      <div class="summary-item">
+                        <label>Status:</label>
+                        <span class="status-badge published">{{ uploadSuccessData.status || 'Published' }}</span>
+                      </div>
                     </div>
                   </div>
 
@@ -293,38 +299,36 @@
               </div>
               
               <form [formGroup]="uploadForm" (ngSubmit)="uploadResult()" class="modal-form">
-                <div class="form-grid">
-                  <div class="form-group">
-                    <label for="lottery">Lottery Type</label>
-                    <select id="lottery" formControlName="lottery" class="form-control select-field" required>
-                      <option value="" disabled>Select lottery type</option>
-                      <option value="Monday Lotto">Monday Lotto</option>
-                      <option value="Wednesday Lotto">Wednesday Lotto</option>
-                      <option value="Friday Lotto">Friday Lotto</option>
-                    </select>
-                  </div>
-                  
-                  <div class="form-group">
-                    <label for="drawDate">Draw Date</label>
-                    <input 
-                      type="datetime-local" 
-                      id="drawDate"
-                      formControlName="drawDate" 
-                      class="form-control" 
-                      required>
-                  </div>
-                  
-                  <div class="form-group">
-                    <label for="jackpot">Jackpot (Millions)</label>
-                    <input 
-                      type="number" 
-                      id="jackpot"
-                      formControlName="jackpot" 
-                      class="form-control" 
-                      placeholder="15.50"
-                      step="0.01"
-                      required>
-                  </div>
+                <div class="form-group">
+                  <label for="lottery">Lottery Type</label>
+                  <select id="lottery" formControlName="lottery" class="form-control select-field" required>
+                    <option value="" disabled>Select lottery type</option>
+                    <option value="Monday Lotto">Monday Lotto</option>
+                    <option value="Wednesday Lotto">Wednesday Lotto</option>
+                    <option value="Friday Lotto">Friday Lotto</option>
+                  </select>
+                </div>
+                
+                <div class="form-group">
+                  <label for="drawDate">Draw Date</label>
+                  <input 
+                    type="datetime-local" 
+                    id="drawDate"
+                    formControlName="drawDate" 
+                    class="form-control" 
+                    required>
+                </div>
+                
+                <div class="form-group">
+                  <label for="jackpot">Jackpot (Millions)</label>
+                  <input 
+                    type="number" 
+                    id="jackpot"
+                    formControlName="jackpot" 
+                    class="form-control" 
+                    placeholder="15.50"
+                    step="0.01"
+                    required>
                 </div>
 
                 <div class="numbers-section">
@@ -445,7 +449,6 @@
                         </th>
                         <th>Lottery</th>
                         <th>Draw Date</th>
-                        <th>Numbers</th>
                         <th>Jackpot</th>
                         <th>Winners</th>
                         <th>Status</th>
@@ -454,7 +457,7 @@
                       </tr>
                     </thead>
                     <tbody>
-                      @for (result of filteredResults; track result.id) {
+                      @for (result of paginatedResults; track result.id) {
                         <tr [class.selected]="selectedResults.has(result.id)">
                           <td data-label="Select">
                             <input 
@@ -469,13 +472,6 @@
                             </div>
                           </td>
                           <td data-label="Draw Date">{{ result.drawDate | date:'medium' }}</td>
-                          <td data-label="Numbers">
-                            <div class="winning-numbers">
-                              @for (num of result.numbers; track $index) {
-                                <span class="number-badge">{{ num }}</span>
-                              }
-                            </div>
-                          </td>
                           <td data-label="Jackpot"><strong>{{ result.jackpot }}</strong></td>
                           <td data-label="Winners">
                             <span class="winners-count">{{ result.winners }}</span>
@@ -590,7 +586,6 @@
         @if (activeSection === 'analytics') {
           <section class="analytics-section">
             <div class="analytics-header">
-              <h2><i class="fas fa-chart-pie"></i> Analytics Dashboard</h2>
               <div class="date-range">
                 <button class="btn btn-sm" [class.active]="analyticsRange === '7d'" (click)="setAnalyticsRange('7d')">
                   Last 7 Days
@@ -607,46 +602,50 @@
               </div>
             </div>
 
+            <div class="analytics-stats-grid">
+              <div class="stat-card primary">
+                <div class="stat-icon">
+                  <i class="fas fa-play"></i>
+                </div>
+                <div class="stat-content">
+                  <h3>{{ analyticsData.totalPlays | number }}</h3>
+                  <p>Total Plays</p>
+                </div>
+              </div>
+              
+              <div class="stat-card success">
+                <div class="stat-icon">
+                  <i class="fas fa-dollar-sign"></i>
+                </div>
+                <div class="stat-content">
+                  <h3>${{ analyticsData.totalRevenue | number }}</h3>
+                  <p>Total Revenue</p>
+                </div>
+              </div>
+              
+              <div class="stat-card warning">
+                <div class="stat-icon">
+                  <i class="fas fa-users"></i>
+                </div>
+                <div class="stat-content">
+                  <h3>{{ analyticsData.averagePlayersPerDraw | number }}</h3>
+                  <p>Avg Players/Draw</p>
+                </div>
+              </div>
+              
+              <div class="stat-card info">
+                <div class="stat-icon">
+                  <i class="fas fa-trophy"></i>
+                </div>
+                <div class="stat-content">
+                  <h3>{{ analyticsData.winnerRate }}%</h3>
+                  <p>Winner Rate</p>
+                </div>
+              </div>
+            </div>
+
             <div class="analytics-grid">
-              <div class="card">
-                <div class="card-header">
-                  <h4>Results by Lottery Type</h4>
-                </div>
-                <div class="chart-container pie">
-                  <canvas #lotteryChart></canvas>
-                </div>
-              </div>
-
-              <div class="card">
-                <div class="card-header">
-                  <h4>User Engagement</h4>
-                </div>
-                <div class="chart-container">
-                  <canvas #engagementChart></canvas>
-                </div>
-              </div>
-
-              <div class="card">
-                <div class="card-header">
-                  <h4>Top Performing Lotteries</h4>
-                </div>
-                <div class="top-performers">
-                  @for (lottery of topLotteries; track lottery.id) {
-                    <div class="performer-item">
-                      <div class="performer-info">
-                        <i class="fas fa-trophy"></i>
-                        <span>{{ lottery.name }}</span>
-                      </div>
-                      <div class="performer-stats">
-                        <span class="stat">{{ lottery.results }} results</span>
-                        <span class="growth positive">
-                          <i class="fas fa-arrow-up"></i> {{ lottery.growth }}%
-                        </span>
-                      </div>
-                    </div>
-                  }
-                </div>
-              </div>
+              <!-- Charts and analytics content will be added here -->
             </div>
           </section>
         }
@@ -905,7 +904,7 @@
         <!-- Edit User Modal -->
         @if (editingUser) {
           <div class="modal-overlay" (click)="cancelEditUser()">
-            <div class="modal-content" (click)="$event.stopPropagation()">
+            <div class="modal-content edit-user-modal" (click)="$event.stopPropagation()">
               <div class="modal-header">
                 <h3>{{ editingUser?.id ? 'Edit User' : 'Add User' }}</h3>
                 <button class="btn-close" (click)="cancelEditUser()">
@@ -1000,6 +999,112 @@
             </div>
           </div>
         }
-      </main>
-    </div>
-</div>
+        <!-- Custom Date Range Modal -->
+        @if (showCustomDateModal) {
+          <div class="modal-overlay" (click)="cancelCustomDateRange()">
+            <div class="modal-content custom-date-modal" (click)="$event.stopPropagation()">
+              <div class="modal-header">
+                <h3>Select Date Range</h3>
+                <button class="btn-close" (click)="cancelCustomDateRange()">
+                  <i class="fas fa-times"></i>
+                </button>
+              </div>
+              <div class="modal-body">
+                <div class="form-group">
+                  <label for="dateFrom">From Date</label>
+                  <input type="date" id="dateFrom" [(ngModel)]="customDateFrom" class="form-control" required>
+                </div>
+                <div class="form-group">
+                  <label for="dateTo">To Date</label>
+                  <input type="date" id="dateTo" [(ngModel)]="customDateTo" class="form-control" required>
+                </div>
+              </div>
+              <div class="modal-actions">
+                <button type="button" class="btn btn-outline" (click)="cancelCustomDateRange()">Cancel</button>
+                <button type="button" class="btn btn-primary" (click)="applyCustomDateRange()" [disabled]="!customDateFrom || !customDateTo">Apply Range</button>
+              </div>
+            </div>
+          </div>
+        }
+        <!-- Edit Result Modal -->
+        @if (editingResult) {
+          <div class="modal-overlay" (click)="cancelEditResult()">
+            <div class="modal-content edit-result-modal" (click)="$event.stopPropagation()">
+              <div class="modal-header">
+                <h3>Edit Result</h3>
+                <button class="btn-close" (click)="cancelEditResult()">
+                  <i class="fas fa-times"></i>
+                </button>
+              </div>
+              <form [formGroup]="editResultForm" (ngSubmit)="saveEditResult()" class="modal-form">
+                <div class="form-group">
+                  <label for="editLottery">Lottery Type</label>
+                  <select id="editLottery" formControlName="lottery" class="form-control" required>
+                    <option value="Monday Lotto">Monday Lotto</option>
+                    <option value="Wednesday Lotto">Wednesday Lotto</option>
+                    <option value="Friday Lotto">Friday Lotto</option>
+                  </select>
+                </div>
+                
+                <div class="form-group">
+                  <label for="editDrawDate">Draw Date</label>
+                  <input type="datetime-local" id="editDrawDate" formControlName="drawDate" class="form-control" required>
+                </div>
+                
+                <div class="form-group">
+                  <label for="editJackpot">Jackpot (Millions)</label>
+                  <input type="number" id="editJackpot" formControlName="jackpot" class="form-control" step="0.01" required>
+                </div>
+
+                <div class="numbers-section">
+                  <label>Winning Numbers (5 numbers required)</label>
+                  <div class="numbers-grid">
+                    @for (num of editWinningNumbers; track $index; let i = $index) {
+                      <input 
+                        type="number" 
+                        [(ngModel)]="editWinningNumbers[i]" 
+                        [ngModelOptions]="{standalone: true}"
+                        class="number-ball" 
+                        min="1" 
+                        max="75"
+                        (input)="validateEditNumber($event, i, 'winning')"
+                        placeholder="{{ i + 1 }}"
+                        required>
+                    }
+                  </div>
+                </div>
+
+                <div class="numbers-section">
+                  <label>Bonus Numbers (2 numbers required)</label>
+                  <div class="numbers-grid bonus-grid">
+                    @for (num of editBonusNumbers; track $index; let i = $index) {
+                      <input 
+                        type="number" 
+                        [(ngModel)]="editBonusNumbers[i]" 
+                        [ngModelOptions]="{standalone: true}"
+                        class="number-ball bonus-ball" 
+                        min="1" 
+                        max="75"
+                        (input)="validateEditNumber($event, i, 'bonus')"
+                        placeholder="B{{ i + 1 }}"
+                        required>
+                    }
+                  </div>
+                </div>
+
+                <div class="form-group">
+                  <label for="editStatus">Status</label>
+                  <select id="editStatus" formControlName="status" class="form-control">
+                    <option value="published">Published</option>
+                    <option value="draft">Draft</option>
+                  </select>
+                </div>
+
+                <div class="modal-actions">
+                  <button type="button" class="btn btn-outline" (click)="cancelEditResult()">Cancel</button>
+                  <button type="submit" class="btn btn-primary" [disabled]="editResultForm.invalid">Save Changes</button>
+                </div>
+              </form>
+            </div>
+          </div>
+        }
