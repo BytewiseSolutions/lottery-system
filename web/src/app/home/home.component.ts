@@ -47,18 +47,28 @@ export class HomeComponent implements OnInit {
       const response = await fetch(`${environment.apiUrl}/results`);
       const data = await response.json();
       
-      // Ensure data is an array before using slice
+      console.log('Raw results data:', data);
+      
       if (Array.isArray(data)) {
-        this.results = data.slice(0, 1).map((result: any) => ({
-          id: result.id,
-          name: result.lottery || 'Unknown Lottery',
-          drawDate: result.drawDate,
-          winningNumbers: result.numbers || [],
-          bonusNumbers: result.bonusNumbers || [],
-          poolMoney: result.jackpot || '$0.00',
-          nextDraw: this.getNextDrawDate(result.lottery),
-          currentPool: this.getCurrentPoolFromDraws(result.lottery)
-        }));
+        this.results = data.slice(0, 1).map((result: any) => {
+          console.log('Processing result:', result);
+          console.log('Raw winning_numbers:', result.winning_numbers);
+          console.log('Raw bonus_numbers:', result.bonus_numbers);
+          
+          const processed = {
+            id: result.id,
+            name: result.lottery || 'Unknown Lottery',
+            drawDate: result.draw_date || result.drawDate,
+            winningNumbers: this.parseNumbers(result.winning_numbers || result.numbers),
+            bonusNumbers: this.parseNumbers(result.bonus_numbers || result.bonusNumbers),
+            poolMoney: result.jackpot || '$0.00',
+            nextDraw: this.getNextDrawDate(result.lottery),
+            currentPool: this.getCurrentPoolFromDraws(result.lottery)
+          };
+          
+          console.log('Processed result:', processed);
+          return processed;
+        });
       } else {
         this.results = [];
       }
@@ -66,6 +76,52 @@ export class HomeComponent implements OnInit {
       console.error('Error loading results:', error);
       this.results = [];
     }
+  }
+
+  private parseNumbers(numbers: any): number[] {
+    console.log('Parsing numbers:', numbers, 'Type:', typeof numbers);
+    
+    if (!numbers) return [];
+    
+    // If it's already an array, return it
+    if (Array.isArray(numbers)) {
+      console.log('Already array:', numbers);
+      return numbers;
+    }
+    
+    // If it's a string, try to parse it as JSON
+    if (typeof numbers === 'string') {
+      try {
+        // Remove any extra quotes or whitespace
+        const cleaned = numbers.trim();
+        console.log('Cleaned string:', cleaned);
+        
+        const parsed = JSON.parse(cleaned);
+        console.log('Parsed result:', parsed);
+        
+        return Array.isArray(parsed) ? parsed : [];
+      } catch (error) {
+        console.warn('Failed to parse numbers as JSON:', numbers, error);
+        
+        // Try to extract numbers from concatenated string like "1345645127570"
+        if (/^\d+$/.test(numbers)) {
+          // Split into groups of 2 digits (assuming lottery numbers are 1-75)
+          const nums = [];
+          for (let i = 0; i < numbers.length; i += 2) {
+            const num = parseInt(numbers.substr(i, 2));
+            if (num >= 1 && num <= 75) {
+              nums.push(num);
+            }
+          }
+          console.log('Extracted from concatenated string:', nums);
+          return nums;
+        }
+        
+        return [];
+      }
+    }
+    
+    return [];
   }
 
   private getNextDrawDate(lottery: string): string {

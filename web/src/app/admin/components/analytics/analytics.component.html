@@ -1,0 +1,64 @@
+<section class="analytics-section">
+  <div class="analytics-header">
+    <div class="date-range">
+      <button class="btn btn-sm" [class.active]="analyticsRange === '7d'" (click)="setAnalyticsRange('7d')">
+        Last 7 Days
+      </button>
+      <button class="btn btn-sm" [class.active]="analyticsRange === '30d'" (click)="setAnalyticsRange('30d')">
+        Last 30 Days
+      </button>
+      <button class="btn btn-sm" [class.active]="analyticsRange === '90d'" (click)="setAnalyticsRange('90d')">
+        Last 90 Days
+      </button>
+      <button class="btn btn-sm" [class.active]="analyticsRange === 'custom'" (click)="openDateRangePicker()">
+        Custom Range
+      </button>
+    </div>
+  </div>
+
+  <div class="analytics-stats-grid">
+    <div class="stat-card primary">
+      <div class="stat-icon">
+        <i class="fas fa-play"></i>
+      </div>
+      <div class="stat-content">
+        <h3>{{ analyticsData.totalPlays | number }}</h3>
+        <p>Total Plays</p>
+      </div>
+    </div>
+    
+    <div class="stat-card success">
+      <div class="stat-icon">
+        <i class="fas fa-dollar-sign"></i>
+      </div>
+      <div class="stat-content">
+        <h3>${{ analyticsData.totalRevenue | number }}</h3>
+        <p>Total Revenue</p>
+      </div>
+    </div>
+    
+    <div class="stat-card warning">
+      <div class="stat-icon">
+        <i class="fas fa-users"></i>
+      </div>
+      <div class="stat-content">
+        <h3>{{ analyticsData.averagePlayersPerDraw | number }}</h3>
+        <p>Avg Players/Draw</p>
+      </div>
+    </div>
+    
+    <div class="stat-card info">
+      <div class="stat-icon">
+        <i class="fas fa-trophy"></i>
+      </div>
+      <div class="stat-content">
+        <h3>{{ analyticsData.winnerRate }}%</h3>
+        <p>Winner Rate</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="analytics-grid">
+    <!-- Charts and analytics content will be added here -->
+  </div>
+</section>

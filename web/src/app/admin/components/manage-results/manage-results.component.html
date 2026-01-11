@@ -1,0 +1,151 @@
+<section class="manage-section">
+  @if (results.length === 0) {
+    <div class="empty-results-state">
+      <div class="empty-icon">
+        <i class="fas fa-inbox"></i>
+      </div>
+      <h3>No Results Yet</h3>
+      <p>Start by uploading your first lottery result to see it here.</p>
+      <button class="btn btn-primary" (click)="onUploadClick()">
+        <i class="fas fa-plus"></i> Upload First Result
+      </button>
+    </div>
+  } @else {
+    <div class="card">
+      <div class="card-header">
+        <h3><i class="fas fa-list"></i> Manage Results</h3>
+        <div class="header-actions">
+          <button class="btn btn-primary" (click)="onUploadClick()">
+            <i class="fas fa-plus"></i> Upload Results
+          </button>
+          <button class="btn btn-outline" (click)="onExportClick()">
+            <i class="fas fa-download"></i> Export
+          </button>
+        </div>
+      </div>
+
+      <div class="table-responsive">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th width="40">
+                <input type="checkbox" (change)="onSelectAllChange($event)">
+              </th>
+              <th>Lottery</th>
+              <th>Draw Date</th>
+              <th>Jackpot</th>
+              <th>Winners</th>
+              <th>Status</th>
+              <th>Last Updated</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (result of paginatedResults; track result.id) {
+              <tr [class.selected]="selectedResults.has(result.id)">
+                <td data-label="Select">
+                  <input 
+                    type="checkbox" 
+                    [checked]="selectedResults.has(result.id)"
+                    (change)="onSelectResultChange(result.id)">
+                </td>
+                <td data-label="Lottery">
+                  <div class="lottery-info">
+                    <i class="fas fa-ticket-alt"></i>
+                    <span>{{ result.lottery }}</span>
+                  </div>
+                </td>
+                <td data-label="Draw Date">{{ result.drawDate | date:'mediumDate' }}</td>
+                <td data-label="Jackpot"><strong>{{ result.jackpot }}</strong></td>
+                <td data-label="Winners">
+                  <span class="winners-count">{{ result.winners }}</span>
+                </td>
+                <td data-label="Status">
+                  <span class="status-badge" [class]="result.status">
+                    {{ result.status }}
+                  </span>
+                </td>
+                <td data-label="Last Updated">
+                  <span class="timestamp">{{ result.updatedAt | date:'short' }}</span>
+                </td>
+                <td data-label="Actions">
+                  <div class="table-actions">
+                    <button class="btn-icon" (click)="onViewResult(result)" title="View">
+                      <i class="fas fa-eye"></i>
+                    </button>
+                    <button class="btn-icon" (click)="onEditResult(result)" title="Edit">
+                      <i class="fas fa-edit"></i>
+                    </button>
+                    <button 
+                      class="btn-icon" 
+                      (click)="onToggleStatus(result)"
+                      [title]="result.status === 'published' ? 'Unpublish' : 'Publish'">
+                      <i 
+                        class="fas" 
+                        [class.fa-eye-slash]="result.status === 'published'"
+                        [class.fa-eye]="result.status !== 'published'">
+                      </i>
+                    </button>
+                    <button 
+                      class="btn-icon danger" 
+                      (click)="onDeleteResult(result.id)"
+                      title="Delete">
+                      <i class="fas fa-trash"></i>
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+
+      @if (results.length > 0) {
+        <div class="table-footer">
+          <div class="table-info">
+            Showing {{ results.length }} of {{ totalResults }} results
+            @if (selectedResults.size > 0) {
+              <span class="selected-count">
+                ({{ selectedResults.size }} selected)
+              </span>
+            }
+          </div>
+          @if (selectedResults.size > 0) {
+            <div class="bulk-actions">
+              <select [(ngModel)]="bulkAction" class="form-control-sm">
+                <option value="">Bulk Actions</option>
+                <option value="publish">Publish Selected</option>
+                <option value="unpublish">Unpublish Selected</option>
+                <option value="delete">Delete Selected</option>
+                <option value="export">Export Selected</option>
+              </select>
+              <button 
+                class="btn btn-sm btn-primary"
+                (click)="onBulkActionApply()"
+                [disabled]="!bulkAction">
+                Apply
+              </button>
+            </div>
+          }
+          <div class="pagination">
+            <button 
+              class="btn-icon" 
+              (click)="onPrevPage()"
+              [disabled]="currentPage === 1">
+              <i class="fas fa-chevron-left"></i>
+            </button>
+            <span class="page-info">
+              Page {{ currentPage }} of {{ totalPages }}
+            </span>
+            <button 
+              class="btn-icon" 
+              (click)="onNextPage()"
+              [disabled]="currentPage === totalPages">
+              <i class="fas fa-chevron-right"></i>
+            </button>
+          </div>
+        </div>
+      }
+    </div>
+  }
+</section>
