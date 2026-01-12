@@ -79,7 +79,7 @@ export class LotteryService {
   }
 
   createResult(result: any): Observable<any> {
-    return this.http.post<any>(`${this.apiUrl}/admin-upload-result`, result);
+    return this.http.post<any>(`${this.apiUrl}/admin-upload-result-enhanced`, result);
   }
 
   updateResultStatus(id: number, status: string): Observable<any> {
