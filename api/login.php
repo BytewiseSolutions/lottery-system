@@ -13,7 +13,14 @@ $db = $database->getConnection();
 
 $data = json_decode(file_get_contents("php://input"));
 
-if (!$data || !isset($data->identifier) || !isset($data->password) || !$data->identifier || !$data->password) {
+if (!$data) {
+    http_response_code(400);
+    echo json_encode(['error' => 'Invalid request format']);
+    exit;
+}
+
+if (!isset($data->identifier) || !isset($data->password) || 
+    trim($data->identifier) === '' || trim($data->password) === '') {
     http_response_code(400);
     echo json_encode(['error' => 'Email/phone and password are required']);
     exit;
