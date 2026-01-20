@@ -83,31 +83,27 @@ export class PlayLotteryComponent implements OnInit {
   nextSection() {
     if (this.currentSection === 1 && this.selectedNumbers.length === 5) {
       this.currentSection = 2;
-      this.scrollToTop();
+      this.scrollToSectionTop();
     } else if (this.currentSection === 2 && this.selectedBonusNumbers.length === 2) {
       this.currentSection = 3;
-      this.scrollToTop();
+      this.scrollToSectionTop();
     }
   }
 
-  private scrollToTop() {
+  private scrollToSectionTop() {
+    // Wait for DOM to update, then scroll to section header
     setTimeout(() => {
-      const playSection = document.querySelector('.play-section');
-      if (playSection) {
-        playSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        // Different scroll offset for section 3 (review) to show full content
-        if (this.currentSection === 3) {
-          window.scrollBy(0, -250);
-        } else {
-          window.scrollBy(0, -200);
-        }
+      const sectionHeader = document.querySelector('.section-header');
+      if (sectionHeader) {
+        const headerTop = sectionHeader.getBoundingClientRect().top + window.pageYOffset - 80;
+        window.scrollTo({ top: headerTop, behavior: 'smooth' });
       }
     }, 100);
   }
 
   editEntry() {
     this.currentSection = 1;
-    this.scrollToTop();
+    this.scrollToSectionTop();
   }
 
   showLogin() {
@@ -183,15 +179,22 @@ export class PlayLotteryComponent implements OnInit {
         }
         
         if (result.success) {
-          // Show immediate success feedback
-          this.toastService.showSuccess('Entry submitted successfully!');
+      
           this.showSuccessPopup = true;
-          
-          // Redirect immediately after showing success
+ 
           setTimeout(() => {
-            this.showSuccessPopup = false;
-            window.location.href = '/lotteries';
-          }, 3000); // Reduced from 30 seconds to 3 seconds
+            const popup = document.querySelector('.success-popup');
+            if (popup) {
+              popup.classList.add('show');
+            }
+          }, 50);
+          
+
+          setTimeout(() => {
+            if (this.showSuccessPopup) {
+              this.dismissSuccessPopup();
+            }
+          }, 15000);
         } else {
           this.toastService.showError(result.error || 'Failed to submit entry');
         }
@@ -232,5 +235,27 @@ export class PlayLotteryComponent implements OnInit {
   dismissSuccessPopup() {
     this.showSuccessPopup = false;
     window.location.href = '/lotteries';
+  }
+
+  quickPick() {
+    this.selectedNumbers = [];
+    const available = [...this.numbers];
+    for (let i = 0; i < 5; i++) {
+      const randomIndex = Math.floor(Math.random() * available.length);
+      this.selectedNumbers.push(available[randomIndex]);
+      available.splice(randomIndex, 1);
+    }
+    this.selectedNumbers.sort((a, b) => a - b);
+  }
+
+  quickPickBonus() {
+    this.selectedBonusNumbers = [];
+    const available = [...this.numbers];
+    for (let i = 0; i < 2; i++) {
+      const randomIndex = Math.floor(Math.random() * available.length);
+      this.selectedBonusNumbers.push(available[randomIndex]);
+      available.splice(randomIndex, 1);
+    }
+    this.selectedBonusNumbers.sort((a, b) => a - b);
   }
 }

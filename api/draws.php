@@ -2,38 +2,6 @@
 require_once 'config/cors.php';
 require_once 'config/database.php';
 
-function getNextDrawDate($dayName) {
-    $days = ['monday' => 1, 'wednesday' => 3, 'friday' => 5];
-    $now = new DateTime();
-    $targetDay = $days[$dayName];
-    $currentDay = $now->format('N');
-    $currentHour = $now->format('H');
-    
-    $daysUntilNext = $targetDay - $currentDay;
-    
-    // If it's the same day but after 7 PM, move to next week
-    if ($daysUntilNext === 0 && $currentHour >= 19) {
-        $daysUntilNext = 7;
-    } 
-    // If the target day has passed this week, move to next week
-    elseif ($daysUntilNext < 0) {
-        $daysUntilNext += 7;
-    }
-    // If it's the same day and before 7 PM, it's today
-    elseif ($daysUntilNext === 0) {
-        $daysUntilNext = 0;
-    }
-    
-    $nextDate = clone $now;
-    if ($daysUntilNext > 0) {
-        $nextDate->add(new DateInterval('P' . $daysUntilNext . 'D'));
-    }
-    $nextDate->setTime(19, 0, 0);
-    
-    // Return simple ISO format without Z suffix for better JS parsing
-    return $nextDate->format('Y-m-d\TH:i:s');
-}
-
 $database = new Database();
 $db = $database->getConnection();
 
@@ -44,91 +12,26 @@ if (!$db) {
 }
 
 try {
-    // Auto-populate upcoming_draws table if empty
-    $checkUpcoming = "SELECT COUNT(*) FROM upcoming_draws";
-    $checkStmt = $db->prepare($checkUpcoming);
-    $checkStmt->execute();
-    $upcomingCount = $checkStmt->fetchColumn();
+    // Get draws from upcoming_draws table
+    $query = "SELECT id, lottery as name, lottery, draw_date as drawDate, draw_date as nextDraw, jackpot, status 
+              FROM upcoming_draws 
+              WHERE draw_date >= NOW()
+              ORDER BY draw_date";
     
-    if ($upcomingCount == 0) {
-        $sampleData = [
-            ['Monday Lotto', date('Y-m-d H:i:s', strtotime('next Monday 19:00')), '$10.00'],
-            ['Wednesday Lotto', date('Y-m-d H:i:s', strtotime('next Wednesday 19:00')), '$10.00'],
-            ['Friday Lotto', date('Y-m-d H:i:s', strtotime('next Friday 19:00')), '$10.00']
-        ];
-        
-        $insertStmt = $db->prepare("INSERT INTO upcoming_draws (lottery, draw_date, jackpot) VALUES (?, ?, ?)");
-        foreach ($sampleData as $data) {
-            $insertStmt->execute($data);
-        }
+    $stmt = $db->prepare($query);
+    $stmt->execute();
+    $draws = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    
+    // Format jackpot for display
+    foreach ($draws as &$draw) {
+        $draw['jackpot'] = '$' . number_format($draw['jackpot'], 2);
     }
-    
-    // Initialize balances with $10 base amount
-    $balances = ['Monday Lotto' => 10, 'Wednesday Lotto' => 10, 'Friday Lotto' => 10];
-    
-    // Get pool data only for next draw dates
-    $lotteries = ['Monday Lotto', 'Wednesday Lotto', 'Friday Lotto'];
-    $days = ['monday', 'wednesday', 'friday'];
-    
-    foreach ($lotteries as $index => $lottery) {
-        $nextDrawDate = getNextDrawDate($days[$index]);
-        $drawDateOnly = date('Y-m-d', strtotime($nextDrawDate));
-        
-        // Count entries for this specific draw date (only future/current draws)
-        $query = "SELECT COUNT(*) * 0.01 as pool_amount FROM entries WHERE (lottery = ? OR lottery = ?) AND draw_date = ?";
-        $stmt = $db->prepare($query);
-        $oldName = str_replace(' Lotto', ' Lotto', $lottery);
-        if ($lottery === 'Monday Lotto') $oldName = 'Mon Lotto';
-        if ($lottery === 'Wednesday Lotto') $oldName = 'Wed Lotto';
-        if ($lottery === 'Friday Lotto') $oldName = 'Fri Lotto';
-        
-        $stmt->execute([$lottery, $oldName, $drawDateOnly]);
-        $result = $stmt->fetch(PDO::FETCH_ASSOC);
-        
-        // Debug: Add the exact count for this lottery type (specific draw date only)
-        $debugQuery = "SELECT COUNT(*) as entry_count FROM entries WHERE (lottery = ? OR lottery = ?) AND draw_date = ?";
-        $debugStmt = $db->prepare($debugQuery);
-        $debugStmt->execute([$lottery, $oldName, $drawDateOnly]);
-        $debugResult = $debugStmt->fetch(PDO::FETCH_ASSOC);
-        
-        if ($result && $result['pool_amount']) {
-            $balances[$lottery] += floatval($result['pool_amount']);
-        }
-        
-        // Ensure minimum $10 base amount
-        if ($balances[$lottery] < 10) {
-            $balances[$lottery] = 10;
-        }
-    }
-    
-    $draws = [];
-    $lotteries = ['Monday Lotto', 'Wednesday Lotto', 'Friday Lotto'];
-    $days = ['monday', 'wednesday', 'friday'];
-    
-    // Generate draws with next draw dates
-    foreach ($lotteries as $index => $lottery) {
-        $nextDraw = getNextDrawDate($days[$index]);
-        
-        $draws[] = [
-            'id' => $index + 1,
-            'name' => $lottery,
-            'lottery' => $lottery,
-            'jackpot' => '$' . number_format($balances[$lottery], 2),
-            'nextDraw' => $nextDraw,
-            'drawDate' => $nextDraw,
-            'status' => 'scheduled'
-        ];
-    }
-    
-    // Sort by next draw date (soonest first)
-    usort($draws, function($a, $b) {
-        return strtotime($a['nextDraw']) <=> strtotime($b['nextDraw']);
-    });
     
     echo json_encode($draws);
     
 } catch(PDOException $exception) {
+    error_log("Draws error: " . $exception->getMessage());
     http_response_code(500);
-    echo json_encode(['error' => 'Failed to fetch draws']);
+    echo json_encode(['error' => 'Failed to fetch draws', 'details' => $exception->getMessage()]);
 }
 ?>

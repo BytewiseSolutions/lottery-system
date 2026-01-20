@@ -301,7 +301,7 @@
               <form [formGroup]="uploadForm" (ngSubmit)="uploadResult()" class="modal-form">
                 <div class="form-group">
                   <label for="lottery">Lottery Type</label>
-                  <select id="lottery" formControlName="lottery" class="form-control select-field" required>
+                  <select id="lottery" formControlName="lottery" class="form-control select-field" (ngModelChange)="onLotteryTypeChange()" [ngModel]="uploadForm.get('lottery')?.value" required>
                     <option value="" disabled>Select lottery type</option>
                     <option value="Monday Lotto">Monday Lotto</option>
                     <option value="Wednesday Lotto">Wednesday Lotto</option>

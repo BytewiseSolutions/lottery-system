@@ -114,7 +114,10 @@ export class HistoryComponent implements OnInit {
   }
 
   formatTime(dateString: string): string {
-    return new Date(dateString).toLocaleTimeString('en-US', { 
+    return new Date(dateString).toLocaleString('en-US', { 
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
       hour: '2-digit', 
       minute: '2-digit',
       hour12: false

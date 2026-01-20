@@ -76,4 +76,9 @@ export class ManageResultsComponent {
       this.pageChange.emit(this.currentPage + 1);
     }
   }
+
+  formatCurrency(value: any): string {
+    const num = typeof value === 'string' ? parseFloat(value) : value;
+    return isNaN(num) ? value : `$${num.toFixed(2)}`;
+  }
 }

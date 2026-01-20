@@ -29,6 +29,12 @@ export class LotteryService {
   constructor(private http: HttpClient) {}
 
   getResults(): Observable<any[]> {
+    const token = localStorage.getItem('token');
+    if (token) {
+      return this.http.get<any[]>(`${this.apiUrl}/results`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+    }
     return this.http.get<any[]>(`${this.apiUrl}/results`);
   }
 
@@ -79,7 +85,13 @@ export class LotteryService {
   }
 
   createResult(result: any): Observable<any> {
-    return this.http.post<any>(`${this.apiUrl}/admin-upload-result-enhanced`, result);
+    const token = localStorage.getItem('token');
+    if (token) {
+      return this.http.post<any>(`${this.apiUrl}/admin-upload-result`, result, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+    }
+    return this.http.post<any>(`${this.apiUrl}/admin-upload-result`, result);
   }
 
   updateResultStatus(id: number, status: string): Observable<any> {
@@ -87,6 +99,12 @@ export class LotteryService {
   }
 
   updateResult(id: number, result: any): Observable<any> {
+    const token = localStorage.getItem('token');
+    if (token) {
+      return this.http.put<any>(`${this.apiUrl}/results?id=${id}`, result, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+    }
     return this.http.put<any>(`${this.apiUrl}/results?id=${id}`, result);
   }
 

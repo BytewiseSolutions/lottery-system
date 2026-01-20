@@ -67,6 +67,14 @@ export class LotteriesComponent implements OnInit {
     return date ? `${baseCode}-${date}` : baseCode;
   }
 
+  getLotteryImageId(name: string): number {
+    if (!name) return 1;
+    if (name.includes('Monday')) return 1;
+    if (name.includes('Wednesday')) return 2;
+    if (name.includes('Friday')) return 3;
+    return 1;
+  }
+
   getDateOnly(dateString: string): string {
     if (!dateString) return '';
     try {

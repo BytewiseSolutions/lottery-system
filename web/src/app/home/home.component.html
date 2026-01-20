@@ -32,7 +32,7 @@
               <div class="single-draw">
                 <img class="overlay" [src]="'assets/images/overlaymask' + (i === 0 ? '1' : i === 1 ? '' : '3') + '.png'" alt>
                 <div class="icon">
-                  <img [src]="'assets/images/d' + (i + 1) + '.png'" alt>
+                  <img [src]="'assets/images/d' + getLotteryImageNumber(draw.name) + '.png'" alt>
                 </div>
                 <h4 style="text-align: center;">
                   {{draw.name}}<br>

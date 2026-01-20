@@ -166,6 +166,14 @@ export class HomeComponent implements OnInit {
     });
   }
 
+  getLotteryImageNumber(name: string | undefined): number {
+    if (!name || typeof name !== 'string') return 1;
+    if (name.includes('Mon')) return 1;
+    if (name.includes('Wed')) return 2;
+    if (name.includes('Fri')) return 3;
+    return 1;
+  }
+
   getLotteryCode(name: string | undefined): string {
     if (!name || typeof name !== 'string') return 'monday';
     if (name.includes('Mon')) return 'monday';
