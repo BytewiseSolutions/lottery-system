@@ -37,9 +37,9 @@ if (!$db) {
 
 try {
     $lotteries = [
-        ['name' => 'Monday Lotto', 'day' => 'monday', 'jackpot' => '$10.00'],
-        ['name' => 'Wednesday Lotto', 'day' => 'wednesday', 'jackpot' => '$10.00'],
-        ['name' => 'Friday Lotto', 'day' => 'friday', 'jackpot' => '$10.00']
+        ['name' => 'Monday Lotto', 'day' => 'monday', 'jackpot' => 10.00],
+        ['name' => 'Wednesday Lotto', 'day' => 'wednesday', 'jackpot' => 10.00],
+        ['name' => 'Friday Lotto', 'day' => 'friday', 'jackpot' => 10.00]
     ];
     
     foreach ($lotteries as $lottery) {

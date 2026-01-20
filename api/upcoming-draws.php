@@ -23,19 +23,39 @@ try {
     $deleteQuery = "DELETE FROM upcoming_draws WHERE draw_date < NOW()";
     $db->prepare($deleteQuery)->execute();
     
-    $checkQuery = "SELECT COUNT(*) as count FROM upcoming_draws";
+    $checkQuery = "SELECT COUNT(*) as count FROM upcoming_draws WHERE draw_date >= NOW()";
     $stmt = $db->prepare($checkQuery);
     $stmt->execute();
     $count = $stmt->fetch(PDO::FETCH_ASSOC)['count'];
     
     if ($count < 3) {
-        $nextMonday = date('Y-m-d 19:00:00', strtotime('next monday'));
+        // Get current day of week (1=Monday, 7=Sunday)
+        $currentDay = date('N');
+        $currentTime = date('H:i:s');
+        $drawTime = '19:00:00';
+        
+        // Monday
+        if ($currentDay == 1 && $currentTime < $drawTime) {
+            $nextMonday = date('Y-m-d 19:00:00');
+        } else {
+            $nextMonday = date('Y-m-d 19:00:00', strtotime('next monday'));
+        }
         $db->prepare("INSERT IGNORE INTO upcoming_draws (lottery, draw_date, jackpot, status) VALUES ('Monday Lotto', ?, 10.00, 'scheduled')")->execute([$nextMonday]);
         
-        $nextWednesday = date('Y-m-d 19:00:00', strtotime('next wednesday'));
+        // Wednesday
+        if ($currentDay == 3 && $currentTime < $drawTime) {
+            $nextWednesday = date('Y-m-d 19:00:00');
+        } else {
+            $nextWednesday = date('Y-m-d 19:00:00', strtotime('next wednesday'));
+        }
         $db->prepare("INSERT IGNORE INTO upcoming_draws (lottery, draw_date, jackpot, status) VALUES ('Wednesday Lotto', ?, 10.00, 'scheduled')")->execute([$nextWednesday]);
         
-        $nextFriday = date('Y-m-d 19:00:00', strtotime('next friday'));
+        // Friday
+        if ($currentDay == 5 && $currentTime < $drawTime) {
+            $nextFriday = date('Y-m-d 19:00:00');
+        } else {
+            $nextFriday = date('Y-m-d 19:00:00', strtotime('next friday'));
+        }
         $db->prepare("INSERT IGNORE INTO upcoming_draws (lottery, draw_date, jackpot, status) VALUES ('Friday Lotto', ?, 10.00, 'scheduled')")->execute([$nextFriday]);
     }
     
