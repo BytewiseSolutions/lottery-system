@@ -3,6 +3,8 @@ require_once 'config/cors.php';
 require_once 'config/database.php';
 require_once 'config/jwt.php';
 
+date_default_timezone_set('Africa/Johannesburg'); // Set to South Africa timezone (UTC+2)
+
 $database = new Database();
 $db = $database->getConnection();
 

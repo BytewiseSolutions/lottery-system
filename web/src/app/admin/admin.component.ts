@@ -337,6 +337,7 @@ export class AdminComponent implements OnInit, OnDestroy {
 
   // Manage Results handlers
   onUploadClick() {
+    this.loadUpcomingDraws(); // Load fresh data
     this.showUploadModal = true;
   }
 
@@ -472,8 +473,10 @@ export class AdminComponent implements OnInit, OnDestroy {
             lottery: this.formatLotteryName(draw.lottery_type || draw.lottery),
             drawDate: draw.draw_date || draw.drawDate,
             jackpot: '$' + (draw.jackpot || '10.00') + 'M',
+            jackpotValue: draw.jackpot || '10.00', // Store raw value for auto-fill
             status: 'scheduled'
           }));
+          console.log('Loaded upcoming draws:', this.upcomingDraws);
         },
         error: (error) => {
           console.error('Error loading upcoming draws:', error);
@@ -1051,4 +1054,34 @@ export class AdminComponent implements OnInit, OnDestroy {
   announceWinner(draw: any) {}
   editDrawTime(draw: any) {}
   deleteDraw(id: number) {}
+
+  onLotteryTypeChange() {
+    const lotteryType = this.uploadForm.get('lottery')?.value;
+    console.log('Selected lottery:', lotteryType);
+    console.log('Upcoming draws:', this.upcomingDraws);
+    
+    if (!lotteryType) return;
+
+    // Find the corresponding upcoming draw
+    const upcomingDraw = this.upcomingDraws.find(d => d.lottery === lotteryType);
+    console.log('Found draw:', upcomingDraw);
+    
+    if (upcomingDraw) {
+      // Set draw date
+      const formattedDate = this.formatDateTimeForInput(upcomingDraw.drawDate);
+      console.log('Setting draw date to:', formattedDate);
+      this.uploadForm.patchValue({
+        drawDate: formattedDate
+      });
+
+      // Set jackpot using raw value
+      const jackpotValue = upcomingDraw.jackpotValue || upcomingDraw.jackpot.replace('$', '').replace('M', '').trim();
+      console.log('Setting jackpot to:', jackpotValue);
+      this.uploadForm.patchValue({
+        jackpot: jackpotValue
+      });
+    } else {
+      console.log('No matching draw found for:', lotteryType);
+    }
+  }
 }

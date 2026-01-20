@@ -27,8 +27,8 @@ if (!isset($data->identifier) || !isset($data->password) ||
 }
 
 try {
-    // Check if identifier is email or phone
-    $query = "SELECT * FROM users WHERE (email = ? OR phone = ?) AND is_active = TRUE";
+    // Check if identifier is email or phone - only select needed fields
+    $query = "SELECT id, full_name, email, phone, password, role FROM users WHERE (email = ? OR phone = ?) AND is_active = TRUE LIMIT 1";
     $stmt = $db->prepare($query);
     $stmt->execute([$data->identifier, $data->identifier]);
     

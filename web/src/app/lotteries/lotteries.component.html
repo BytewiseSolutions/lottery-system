@@ -15,9 +15,9 @@
     <div class="row">
       <div class="col-12 col-md-6 col-lg-4 mb-4" *ngFor="let draw of draws">
         <div class="single-draw">
-          <img class="overlay" [src]="'assets/images/overlaymask' + (draw.id === 1 ? '1' : draw.id === 2 ? '' : '3') + '.png'" alt>
+          <img class="overlay" [src]="'assets/images/overlaymask' + (getLotteryImageId(draw.lottery || draw.name || '') === 1 ? '1' : getLotteryImageId(draw.lottery || draw.name || '') === 2 ? '' : '3') + '.png'" alt>
           <div class="icon">
-            <img [src]="'assets/images/d' + draw.id + '.png'" alt>
+            <img [src]="'assets/images/d' + getLotteryImageId(draw.lottery || draw.name || '') + '.png'" alt>
           </div>
           <h4 style="text-align: center;">
             {{ draw.lottery || draw.name }}<br>
@@ -25,7 +25,7 @@
             {{ draw.jackpot }}
           </h4>
           <a routerLink="/play-lottery" [queryParams]="{lottery: getLotteryCode(draw.lottery || draw.name || ''), drawDate: getDateOnly(draw.drawDate || draw.nextDraw || '')}" 
-             [class]="draw.id === 2 ? 'custom-button2' : 'custom-button1'">Play</a>
+             [class]="getLotteryImageId(draw.lottery || draw.name || '') === 2 ? 'custom-button2' : 'custom-button1'">Play</a>
           <div class="next-draw">
             <span class="text">Next Draw :</span>
             <div class="time">

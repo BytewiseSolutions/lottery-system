@@ -4,6 +4,8 @@ require_once 'config/database.php';
 require_once 'config/jwt.php';
 // require_once 'config/ratelimit.php'; // Disabled for performance
 
+date_default_timezone_set('Africa/Johannesburg'); // Set to South Africa timezone (UTC+2)
+
 $user = JWT::authenticate();
 
 $database = new Database();
@@ -45,12 +47,13 @@ foreach ($data->bonusNumbers as $num) {
 }
 
 try {
-    // Insert entry immediately - no complex processing
+    $lotteryName = ucfirst($data->lottery) . ' Lotto';
+    
     $query = "INSERT INTO entries (user_id, lottery, numbers, bonus_numbers, draw_date) VALUES (?, ?, ?, ?, ?)";
     $stmt = $db->prepare($query);
     $stmt->execute([
         $user['id'],
-        $data->lottery,
+        $lotteryName,
         json_encode($data->numbers),
         json_encode($data->bonusNumbers),
         $data->drawDate
@@ -58,7 +61,20 @@ try {
     
     $entryId = $db->lastInsertId();
     
-    // Send immediate response
+    error_log("Entry created: lottery=$lotteryName, date=$data->drawDate");
+    
+    // Update jackpot - add $0.01 per entry
+    $updateJackpot = "UPDATE upcoming_draws SET jackpot = jackpot + 0.01 
+                      WHERE lottery = ? AND DATE(draw_date) = ? LIMIT 1";
+    $stmt = $db->prepare($updateJackpot);
+    $result = $stmt->execute([$lotteryName, $data->drawDate]);
+    $rowsAffected = $stmt->rowCount();
+    error_log("Jackpot update: lottery=$lotteryName, date=$data->drawDate, rows affected=$rowsAffected, result=$result");
+    
+    if ($rowsAffected === 0) {
+        error_log("WARNING: No rows updated! Check if lottery name and date match in upcoming_draws table");
+    }
+    
     echo json_encode([
         'success' => true,
         'message' => 'Entry submitted successfully!',
