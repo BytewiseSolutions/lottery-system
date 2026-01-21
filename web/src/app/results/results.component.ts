@@ -12,9 +12,26 @@ import { environment } from '../../environments/environment';
 })
 export class ResultsComponent implements OnInit {
   results: any[] = [];
+  upcomingDraws: any = {};
 
   ngOnInit() {
     this.loadResults();
+    this.loadUpcomingDraws();
+  }
+
+  async loadUpcomingDraws() {
+    try {
+      const response = await fetch(`${environment.apiUrl}/upcoming-draws`);
+      const data = await response.json();
+      if (data.success && data.draws) {
+        data.draws.forEach((draw: any) => {
+          const lotteryCode = this.getLotteryCode(draw.lottery_type);
+          this.upcomingDraws[lotteryCode] = draw.draw_date;
+        });
+      }
+    } catch (error) {
+      console.error('Error loading upcoming draws:', error);
+    }
   }
 
   async loadResults() {
@@ -60,5 +77,10 @@ export class ResultsComponent implements OnInit {
     if (lottery.includes('Wed')) return 'wednesday';
     if (lottery.includes('Fri')) return 'friday';
     return 'monday';
+  }
+
+  getDrawDate(lottery: string | undefined): string | undefined {
+    const code = this.getLotteryCode(lottery);
+    return this.upcomingDraws[code];
   }
 }

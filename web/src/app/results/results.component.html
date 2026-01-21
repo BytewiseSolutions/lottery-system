@@ -50,7 +50,7 @@
               </div>
               <div class="color-area clickable-next-draw" 
                    [routerLink]="['/play-lottery']" 
-                   [queryParams]="{lottery: getLotteryCode(result.game)}">
+                   [queryParams]="{lottery: getLotteryCode(result.game), drawDate: getDrawDate(result.game)}">
                 <div class="top">
                   <span>Next {{result.game}} Draw</span>
                   <h6>Coming Soon</h6>

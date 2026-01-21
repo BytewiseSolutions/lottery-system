@@ -31,7 +31,6 @@ export class NavbarComponent implements OnInit {
     this.checkAuthStatus();
     this.updatePoolMoney();
     setInterval(() => this.updatePoolMoney(), 60000);
-    this.initStickyHeader();
     
     // Check current route
     this.router.events.pipe(
@@ -44,16 +43,6 @@ export class NavbarComponent implements OnInit {
     this.isPlayLotteryPage = this.router.url.includes('/play-lottery');
   }
 
-  private initStickyHeader() {
-    window.addEventListener('scroll', () => {
-      const header = document.querySelector('.header-section');
-      if (window.scrollY > 100) {
-        header?.classList.add('header-active');
-      } else {
-        header?.classList.remove('header-active');
-      }
-    });
-  }
 
   private checkAuthStatus() {
     const token = localStorage.getItem('token');

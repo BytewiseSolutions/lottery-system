@@ -10,59 +10,73 @@ try {
     $database = new Database();
     $db = $database->getConnection();
     
+    // Archive draws that are 1 hour past their draw time (at 20:00 for 19:00 draws)
     $archiveQuery = "INSERT INTO past_draws (lottery, draw_date, winning_numbers, bonus_numbers, jackpot, winners, status)
                      SELECT lottery, draw_date, '[]', '[]', jackpot, 0, 'completed'
                      FROM upcoming_draws 
-                     WHERE draw_date < NOW()";
+                     WHERE draw_date < DATE_SUB(NOW(), INTERVAL 1 HOUR)";
     try {
         $db->prepare($archiveQuery)->execute();
     } catch(PDOException $e) {
         // Ignore duplicate errors
     }
     
-    $deleteQuery = "DELETE FROM upcoming_draws WHERE draw_date < NOW()";
+    // Delete archived draws (1 hour after draw time)
+    $deleteQuery = "DELETE FROM upcoming_draws WHERE draw_date < DATE_SUB(NOW(), INTERVAL 1 HOUR)";
     $db->prepare($deleteQuery)->execute();
     
-    $checkQuery = "SELECT COUNT(*) as count FROM upcoming_draws WHERE draw_date >= NOW()";
+    // Check how many upcoming draws exist
+    $checkQuery = "SELECT lottery, draw_date FROM upcoming_draws";
     $stmt = $db->prepare($checkQuery);
     $stmt->execute();
-    $count = $stmt->fetch(PDO::FETCH_ASSOC)['count'];
+    $existingDraws = $stmt->fetchAll(PDO::FETCH_ASSOC);
     
-    if ($count < 3) {
-        // Get current day of week (1=Monday, 7=Sunday)
-        $currentDay = date('N');
-        $currentTime = date('H:i:s');
-        $drawTime = '19:00:00';
-        
-        // Monday
-        if ($currentDay == 1 && $currentTime < $drawTime) {
-            $nextMonday = date('Y-m-d 19:00:00');
-        } else {
-            $nextMonday = date('Y-m-d 19:00:00', strtotime('next monday'));
+    error_log("Existing draws count: " . count($existingDraws));
+    error_log("Existing draws: " . json_encode($existingDraws));
+    
+    $lotteries = ['Monday Lotto' => 1, 'Wednesday Lotto' => 3, 'Friday Lotto' => 5];
+    
+    foreach ($lotteries as $lotteryName => $dayOfWeek) {
+        // Check if this lottery already has an upcoming draw
+        $hasUpcoming = false;
+        foreach ($existingDraws as $draw) {
+            if ($draw['lottery'] === $lotteryName) {
+                $hasUpcoming = true;
+                break;
+            }
         }
-        $db->prepare("INSERT IGNORE INTO upcoming_draws (lottery, draw_date, jackpot, status) VALUES ('Monday Lotto', ?, 10.00, 'scheduled')")->execute([$nextMonday]);
         
-        // Wednesday
-        if ($currentDay == 3 && $currentTime < $drawTime) {
-            $nextWednesday = date('Y-m-d 19:00:00');
-        } else {
-            $nextWednesday = date('Y-m-d 19:00:00', strtotime('next wednesday'));
-        }
-        $db->prepare("INSERT IGNORE INTO upcoming_draws (lottery, draw_date, jackpot, status) VALUES ('Wednesday Lotto', ?, 10.00, 'scheduled')")->execute([$nextWednesday]);
+        error_log("Checking $lotteryName: hasUpcoming=" . ($hasUpcoming ? 'true' : 'false'));
         
-        // Friday
-        if ($currentDay == 5 && $currentTime < $drawTime) {
-            $nextFriday = date('Y-m-d 19:00:00');
-        } else {
-            $nextFriday = date('Y-m-d 19:00:00', strtotime('next friday'));
+        if (!$hasUpcoming) {
+            // Calculate next draw date
+            $currentDay = date('N');
+            $currentTime = date('H:i:s');
+            $drawTime = '19:00:00';
+            
+            error_log("Current day: $currentDay, Current time: $currentTime, Target day: $dayOfWeek");
+            
+            if ($currentDay == $dayOfWeek && $currentTime < $drawTime) {
+                $nextDraw = date('Y-m-d 19:00:00');
+            } else {
+                $dayName = array_search($dayOfWeek, [1 => 'monday', 3 => 'wednesday', 5 => 'friday']);
+                $nextDraw = date('Y-m-d 19:00:00', strtotime('next ' . $dayName));
+            }
+            
+            error_log("Creating new draw: $lotteryName on $nextDraw");
+            try {
+                $stmt = $db->prepare("INSERT INTO upcoming_draws (lottery, draw_date, jackpot, status) VALUES (?, ?, 10.00, 'scheduled')");
+                $stmt->execute([$lotteryName, $nextDraw]);
+                error_log("Successfully created draw for $lotteryName");
+            } catch(PDOException $e) {
+                error_log("Failed to create draw for $lotteryName: " . $e->getMessage());
+            }
         }
-        $db->prepare("INSERT IGNORE INTO upcoming_draws (lottery, draw_date, jackpot, status) VALUES ('Friday Lotto', ?, 10.00, 'scheduled')")->execute([$nextFriday]);
     }
     
     $query = "SELECT lottery as lottery_type, draw_date, jackpot 
               FROM upcoming_draws 
-              WHERE draw_date >= NOW()
-              ORDER BY draw_date LIMIT 3";
+              ORDER BY draw_date";
     
     $stmt = $db->prepare($query);
     $stmt->execute();

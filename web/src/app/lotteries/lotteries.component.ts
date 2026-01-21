@@ -24,7 +24,7 @@ export class LotteriesComponent implements OnInit {
   private loadDraws() {
     this.lotteryService.getDraws().subscribe({
       next: (draws) => {
-        console.log('Loaded draws:', draws); // Debug log
+        console.log('Loaded draws:', draws);
         this.draws = draws;
         this.cdr.detectChanges();
       },

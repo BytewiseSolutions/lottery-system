@@ -120,8 +120,7 @@ export class HistoryComponent implements OnInit {
       day: 'numeric',
       hour: '2-digit', 
       minute: '2-digit',
-      hour12: false,
-      timeZone: 'Africa/Johannesburg'
+      hour12: false
     });
   }
 

@@ -25,8 +25,37 @@ if (!$data->lottery || !$data->drawDate || !$data->jackpot || !$data->numbers ||
 try {
     $status = isset($data->publishNow) && $data->publishNow ? 'published' : 'draft';
     
+    // Find matching entries to calculate winners
+    $entriesQuery = "SELECT * FROM entries WHERE lottery = ? AND DATE(draw_date) = DATE(?)";
+    $stmt = $db->prepare($entriesQuery);
+    $stmt->execute([$data->lottery, $data->drawDate]);
+    $entries = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    
+    $winners = [];
+    $winningNums = $data->numbers;
+    $bonusNums = $data->bonusNumbers;
+    
+    foreach ($entries as $entry) {
+        $entryNums = json_decode($entry['numbers'], true);
+        $entryBonus = json_decode($entry['bonus_numbers'], true);
+        
+        $matchedNums = count(array_intersect($entryNums, $winningNums));
+        $matchedBonus = count(array_intersect($entryBonus, $bonusNums));
+        
+        // Winner criteria: 5 main numbers + 2 bonus (jackpot) OR 5 main + 1 bonus OR 4 main + 2 bonus
+        if (($matchedNums == 5 && $matchedBonus == 2) || 
+            ($matchedNums == 5 && $matchedBonus >= 1) ||
+            ($matchedNums == 4 && $matchedBonus == 2)) {
+            $winners[] = [
+                'userId' => $entry['user_id'],
+                'entryId' => $entry['id'],
+                'matched' => $matchedNums . '+' . $matchedBonus
+            ];
+        }
+    }
+    
     $query = "INSERT INTO results (lottery, draw_date, winning_numbers, bonus_numbers, jackpot, winners, status, notes) 
-              VALUES (?, ?, ?, ?, ?, 0, ?, ?)";
+              VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
     $stmt = $db->prepare($query);
     $stmt->execute([
         $data->lottery,
@@ -34,6 +63,7 @@ try {
         json_encode($data->numbers),
         json_encode($data->bonusNumbers),
         $data->jackpot,
+        count($winners),
         $status,
         $data->notes ?? ''
     ]);
@@ -41,7 +71,8 @@ try {
     echo json_encode([
         'success' => true,
         'message' => 'Result uploaded successfully',
-        'winners' => 0
+        'winners' => count($winners),
+        'winnerDetails' => $winners
     ]);
     
 } catch(PDOException $exception) {

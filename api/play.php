@@ -49,6 +49,28 @@ foreach ($data->bonusNumbers as $num) {
 try {
     $lotteryName = ucfirst($data->lottery) . ' Lotto';
     
+    // Check if draw time has passed
+    $checkDrawQuery = "SELECT draw_date FROM upcoming_draws WHERE lottery = ? AND draw_date = ?";
+    $stmt = $db->prepare($checkDrawQuery);
+    $stmt->execute([$lotteryName, $data->drawDate]);
+    $draw = $stmt->fetch(PDO::FETCH_ASSOC);
+    
+    if (!$draw) {
+        http_response_code(400);
+        echo json_encode(['error' => 'This draw is no longer available for play']);
+        exit;
+    }
+    
+    // Check if current time is past the draw time
+    $drawDateTime = new DateTime($draw['draw_date']);
+    $now = new DateTime();
+    
+    if ($now >= $drawDateTime) {
+        http_response_code(400);
+        echo json_encode(['error' => 'Draw time has passed. You cannot play this lottery anymore.']);
+        exit;
+    }
+    
     $query = "INSERT INTO entries (user_id, lottery, numbers, bonus_numbers, draw_date) VALUES (?, ?, ?, ?, ?)";
     $stmt = $db->prepare($query);
     $stmt->execute([
