@@ -51,7 +51,7 @@ switch ($path) {
         require 'upcoming-draws.php';
         break;
     case 'api/admin-upload-result':
-        require 'admin-upload-result-enhanced.php';
+        require 'admin-upload-result.php';
         break;
     case 'api/admin-delete-result':
         require 'admin-delete-result.php';
@@ -64,6 +64,9 @@ switch ($path) {
         break;
     case 'api/users':
         require 'users.php';
+        break;
+    case 'api/winners':
+        require 'winners.php';
         break;
     default:
         http_response_code(404);

@@ -179,7 +179,11 @@ export class PlayLotteryComponent implements OnInit {
         }
         
         if (result.success) {
-      
+          this.toastService.showSuccess('Entry submitted successfully!');
+          
+          // Trigger navbar to refresh jackpot immediately
+          window.dispatchEvent(new CustomEvent('jackpotUpdated'));
+          
           this.showSuccessPopup = true;
  
           setTimeout(() => {

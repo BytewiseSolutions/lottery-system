@@ -33,6 +33,11 @@ export class NavbarComponent implements OnInit {
     setInterval(() => this.updatePoolMoney(), 60000);
     this.initStickyHeader();
     
+    // Listen for jackpot update events
+    window.addEventListener('jackpotUpdated', () => {
+      this.updatePoolMoney();
+    });
+    
     // Check current route
     this.router.events.pipe(
       filter(event => event instanceof NavigationEnd)

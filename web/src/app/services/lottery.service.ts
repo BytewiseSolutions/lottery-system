@@ -127,4 +127,18 @@ export class LotteryService {
       bonusNumbers
     });
   }
+
+  getEntries(): Observable<any> {
+    const token = localStorage.getItem('token');
+    return this.http.get<any>(`${this.apiUrl}/entries`, {
+      headers: { 'Authorization': `Bearer ${token}` }
+    });
+  }
+
+  getWinners(): Observable<any> {
+    const token = localStorage.getItem('token');
+    return this.http.get<any>(`${this.apiUrl}/winners`, {
+      headers: { 'Authorization': `Bearer ${token}` }
+    });
+  }
 }

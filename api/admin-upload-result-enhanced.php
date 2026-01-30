@@ -41,23 +41,29 @@ try {
     
     $resultId = $db->lastInsertId();
     
-    // Count winners
-    $winnersQuery = "SELECT COUNT(*) as winners FROM entries 
-                     WHERE lottery = ? 
-                     AND draw_date = DATE(?)
-                     AND JSON_CONTAINS(numbers, ?)
-                     AND JSON_CONTAINS(bonus_numbers, ?)";
-    $stmt = $db->prepare($winnersQuery);
-    $stmt->execute([
-        $data->lottery,
-        $data->drawDate,
-        json_encode($data->numbers),
-        json_encode($data->bonusNumbers)
-    ]);
-    $winnersResult = $stmt->fetch(PDO::FETCH_ASSOC);
-    $winners = $winnersResult['winners'] ?? 0;
+    $entriesQuery = "SELECT * FROM entries WHERE lottery = ? AND DATE(draw_date) = DATE(?)";
+    $stmt = $db->prepare($entriesQuery);
+    $stmt->execute([$data->lottery, $data->drawDate]);
+    $entries = $stmt->fetchAll(PDO::FETCH_ASSOC);
     
-    // Update winners count
+    $winners = 0;
+    $winningNums = $data->numbers;
+    $bonusNums = $data->bonusNumbers;
+    
+    foreach ($entries as $entry) {
+        $entryNums = json_decode($entry['numbers'], true);
+        $entryBonus = json_decode($entry['bonus_numbers'], true);
+        
+        sort($entryNums);
+        sort($entryBonus);
+        sort($winningNums);
+        sort($bonusNums);
+        
+        if ($entryNums === $winningNums && $entryBonus === $bonusNums) {
+            $winners++;
+        }
+    }
+    
     $updateQuery = "UPDATE results SET winners = ? WHERE id = ?";
     $db->prepare($updateQuery)->execute([$winners, $resultId]);
     

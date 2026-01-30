@@ -24,8 +24,10 @@
             <button class="mobile-sidebar-toggle" (click)="toggleMobileSidebar()">
               <i class="fas fa-bars"></i>
             </button>
-            <a (click)="goHome()">Home</a>
-            <i class="fas fa-chevron-right"></i>
+            @if (activeSection !== 'dashboard') {
+              <a (click)="onSectionChange('dashboard')" style="cursor: pointer;">Dashboard</a>
+              <i class="fas fa-chevron-right"></i>
+            }
             <span>{{ getPageTitle() }}</span>
           </div>
           
@@ -231,10 +233,12 @@
                         <label>Draw Date:</label>
                         <span>{{ uploadSuccessData.drawDate | date:'medium' }}</span>
                       </div>
-                      <div class="summary-item">
-                        <label>Jackpot:</label>
-                        <span>${{ uploadSuccessData.jackpot }}</span>
-                      </div>
+                      @if (uploadSuccessData.jackpot && uploadSuccessData.jackpot !== 'N/A') {
+                        <div class="summary-item">
+                          <label>Jackpot:</label>
+                          <span>${{ uploadSuccessData.jackpot }}</span>
+                        </div>
+                      }
                       <div class="summary-item">
                         <label>Status:</label>
                         <span class="status-badge published">{{ uploadSuccessData.status || 'Published' }}</span>
@@ -460,6 +464,105 @@
             (deleteUser)="onDeleteUser($event)"
             (pageChange)="onUsersPageChange($event)">
           </app-user-management>
+        }
+
+        <!-- Entries Section -->
+        @if (activeSection === 'entries') {
+          <section class="entries-section">
+            <div class="card">
+              <div class="card-header">
+                <h3>All Entries</h3>
+              </div>
+              <div class="table-responsive">
+                <table class="data-table">
+                  <thead>
+                    <tr>
+                      <th>#</th>
+                      <th>User</th>
+                      <th>Lottery</th>
+                      <th>Numbers</th>
+                      <th>Bonus</th>
+                      <th>Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    @for (entry of entries; track entry.id; let i = $index) {
+                      <tr>
+                        <td>{{ i + 1 }}</td>
+                        <td>{{ entry.user_name || 'User ' + entry.user_id }}</td>
+                        <td>{{ entry.lottery }}</td>
+                        <td>
+                          <div class="numbers-row">
+                            @for (num of parseNumbers(entry.numbers); track $index) {
+                              <span class="number-badge small">{{ num }}</span>
+                            }
+                          </div>
+                        </td>
+                        <td>
+                          <div class="numbers-row">
+                            @for (num of parseNumbers(entry.bonus_numbers); track $index) {
+                              <span class="number-badge small bonus">{{ num }}</span>
+                            }
+                          </div>
+                        </td>
+                        <td>
+                          <button class="btn-icon" title="View Details" (click)="viewEntry(entry)">
+                            <i class="fas fa-eye"></i>
+                          </button>
+                        </td>
+                      </tr>
+                    }
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </section>
+        }
+
+        <!-- Winners Section -->
+        @if (activeSection === 'winners') {
+          <section class="winners-section">
+            <div class="card">
+              <div class="card-header">
+                <h3>All Winners</h3>
+              </div>
+              <div class="table-responsive">
+                <table class="data-table">
+                  <thead>
+                    <tr>
+                      <th>#</th>
+                      <th>User</th>
+                      <th>Contact</th>
+                      <th>Lottery</th>
+                      <th>Prize</th>
+                      <th>Status</th>
+                      <th>Draw Date</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    @for (winner of winners; track winner.id; let i = $index) {
+                      <tr>
+                        <td>{{ i + 1 }}</td>
+                        <td>{{ winner.full_name }}</td>
+                        <td>
+                          <div>{{ winner.email || '-' }}</div>
+                          <div><small>{{ winner.phone || '-' }}</small></div>
+                        </td>
+                        <td>{{ winner.lottery }}</td>
+                        <td class="prize-amount">${{ winner.prize_amount }}</td>
+                        <td>
+                          <span class="status-badge" [class]="winner.status">
+                            {{ winner.status }}
+                          </span>
+                        </td>
+                        <td>{{ winner.draw_date | date:'short' }}</td>
+                      </tr>
+                    }
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </section>
         }
 
         <!-- Activity Logs Section -->

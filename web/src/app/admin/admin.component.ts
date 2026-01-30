@@ -94,6 +94,8 @@ export class AdminComponent implements OnInit, OnDestroy {
   usersCurrentPage = 1;
   usersTotalPages = 1;
   usersSearchQuery = '';
+  entries: any[] = [];
+  winners: any[] = [];
   paginatedResults: any[] = [];
   editingResult: any = null;
   editResultForm: FormGroup;
@@ -300,6 +302,12 @@ export class AdminComponent implements OnInit, OnDestroy {
       case 'users':
         this.loadUsers();
         break;
+      case 'entries':
+        this.loadEntries();
+        break;
+      case 'winners':
+        this.loadWinners();
+        break;
     }
   }
 
@@ -310,6 +318,8 @@ export class AdminComponent implements OnInit, OnDestroy {
       'manage': 'Manage Results',
       'analytics': 'Analytics & Reports',
       'users': 'User Management',
+      'entries': 'Entries',
+      'winners': 'Winners',
       'logs': 'Activity Logs',
       'settings': 'Settings'
     };
@@ -1083,5 +1093,55 @@ export class AdminComponent implements OnInit, OnDestroy {
     } else {
       console.log('No matching draw found for:', lotteryType);
     }
+  }
+
+  loadEntries() {
+    this.lotteryService.getEntries()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (entries) => {
+          this.entries = entries;
+        },
+        error: (error) => {
+          console.error('Error loading entries:', error);
+          this.entries = [];
+        }
+      });
+  }
+
+  loadWinners() {
+    this.lotteryService.getWinners()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (winners) => {
+          this.winners = winners;
+        },
+        error: (error) => {
+          console.error('Error loading winners:', error);
+          this.winners = [];
+        }
+      });
+  }
+
+  parseNumbers(numbersJson: string): number[] {
+    try {
+      return JSON.parse(numbersJson);
+    } catch {
+      return [];
+    }
+  }
+
+  viewEntry(entry: any) {
+    this.uploadSuccessData = {
+      lottery: entry.lottery,
+      drawDate: entry.draw_date,
+      jackpot: 'N/A',
+      winningNumbers: this.parseNumbers(entry.numbers),
+      bonusNumbers: this.parseNumbers(entry.bonus_numbers),
+      status: 'Entry',
+      message: `Entry Details - ${entry.user_name || 'User ' + entry.user_id}`,
+      isError: false
+    };
+    this.showSuccessModal = true;
   }
 }

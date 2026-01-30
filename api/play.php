@@ -87,15 +87,21 @@ try {
     
     // Update jackpot - add $0.01 per entry
     $updateJackpot = "UPDATE upcoming_draws SET jackpot = jackpot + 0.01 
-                      WHERE lottery = ? AND DATE(draw_date) = ? LIMIT 1";
+                      WHERE lottery = ? AND DATE(draw_date) = DATE(?) LIMIT 1";
     $stmt = $db->prepare($updateJackpot);
     $result = $stmt->execute([$lotteryName, $data->drawDate]);
     $rowsAffected = $stmt->rowCount();
-    error_log("Jackpot update: lottery=$lotteryName, date=$data->drawDate, rows affected=$rowsAffected, result=$result");
+    error_log("Jackpot update: lottery=$lotteryName, date=$data->drawDate, rows affected=$rowsAffected");
     
     if ($rowsAffected === 0) {
         error_log("WARNING: No rows updated! Check if lottery name and date match in upcoming_draws table");
     }
+    
+    // Get updated jackpot
+    $getJackpot = "SELECT jackpot FROM upcoming_draws WHERE lottery = ? AND DATE(draw_date) = DATE(?) LIMIT 1";
+    $stmt = $db->prepare($getJackpot);
+    $stmt->execute([$lotteryName, $data->drawDate]);
+    $updatedJackpot = $stmt->fetchColumn();
     
     echo json_encode([
         'success' => true,
@@ -104,7 +110,8 @@ try {
         'numbers' => $data->numbers,
         'bonusNumbers' => $data->bonusNumbers,
         'lottery' => $data->lottery,
-        'drawDate' => $data->drawDate
+        'drawDate' => $data->drawDate,
+        'updatedJackpot' => $updatedJackpot
     ]);
     
 } catch(PDOException $exception) {
