@@ -64,12 +64,33 @@ try {
             // Create new user
             $input = json_decode(file_get_contents('php://input'), true);
             
-            $stmt = $db->prepare("INSERT INTO users (full_name, email, phone, is_active) VALUES (?, ?, ?, ?)");
+            // Validate required fields
+            if (empty($input['full_name']) || empty($input['email']) || empty($input['password'])) {
+                http_response_code(400);
+                echo json_encode(['success' => false, 'error' => 'Full name, email, and password are required']);
+                break;
+            }
+            
+            // Check if email already exists
+            $checkStmt = $db->prepare("SELECT id FROM users WHERE email = ?");
+            $checkStmt->execute([$input['email']]);
+            if ($checkStmt->fetch()) {
+                http_response_code(400);
+                echo json_encode(['success' => false, 'error' => 'Email already exists']);
+                break;
+            }
+            
+            // Hash password
+            $hashedPassword = password_hash($input['password'], PASSWORD_DEFAULT);
+            
+            $stmt = $db->prepare("INSERT INTO users (full_name, email, phone, password_hash, is_active, email_verified) VALUES (?, ?, ?, ?, ?, ?)");
             $stmt->execute([
                 $input['full_name'],
                 $input['email'],
                 $input['phone'] ?? null,
-                $input['is_active'] ?? true
+                $hashedPassword,
+                $input['is_active'] ?? true,
+                false
             ]);
             
             echo json_encode(['success' => true, 'id' => $db->lastInsertId()]);

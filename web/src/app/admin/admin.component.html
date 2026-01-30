@@ -12,6 +12,7 @@
           [storagePercentage]="storagePercentage"
           [memoryUsage]="memoryUsage"
           [lastLogin]="lastLogin"
+          [adminName]="adminName"
           (sectionChange)="onSectionChange($event); closeMobileSidebar()"
           (logoutClick)="onSidebarLogout()">
         </app-admin-sidebar>
@@ -21,15 +22,16 @@
 
         <header class="top-bar">
           <div class="breadcrumb">
-            <button class="mobile-sidebar-toggle" (click)="toggleMobileSidebar()">
-              <i class="fas fa-bars"></i>
-            </button>
             @if (activeSection !== 'dashboard') {
               <a (click)="onSectionChange('dashboard')" style="cursor: pointer;">Dashboard</a>
               <i class="fas fa-chevron-right"></i>
             }
             <span>{{ getPageTitle() }}</span>
           </div>
+          
+          <button class="mobile-sidebar-toggle" (click)="toggleMobileSidebar()">
+            <i class="fas fa-bars"></i>
+          </button>
           
           <div class="top-bar-actions">
             <div class="search-box">
@@ -565,17 +567,40 @@
                   <thead>
                     <tr>
                       <th>#</th>
-                      <th>Recipient</th>
+                      <th>Recipient Type</th>
                       <th>Message</th>
+                      <th>Sent Count</th>
+                      <th>Sent By</th>
                       <th>Sent At</th>
                     </tr>
                   </thead>
                   <tbody>
-                    <tr>
-                      <td colspan="4" style="text-align: center; padding: 2rem; color: #a0aec0;">
-                        No notifications sent yet
-                      </td>
-                    </tr>
+                    @if (notifications.length === 0) {
+                      <tr>
+                        <td colspan="6" style="text-align: center; padding: 2rem; color: #a0aec0;">
+                          No notifications sent yet
+                        </td>
+                      </tr>
+                    } @else {
+                      @for (notification of notifications; track notification.id; let i = $index) {
+                        <tr>
+                          <td>{{ i + 1 }}</td>
+                          <td>
+                            <span class="status-badge">
+                              {{ notification.recipient_type.replace('_', ' ') }}
+                            </span>
+                          </td>
+                          <td>
+                            <div style="max-width: 300px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+                              {{ notification.message }}
+                            </div>
+                          </td>
+                          <td>{{ notification.sent_count }}</td>
+                          <td>{{ notification.sent_by_name }}</td>
+                          <td>{{ notification.created_at | date:'short' }}</td>
+                        </tr>
+                      }
+                    }
                   </tbody>
                 </table>
               </div>
@@ -613,6 +638,7 @@
                       <th>#</th>
                       <th>User</th>
                       <th>Lottery</th>
+                      <th class="hide-on-desktop">Date</th>
                       <th>Numbers</th>
                       <th>Bonus</th>
                       <th>Actions</th>
@@ -621,24 +647,25 @@
                   <tbody>
                     @for (entry of entries; track entry.id; let i = $index) {
                       <tr>
-                        <td>{{ i + 1 }}</td>
-                        <td>{{ entry.user_name || 'User ' + entry.user_id }}</td>
-                        <td>{{ entry.lottery }}</td>
-                        <td>
+                        <td data-label="#">{{ i + 1 }}</td>
+                        <td data-label="User">{{ entry.user_name || 'User ' + entry.user_id }}</td>
+                        <td data-label="Lottery">{{ entry.lottery }}</td>
+                        <td data-label="Date" class="hide-on-desktop">{{ entry.created_at | date:'dd/MM/yy, HH:mm' }}</td>
+                        <td data-label="Numbers">
                           <div class="numbers-row">
                             @for (num of parseNumbers(entry.numbers); track $index) {
                               <span class="number-badge small">{{ num }}</span>
                             }
                           </div>
                         </td>
-                        <td>
+                        <td data-label="Bonus">
                           <div class="numbers-row">
                             @for (num of parseNumbers(entry.bonus_numbers); track $index) {
                               <span class="number-badge small bonus">{{ num }}</span>
                             }
                           </div>
                         </td>
-                        <td>
+                        <td data-label="Actions">
                           <button class="btn-icon" title="View Details" (click)="viewEntry(entry)">
                             <i class="fas fa-eye"></i>
                           </button>
@@ -675,20 +702,24 @@
                   <tbody>
                     @for (winner of filteredWinners; track winner.id; let i = $index) {
                       <tr>
-                        <td>{{ i + 1 }}</td>
-                        <td>{{ winner.full_name }}</td>
-                        <td>
+                        <td data-label="#">{{ i + 1 }}</td>
+                        <td data-label="User">
+                          <div class="winner-name-mobile">{{ winner.full_name }}</div>
+                          <div class="winner-email-mobile">{{ winner.email || '-' }}</div>
+                        </td>
+                        <td data-label="Phone" class="winner-phone-mobile">{{ winner.phone || '-' }}</td>
+                        <td data-label="Contact">
                           <div>{{ winner.email || '-' }}</div>
                           <div><small>{{ winner.phone || '-' }}</small></div>
                         </td>
-                        <td>{{ winner.lottery }}</td>
-                        <td class="prize-amount">${{ winner.prize_amount }}</td>
-                        <td>
+                        <td data-label="Lottery">{{ winner.lottery }}</td>
+                        <td data-label="Status">
                           <span class="status-badge" [class]="winner.status">
                             {{ winner.status }}
                           </span>
                         </td>
-                        <td>{{ winner.draw_date | date:'short' }}</td>
+                        <td data-label="Prize">${{ winner.prize_amount }}</td>
+                        <td data-label="Draw Date">{{ winner.draw_date | date:'short' }}</td>
                       </tr>
                     }
                   </tbody>
@@ -824,6 +855,42 @@
               <div class="modal-actions">
                 <button type="button" class="btn btn-outline" (click)="cancelCustomDateRange()">Cancel</button>
                 <button type="button" class="btn btn-primary" (click)="applyCustomDateRange()" [disabled]="!customDateFrom || !customDateTo">Apply Range</button>
+              </div>
+            </div>
+          </div>
+        }
+
+        <!-- Add User Modal -->
+        @if (showAddUserModal) {
+          <div class="modal-overlay" (click)="cancelAddUser()">
+            <div class="modal-content" (click)="$event.stopPropagation()">
+              <div class="modal-header">
+                <h3>Add New User</h3>
+                <button class="btn-close" (click)="cancelAddUser()">
+                  <i class="fas fa-times"></i>
+                </button>
+              </div>
+              <div class="modal-body">
+                <div class="form-group">
+                  <label for="newUserFullName">Full Name</label>
+                  <input type="text" id="newUserFullName" [(ngModel)]="newUserData.full_name" class="form-control" required>
+                </div>
+                <div class="form-group">
+                  <label for="newUserEmail">Email</label>
+                  <input type="email" id="newUserEmail" [(ngModel)]="newUserData.email" class="form-control" required>
+                </div>
+                <div class="form-group">
+                  <label for="newUserPhone">Phone</label>
+                  <input type="tel" id="newUserPhone" [(ngModel)]="newUserData.phone" class="form-control">
+                </div>
+                <div class="form-group">
+                  <label for="newUserPassword">Password (min 6 characters)</label>
+                  <input type="password" id="newUserPassword" [(ngModel)]="newUserData.password" class="form-control" required>
+                </div>
+              </div>
+              <div class="modal-actions">
+                <button type="button" class="btn btn-outline" (click)="cancelAddUser()">Cancel</button>
+                <button type="button" class="btn btn-primary" (click)="submitAddUser()" [disabled]="!newUserData.full_name || !newUserData.email || !newUserData.password || newUserData.password.length < 6">Add User</button>
               </div>
             </div>
           </div>

@@ -76,6 +76,7 @@ export class AdminComponent implements OnInit, OnDestroy {
   storagePercentage = 12;
   memoryUsage = 45;
   lastLogin = 'Today, 09:30';
+  adminName = 'Administrator';
   currentDate = '';
   currentTime = '';
   
@@ -101,6 +102,7 @@ export class AdminComponent implements OnInit, OnDestroy {
   filteredWinners: any[] = [];
   notificationRecipient = 'all_users';
   notificationMessage = '';
+  notifications: any[] = [];
   paginatedResults: any[] = [];
   editingResult: any = null;
   editResultForm: FormGroup;
@@ -128,6 +130,8 @@ export class AdminComponent implements OnInit, OnDestroy {
   customDateFrom = '';
   customDateTo = '';
   showCustomDateModal = false;
+  showAddUserModal = false;
+  newUserData = { full_name: '', email: '', phone: '', password: '' };
 
   constructor(
     private router: Router,
@@ -208,7 +212,13 @@ export class AdminComponent implements OnInit, OnDestroy {
       const userData = JSON.parse(user);
       this.isAuthenticated = userData.role === 'admin' || userData.email === 'admin@totalfreelotto.com';
       
-      if (!this.isAuthenticated) {
+      if (this.isAuthenticated) {
+        console.log('User data from localStorage:', userData);
+        console.log('Full name:', userData.fullName || userData.full_name);
+        this.adminName = userData.fullName || userData.full_name || userData.email?.split('@')[0] || 'Admin';
+        console.log('Admin name set to:', this.adminName);
+        this.updateLastLogin();
+      } else {
         this.router.navigate(['/']);
       }
     } catch (error) {
@@ -315,7 +325,7 @@ export class AdminComponent implements OnInit, OnDestroy {
         this.loadWinners();
         break;
       case 'notifications':
-        // Notifications section doesn't need data loading
+        this.loadNotifications();
         break;
     }
   }
@@ -661,7 +671,6 @@ export class AdminComponent implements OnInit, OnDestroy {
   // Placeholder methods for functionality
   exportResults() {
     if (this.results.length === 0) {
-      alert('No results to export');
       return;
     }
     const csvData = this.convertToCSV(this.results);
@@ -770,7 +779,6 @@ export class AdminComponent implements OnInit, OnDestroy {
   
   applyBulkAction() {
     if (this.selectedResults.size === 0) {
-      alert('Please select results first');
       return;
     }
     
@@ -814,7 +822,6 @@ export class AdminComponent implements OnInit, OnDestroy {
               this.loadResults();
               this.selectedResults.clear();
               this.bulkAction = '';
-              alert(`${ids.length} results updated successfully`);
             }
           },
           error: (error) => {
@@ -836,7 +843,6 @@ export class AdminComponent implements OnInit, OnDestroy {
               this.loadResults();
               this.selectedResults.clear();
               this.bulkAction = '';
-              alert(`${ids.length} results deleted successfully`);
             }
           },
           error: (error) => {
@@ -852,7 +858,8 @@ export class AdminComponent implements OnInit, OnDestroy {
   }
   
   addUser() {
-    console.log('Adding new user');
+    // Show add user modal instead of prompts
+    this.showAddUserModal = true;
   }
   
   editUser(user: any) {
@@ -902,7 +909,6 @@ export class AdminComponent implements OnInit, OnDestroy {
     const validBonusNumbers = this.editBonusNumbers.filter(n => n > 0);
     
     if (validWinningNumbers.length !== 5 || validBonusNumbers.length !== 2) {
-      alert('Please enter exactly 5 winning numbers and 2 bonus numbers');
       return;
     }
     
@@ -918,11 +924,9 @@ export class AdminComponent implements OnInit, OnDestroy {
         next: () => {
           this.loadResults();
           this.cancelEditResult();
-          alert('Result updated successfully!');
         },
         error: (error) => {
           console.error('Error updating result:', error);
-          alert('Failed to update result.');
         }
       });
   }
@@ -974,12 +978,10 @@ export class AdminComponent implements OnInit, OnDestroy {
     const validBonusNumbers = this.bonusNumbers.filter(n => n > 0);
     
     if (validWinningNumbers.length !== 5) {
-      alert('Please enter exactly 5 winning numbers (1-75)');
       return;
     }
     
     if (validBonusNumbers.length !== 2) {
-      alert('Please enter exactly 2 bonus numbers (1-75)');
       return;
     }
     
@@ -1021,7 +1023,6 @@ export class AdminComponent implements OnInit, OnDestroy {
         error: (error) => {
           console.error('Error uploading result:', error);
           this.isUploading = false;
-          alert('Error uploading result. Please try again.');
         }
       });
   }
@@ -1041,7 +1042,6 @@ export class AdminComponent implements OnInit, OnDestroy {
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: () => {
-          alert('Draft saved successfully!');
           this.isUploading = false;
           this.showUploadModal = false;
           this.loadResults();
@@ -1049,7 +1049,6 @@ export class AdminComponent implements OnInit, OnDestroy {
         error: (error) => {
           console.error('Error saving draft:', error);
           this.isUploading = false;
-          alert('Error saving draft. Please try again.');
         }
       });
   }
@@ -1099,10 +1098,47 @@ export class AdminComponent implements OnInit, OnDestroy {
     }
   }
 
-  updateDrawTime(draw: any, event: any) {}
-  announceWinner(draw: any) {}
-  editDrawTime(draw: any) {}
-  deleteDraw(id: number) {}
+  updateDrawTime(draw: any, event: any) {
+    const newDate = event.target.value;
+    if (!newDate) return;
+    
+    this.lotteryService.updateDrawTime(draw.id, { draw_date: newDate })
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: () => {
+          draw.drawDate = newDate;
+        },
+        error: (error) => {
+          console.error('Error updating draw time:', error);
+        }
+      });
+  }
+
+  announceWinner(draw: any) {
+    this.onSectionChange('upload');
+  }
+
+  editDrawTime(draw: any) {
+    const input = document.querySelector(`input[value="${this.formatDateTimeForInput(draw.drawDate)}"]`) as HTMLInputElement;
+    if (input) {
+      input.focus();
+    }
+  }
+
+  deleteDraw(id: number) {
+    if (confirm('Are you sure you want to delete this draw?')) {
+      this.lotteryService.deleteDraw(id)
+        .pipe(takeUntil(this.destroy$))
+        .subscribe({
+          next: () => {
+            this.loadUpcomingDraws();
+          },
+          error: (error) => {
+            console.error('Error deleting draw:', error);
+          }
+        });
+    }
+  }
 
   onLotteryTypeChange() {
     const lotteryType = this.uploadForm.get('lottery')?.value;
@@ -1198,14 +1234,22 @@ export class AdminComponent implements OnInit, OnDestroy {
 
   markAsPaid(winner: any) {
     if (confirm(`Mark ${winner.full_name} as paid?`)) {
-      winner.status = 'paid';
-      alert('Winner marked as paid!');
+      this.lotteryService.markAsPaid(winner.id)
+        .pipe(takeUntil(this.destroy$))
+        .subscribe({
+          next: () => {
+            winner.status = 'paid';
+            winner.paid_at = new Date().toISOString();
+          },
+          error: (error) => {
+            console.error('Error marking as paid:', error);
+          }
+        });
     }
   }
 
   sendNotification() {
     if (!this.notificationMessage.trim()) {
-      alert('Please enter a message');
       return;
     }
     
@@ -1213,13 +1257,70 @@ export class AdminComponent implements OnInit, OnDestroy {
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (response) => {
-          alert(`Notification sent to ${response.sent_count} recipients!`);
           this.notificationMessage = '';
+          this.loadNotifications();
         },
         error: (error) => {
           console.error('Error sending notification:', error);
-          alert('Failed to send notification');
         }
       });
+  }
+
+  loadNotifications() {
+    this.lotteryService.getNotifications()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (notifications) => {
+          this.notifications = notifications;
+        },
+        error: (error) => {
+          console.error('Error loading notifications:', error);
+          this.notifications = [];
+        }
+      });
+  }
+
+  updateLastLogin() {
+    const now = new Date();
+    const today = now.toDateString();
+    const yesterday = new Date(now.getTime() - 86400000).toDateString();
+    const dateStr = now.toDateString();
+    
+    if (dateStr === today) {
+      this.lastLogin = `Today, ${now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}`;
+    } else if (dateStr === yesterday) {
+      this.lastLogin = `Yesterday, ${now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}`;
+    } else {
+      this.lastLogin = now.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) + ', ' + 
+                       now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+    }
+  }
+
+  submitAddUser() {
+    if (!this.newUserData.full_name || !this.newUserData.email || !this.newUserData.password) {
+      return;
+    }
+    
+    if (this.newUserData.password.length < 6) {
+      return;
+    }
+    
+    this.lotteryService.createUser(this.newUserData)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: () => {
+          this.showAddUserModal = false;
+          this.newUserData = { full_name: '', email: '', phone: '', password: '' };
+          this.loadUsers();
+        },
+        error: (error) => {
+          console.error('Error creating user:', error);
+        }
+      });
+  }
+
+  cancelAddUser() {
+    this.showAddUserModal = false;
+    this.newUserData = { full_name: '', email: '', phone: '', password: '' };
   }
 }

@@ -71,6 +71,12 @@ switch ($path) {
     case 'api/send-notification':
         require 'send-notification.php';
         break;
+    case 'api/mark-paid':
+        require 'mark-paid.php';
+        break;
+    case 'api/notifications':
+        require 'notifications.php';
+        break;
     default:
         http_response_code(404);
         echo json_encode(['error' => 'Endpoint not found']);

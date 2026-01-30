@@ -149,4 +149,19 @@ export class LotteryService {
       { headers: { 'Authorization': `Bearer ${token}` } }
     );
   }
+
+  markAsPaid(winnerId: number): Observable<any> {
+    const token = localStorage.getItem('token');
+    return this.http.post<any>(`${this.apiUrl}/mark-paid`,
+      { winner_id: winnerId },
+      { headers: { 'Authorization': `Bearer ${token}` } }
+    );
+  }
+
+  getNotifications(): Observable<any> {
+    const token = localStorage.getItem('token');
+    return this.http.get<any>(`${this.apiUrl}/notifications`, {
+      headers: { 'Authorization': `Bearer ${token}` }
+    });
+  }
 }

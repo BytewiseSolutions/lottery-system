@@ -3,12 +3,8 @@
     <div class="logo">
       <i class="fas fa-crown"></i>
       <div class="logo-text">
-        <h2>Admin Panel</h2>
+        <h2>Admin</h2>
       </div>
-    </div>
-    <div class="connection-status" [class.connected]="isConnected">
-      <i class="fas fa-circle"></i>
-      {{ isConnected ? 'Connected' : 'Offline' }}
     </div>
   </div>
 
@@ -80,7 +76,7 @@
         <i class="fas fa-user-shield"></i>
       </div>
       <div class="user-info">
-        <strong>Administrator</strong>
+        <strong>{{ adminName }}</strong>
         <small>Last login: {{ lastLogin }}</small>
       </div>
       <div class="user-actions">

@@ -66,21 +66,101 @@ try {
     $headers .= "Content-Type: text/html; charset=UTF-8\r\n";
     
     $subject = "Notification from Total Free Lotto";
-    $emailBody = "
+    $emailBody = '
+    <!DOCTYPE html>
     <html>
-    <body style='font-family: Arial, sans-serif;'>
-        <h2>Total Free Lotto</h2>
-        <p>" . nl2br(htmlspecialchars($data['message'])) . "</p>
-        <hr>
-        <p style='color: #666; font-size: 12px;'>This is an automated message from Total Free Lotto.</p>
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    </head>
+    <body style="margin: 0; padding: 0; background-color: #f4f4f4; font-family: Arial, sans-serif;">
+        <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #f4f4f4; padding: 20px 0;">
+            <tr>
+                <td align="center">
+                    <table width="600" cellpadding="0" cellspacing="0" style="background-color: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+                        <!-- Header -->
+                        <tr>
+                            <td style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 30px 40px; text-align: center;">
+                                <h1 style="margin: 0; color: #ffffff; font-size: 28px; font-weight: bold;">🎰 Total Free Lotto</h1>
+                                <p style="margin: 10px 0 0 0; color: #ffffff; font-size: 14px; opacity: 0.9;">Your Chance to Win Big!</p>
+                            </td>
+                        </tr>
+                        
+                        <!-- Content -->
+                        <tr>
+                            <td style="padding: 40px;">
+                                <div style="color: #333333; font-size: 16px; line-height: 1.6;">
+                                    ' . nl2br(htmlspecialchars($data['message'])) . '
+                                </div>
+                            </td>
+                        </tr>
+                        
+                        <!-- CTA Button (optional) -->
+                        <tr>
+                            <td style="padding: 0 40px 40px 40px; text-align: center;">
+                                <a href="https://totalfreelotto.com" style="display: inline-block; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: #ffffff; text-decoration: none; padding: 14px 40px; border-radius: 6px; font-weight: bold; font-size: 16px;">Visit Website</a>
+                            </td>
+                        </tr>
+                        
+                        <!-- Footer -->
+                        <tr>
+                            <td style="background-color: #f8f9fa; padding: 30px 40px; border-top: 1px solid #e9ecef;">
+                                <!-- Contact Info -->
+                                <table width="100%" cellpadding="0" cellspacing="0">
+                                    <tr>
+                                        <td style="text-align: center; padding-bottom: 20px;">
+                                            <p style="margin: 0; color: #666; font-size: 14px; font-weight: bold;">Contact Us</p>
+                                            <p style="margin: 5px 0 0 0; color: #666; font-size: 13px;">Email: support@totalfreelotto.com</p>
+                                            <p style="margin: 5px 0 0 0; color: #666; font-size: 13px;">Phone: +27 (0) 123 456 789</p>
+                                        </td>
+                                    </tr>
+                                </table>
+                                
+                                <!-- Social Media -->
+                                <table width="100%" cellpadding="0" cellspacing="0">
+                                    <tr>
+                                        <td style="text-align: center; padding: 20px 0;">
+                                            <a href="https://facebook.com/totalfreelotto" style="display: inline-block; margin: 0 10px; text-decoration: none;">
+                                                <img src="https://img.icons8.com/color/48/facebook.png" alt="Facebook" width="32" height="32" style="display: block;">
+                                            </a>
+                                            <a href="https://twitter.com/totalfreelotto" style="display: inline-block; margin: 0 10px; text-decoration: none;">
+                                                <img src="https://img.icons8.com/color/48/twitter.png" alt="Twitter" width="32" height="32" style="display: block;">
+                                            </a>
+                                        </td>
+                                    </tr>
+                                </table>
+                                
+                                <!-- Unsubscribe -->
+                                <table width="100%" cellpadding="0" cellspacing="0">
+                                    <tr>
+                                        <td style="text-align: center; padding-top: 20px; border-top: 1px solid #e9ecef;">
+                                            <p style="margin: 0; color: #999; font-size: 12px;">
+                                                You are receiving this email because you are a member of Total Free Lotto.<br>
+                                                <a href="https://totalfreelotto.com/unsubscribe" style="color: #667eea; text-decoration: none;">Unsubscribe</a> | 
+                                                <a href="https://totalfreelotto.com/privacy" style="color: #667eea; text-decoration: none;">Privacy Policy</a>
+                                            </p>
+                                            <p style="margin: 10px 0 0 0; color: #999; font-size: 11px;">
+                                                © ' . date('Y') . ' Total Free Lotto. All rights reserved.
+                                            </p>
+                                        </td>
+                                    </tr>
+                                </table>
+                            </td>
+                        </tr>
+                    </table>
+                </td>
+            </tr>
+        </table>
     </body>
     </html>
-    ";
+    ';
     
     foreach ($recipients as $recipient) {
-        if (mail($recipient['email'], $subject, $emailBody, $headers)) {
+        $personalizedBody = str_replace('[NAME]', $recipient['full_name'], $emailBody);
+        if (mail($recipient['email'], $subject, $personalizedBody, $headers)) {
             $sentCount++;
         }
+        error_log("Notification sent to: " . $recipient['email']);
     }
     
     // Save notification to database
