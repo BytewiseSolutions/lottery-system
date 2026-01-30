@@ -1,283 +1,160 @@
-.modern-navbar {
-  position: sticky;
-  top: 0;
-  z-index: 1000;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  box-shadow: 0 2px 20px rgba(0, 0, 0, 0.1);
-  backdrop-filter: blur(10px);
+.header-section.header-active {
+  position: fixed;
+  top: 0px;
+  left: 0px;
+  width: 100%;
+  z-index: 99;
+  box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.2);
+  animation-name: fadeInDown;
+  animation-duration: 1s;
 }
 
-.navbar-container {
-  max-width: 1400px;
-  margin: 0 auto;
-  padding: 0 2rem;
-}
-
-.navbar-content {
+.header-top-area-inner {
   display: flex;
-  align-items: center;
   justify-content: space-between;
-  height: 80px;
-  gap: 2rem;
+  align-items: center;
+  flex-wrap: nowrap;
 }
 
-.navbar-logo {
+.header-top-area-inner .right-area {
   display: flex;
   align-items: center;
   flex-shrink: 0;
 }
 
-.navbar-logo img {
-  height: 50px;
-  width: auto;
-  background: white;
-  padding: 8px 12px;
-  border-radius: 12px;
-  transition: transform 0.3s ease;
+.header-top-area-inner .logo {
+  flex-shrink: 1;
+  min-width: 0;
 }
 
-.navbar-logo:hover img {
-  transform: scale(1.05);
+.modal.show {
+  display: block !important;
 }
 
-.navbar-menu {
-  display: flex;
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  gap: 0.5rem;
+.modal {
+  background: rgba(0, 0, 0, 0.5);
 }
 
-.navbar-menu li a {
-  display: block;
-  padding: 0.75rem 1.25rem;
-  color: white;
-  text-decoration: none;
-  font-weight: 500;
-  font-size: 0.95rem;
-  border-radius: 8px;
-  transition: all 0.3s ease;
-  position: relative;
+.log-reg-area {
+  white-space: nowrap;
 }
 
-.navbar-menu li a:hover {
-  background: rgba(255, 255, 255, 0.15);
-  transform: translateY(-2px);
+.cart-area {
+  margin-left: 10px;
 }
 
-.navbar-menu li a.active {
-  background: rgba(255, 255, 255, 0.2);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-}
-
-.navbar-actions {
-  display: flex;
-  align-items: center;
-  gap: 1.5rem;
-  flex-shrink: 0;
-}
-
-.jackpot-display {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  padding: 0.5rem 1rem;
-  background: rgba(255, 255, 255, 0.15);
-  border-radius: 10px;
-  backdrop-filter: blur(10px);
-}
-
-.jackpot-label {
-  font-size: 0.75rem;
-  color: rgba(255, 255, 255, 0.9);
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  font-weight: 600;
-}
-
-.jackpot-amount {
-  font-size: 1.25rem;
-  font-weight: 700;
-  color: #ffd700;
-  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-}
-
-.auth-buttons {
-  display: flex;
-  gap: 0.75rem;
-}
-
-.auth-buttons button {
-  padding: 0.65rem 1.5rem;
-  border: none;
-  border-radius: 8px;
-  font-weight: 600;
-  font-size: 0.95rem;
-  cursor: pointer;
-  transition: all 0.3s ease;
-}
-
-.btn-login {
-  background: transparent;
-  color: white;
-  border: 2px solid white;
-}
-
-.btn-login:hover {
-  background: white;
-  color: #667eea;
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(255, 255, 255, 0.3);
-}
-
-.btn-signup {
-  background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-  color: white;
-}
-
-.btn-signup:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(245, 87, 108, 0.4);
-}
-
-.btn-logout {
-  background: rgba(255, 255, 255, 0.2);
-  color: white;
-  border: 2px solid white;
-}
-
-.btn-logout:hover {
-  background: white;
-  color: #667eea;
-  transform: translateY(-2px);
-}
-
-.mobile-toggle {
-  display: none;
-  flex-direction: column;
-  gap: 5px;
-  background: transparent;
-  border: none;
-  cursor: pointer;
-  padding: 8px;
-}
-
-.mobile-toggle span {
-  width: 28px;
-  height: 3px;
-  background: white;
-  border-radius: 3px;
-  transition: all 0.3s ease;
-}
-
-.mobile-toggle.active span:nth-child(1) {
-  transform: rotate(45deg) translate(8px, 8px);
-}
-
-.mobile-toggle.active span:nth-child(2) {
-  opacity: 0;
-}
-
-.mobile-toggle.active span:nth-child(3) {
-  transform: rotate(-45deg) translate(7px, -7px);
-}
-
+/* Mobile menu styles from original LotteryApp */
 @media (max-width: 991px) {
-  .navbar-menu {
+  .menu {
     display: none;
     position: fixed;
-    top: 0;
-    left: 0;
-    width: 320px;
-    height: 100vh;
-    background: linear-gradient(180deg, #667eea 0%, #764ba2 100%);
-    flex-direction: column;
-    padding: 100px 2rem 2rem;
-    gap: 0;
-    box-shadow: 4px 0 20px rgba(0, 0, 0, 0.3);
-    overflow-y: auto;
-  }
-
-  .navbar-menu.mobile-open {
-    display: flex;
-    animation: slideInLeft 0.3s ease;
-  }
-
-  .navbar-menu li {
+    background-color: rgb(108, 0, 146);
     width: 100%;
+    max-width: 500px;
+    top: 0px;
+    left: 0;
+    padding-left: 15px;
+    height: calc(100vh - 0px);
+    overflow-y: scroll;
+    padding-top: 20px;
+    padding-bottom: 20px;
+    z-index: 33;
   }
-
-  .navbar-menu li a {
-    padding: 1rem;
-    border-radius: 0;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  
+  .menu.mobile-open {
+    display: block;
+    animation-name: fadeInLeft;
+    animation-duration: 1s;
   }
-
-  .mobile-toggle {
+  
+  .menu li {
+    width: 100%;
+    padding: 0;
+    display: block;
+  }
+  
+  .menu li a {
     display: flex;
+    justify-content: space-between;
+    align-items: center;
+    color: #e9eeff;
+    text-transform: uppercase;
+    padding-right: 20px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    padding-top: 7px;
+    padding-bottom: 7px;
   }
-
-  .navbar-content {
-    height: 70px;
+  
+  .menu li a:hover,
+  .menu li a.active {
+    color: #27ff5a;
   }
-
-  .jackpot-display {
-    padding: 0.4rem 0.8rem;
-  }
-
-  .jackpot-label {
-    font-size: 0.65rem;
-  }
-
-  .jackpot-amount {
-    font-size: 1rem;
+  
+  .header-section {
+    box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.2);
+    background-color: rgb(108, 0, 146);
+    border: none;
+    padding: 10px 0px;
   }
 }
 
 @media (max-width: 767px) {
-  .navbar-container {
-    padding: 0 1rem;
+  .header-top-area-inner {
+    align-self: center;
+    align-items: center;
+    align-content: center;
   }
-
-  .navbar-content {
-    gap: 1rem;
+  
+  .header-top-area-inner .logo h2 {
+    font-size: 18px;
   }
-
-  .navbar-logo img {
-    height: 40px;
-    padding: 6px 10px;
+  
+  .custom-button1, .custom-button2 {
+    padding: 1px 4px;
+    font-size: 14px;
+    line-height: 24px;
   }
-
-  .auth-buttons button {
-    padding: 0.5rem 1rem;
-    font-size: 0.85rem;
+  
+  .header-top-area-inner .right-area .log-reg-area .custom-button1:first-child {
+    margin-right: 5px;
   }
-
-  .jackpot-display {
+  
+  .header-top-area-inner .right-area .log-reg-area {
+    margin-right: 10px;
+  }
+  
+  .header-top-area-inner .right-area .cart-area .amount {
     display: none;
   }
 }
 
-@media (max-width: 480px) {
-  .auth-buttons {
-    gap: 0.5rem;
-  }
-
-  .auth-buttons button {
-    padding: 0.4rem 0.8rem;
-    font-size: 0.8rem;
-  }
-
-  .navbar-menu {
-    width: 280px;
+@media (max-width: 575px) {
+  .menu {
+    width: calc(100% - 65px);
+    max-width: calc(100% - 65px);
   }
 }
 
-@keyframes slideInLeft {
-  from {
-    transform: translateX(-100%);
+@media (max-width: 414px) {
+  .header-top-area-inner .right-area .log-reg-area {
+    margin-right: 0px;
   }
-  to {
-    transform: translateX(0);
+  
+  .header-top-area-inner .logo h2 {
+    font-size: 16px;
+  }
+}
+
+@media (max-width: 340px) {
+  .header-top-area-inner .right-area .log-reg-area .custom-button1:first-child {
+    margin-right: 1px;
+  }
+  
+  .header-top-area-inner .right-area .log-reg-area {
+    margin-right: 5px;
+  }
+  
+  .header-top-area-inner .logo h2 {
+    font-size: 14px;
   }
 }

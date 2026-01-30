@@ -1,43 +1,52 @@
-<header class="modern-navbar">
-  <nav class="navbar-container">
-    <div class="navbar-content">
-      <a routerLink="/" class="navbar-logo">
-        <img src="assets/images/logoo.png" alt="Total Free Lotto">
-      </a>
-
-      <ul class="navbar-menu" [class.mobile-open]="mobileMenuOpen">
-        <li><a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}" (click)="mobileMenuOpen = false">Home</a></li>
-        <li><a routerLink="/lotteries" routerLinkActive="active" (click)="mobileMenuOpen = false">Lotteries</a></li>
-        <li><a routerLink="/results" routerLinkActive="active" (click)="mobileMenuOpen = false">Results</a></li>
-        <li><a routerLink="/about" routerLinkActive="active" (click)="mobileMenuOpen = false">About</a></li>
-        <li><a routerLink="/faq" routerLinkActive="active" (click)="mobileMenuOpen = false">FAQ</a></li>
-        <li><a routerLink="/history" routerLinkActive="active" (click)="mobileMenuOpen = false">History</a></li>
-        <li><a routerLink="/contact" routerLinkActive="active" (click)="mobileMenuOpen = false">Contact</a></li>
-      </ul>
-
-      <div class="navbar-actions">
-        <div class="jackpot-display">
-          <span class="jackpot-label">Jackpot</span>
-          <span class="jackpot-amount">${{totalPoolMoney | number:'1.2-2'}}</span>
-        </div>
-        
-        <div class="auth-buttons" *ngIf="!isLoggedIn">
-          <button class="btn-login" (click)="openLoginModal()">Login</button>
-          <button class="btn-signup" (click)="openRegisterModal()">Sign Up</button>
-        </div>
-        
-        <div class="auth-buttons" *ngIf="isLoggedIn">
-          <button class="btn-logout" (click)="logout()">Logout</button>
+<header class="top-header">
+  <div class="header-top-area">
+    <div class="container">
+      <div class="row">
+        <div class="col-lg-12">
+          <div class="header-top-area-inner">
+            <a routerLink="/" class="logo">
+              <img src="assets/images/logoo.png" alt="Total Free Lotto" style="height: 60px; width: auto; background: white; padding: 5px; border-radius: 5px;">
+            </a>
+            <div class="right-area">
+              <div class="log-reg-area" *ngIf="!isLoggedIn">
+                <a href="#" class="custom-button1" (click)="openRegisterModal()">Sign Up</a>
+                <a href="#" class="custom-button2" (click)="openLoginModal()">Login</a>
+              </div>
+              <div class="log-reg-area" *ngIf="isLoggedIn">
+                <a href="#" class="custom-button2" (click)="logout()">Logout</a>
+              </div>
+              <div class="cart-area">
+                <div class="amount">
+                  <h4 class="mony">$ {{totalPoolMoney | number:'1.2-2'}}</h4>
+                  <p>Winning Money Now</p>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
-
-      <button class="mobile-toggle" [class.active]="mobileMenuOpen" (click)="toggleMobileMenu()">
-        <span></span>
-        <span></span>
-        <span></span>
-      </button>
     </div>
-  </nav>
+  </div>
+  <div class="header-section">
+    <div class="container">
+      <div class="header-wrapper">
+        <ul class="menu" [class.mobile-open]="mobileMenuOpen">
+          <li><a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}" (click)="mobileMenuOpen = false">Home</a></li>
+          <li><a routerLink="/lotteries" routerLinkActive="active" (click)="mobileMenuOpen = false">Lotteries</a></li>
+          <li><a routerLink="/results" routerLinkActive="active" (click)="mobileMenuOpen = false">Results</a></li>
+          <li><a routerLink="/about" routerLinkActive="active" (click)="mobileMenuOpen = false">About</a></li>
+          <li><a routerLink="/faq" routerLinkActive="active" (click)="mobileMenuOpen = false">Faq</a></li>
+          <li><a routerLink="/history" routerLinkActive="active" (click)="mobileMenuOpen = false">History</a></li>
+          <li><a routerLink="/contact" routerLinkActive="active" (click)="mobileMenuOpen = false">Contact</a></li>
+        </ul>
+        <div class="header-bar d-lg-none" [class.active]="mobileMenuOpen" (click)="toggleMobileMenu()">
+          <span></span>
+          <span></span>
+          <span></span>
+        </div>
+      </div>
+    </div>
+  </div>
 </header>
 
 <app-login 
