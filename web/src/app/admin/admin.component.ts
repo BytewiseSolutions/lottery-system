@@ -47,6 +47,8 @@ export class AdminComponent implements OnInit, OnDestroy {
   
   totalResults = 0;
   totalUsers = 0;
+  totalEntries = 0;
+  totalWinners = 0;
   activeLotteries = 0;
   pendingActions = 0;
   resultsGrowth = 0;
@@ -96,6 +98,9 @@ export class AdminComponent implements OnInit, OnDestroy {
   usersSearchQuery = '';
   entries: any[] = [];
   winners: any[] = [];
+  filteredWinners: any[] = [];
+  notificationRecipient = 'all_users';
+  notificationMessage = '';
   paginatedResults: any[] = [];
   editingResult: any = null;
   editResultForm: FormGroup;
@@ -306,7 +311,11 @@ export class AdminComponent implements OnInit, OnDestroy {
         this.loadEntries();
         break;
       case 'winners':
+      case 'payments':
         this.loadWinners();
+        break;
+      case 'notifications':
+        // Notifications section doesn't need data loading
         break;
     }
   }
@@ -320,6 +329,8 @@ export class AdminComponent implements OnInit, OnDestroy {
       'users': 'User Management',
       'entries': 'Entries',
       'winners': 'Winners',
+      'payments': 'Payments',
+      'notifications': 'Notifications',
       'logs': 'Activity Logs',
       'settings': 'Settings'
     };
@@ -446,7 +457,11 @@ export class AdminComponent implements OnInit, OnDestroy {
   }
 
   onSearch() {
-    this.filterResults();
+    if (this.activeSection === 'manage') {
+      this.filterResults();
+    } else if (this.activeSection === 'winners') {
+      this.filterWinners();
+    }
   }
 
   refreshData() {
@@ -511,13 +526,37 @@ export class AdminComponent implements OnInit, OnDestroy {
         next: (response: any) => {
           const stats = response.stats || response;
           this.totalUsers = stats.totalUsers || 0;
-          this.activeLotteries = 3; // Fixed number of lottery types
-          this.pendingActions = 0; // Calculate based on actual data
-          this.resultsGrowth = 12; // Calculate from historical data
-          this.usersGrowth = -5; // Calculate from historical data
+          this.activeLotteries = 3;
+          this.pendingActions = 0;
+          this.resultsGrowth = 12;
+          this.usersGrowth = -5;
         },
         error: (error) => {
           console.error('Error loading dashboard stats:', error);
+        }
+      });
+    
+    // Load total entries
+    this.lotteryService.getEntries()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (entries) => {
+          this.totalEntries = entries.length;
+        },
+        error: () => {
+          this.totalEntries = 0;
+        }
+      });
+    
+    // Load total winners
+    this.lotteryService.getWinners()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (winners) => {
+          this.totalWinners = winners.length;
+        },
+        error: () => {
+          this.totalWinners = 0;
         }
       });
   }
@@ -1115,10 +1154,12 @@ export class AdminComponent implements OnInit, OnDestroy {
       .subscribe({
         next: (winners) => {
           this.winners = winners;
+          this.filteredWinners = winners;
         },
         error: (error) => {
           console.error('Error loading winners:', error);
           this.winners = [];
+          this.filteredWinners = [];
         }
       });
   }
@@ -1129,6 +1170,16 @@ export class AdminComponent implements OnInit, OnDestroy {
     } catch {
       return [];
     }
+  }
+
+  filterWinners() {
+    const query = this.searchQuery.toLowerCase();
+    this.filteredWinners = this.winners.filter(winner => 
+      winner.full_name?.toLowerCase().includes(query) ||
+      winner.email?.toLowerCase().includes(query) ||
+      winner.phone?.toLowerCase().includes(query) ||
+      winner.lottery?.toLowerCase().includes(query)
+    );
   }
 
   viewEntry(entry: any) {
@@ -1143,5 +1194,32 @@ export class AdminComponent implements OnInit, OnDestroy {
       isError: false
     };
     this.showSuccessModal = true;
+  }
+
+  markAsPaid(winner: any) {
+    if (confirm(`Mark ${winner.full_name} as paid?`)) {
+      winner.status = 'paid';
+      alert('Winner marked as paid!');
+    }
+  }
+
+  sendNotification() {
+    if (!this.notificationMessage.trim()) {
+      alert('Please enter a message');
+      return;
+    }
+    
+    this.lotteryService.sendNotification(this.notificationRecipient, this.notificationMessage)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (response) => {
+          alert(`Notification sent to ${response.sent_count} recipients!`);
+          this.notificationMessage = '';
+        },
+        error: (error) => {
+          console.error('Error sending notification:', error);
+          alert('Failed to send notification');
+        }
+      });
   }
 }

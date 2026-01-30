@@ -48,6 +48,22 @@
         </a>
       </li>
       <li>
+        <a (click)="onSectionClick('payments')" [class.active]="activeSection === 'payments'">
+          <div class="nav-item-content">
+            <i class="fas fa-money-bill-wave"></i>
+            <span>Payments</span>
+          </div>
+        </a>
+      </li>
+      <li>
+        <a (click)="onSectionClick('notifications')" [class.active]="activeSection === 'notifications'">
+          <div class="nav-item-content">
+            <i class="fas fa-bell"></i>
+            <span>Notifications</span>
+          </div>
+        </a>
+      </li>
+      <li>
         <a (click)="onSectionClick('users')" [class.active]="activeSection === 'users'">
           <div class="nav-item-content">
             <i class="fas fa-users"></i>

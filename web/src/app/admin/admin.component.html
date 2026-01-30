@@ -101,6 +101,32 @@
                   </span>
                 </div>
               </div>
+              
+              <div class="stat-card warning">
+                <div class="stat-icon">
+                  <i class="fas fa-ticket-alt"></i>
+                </div>
+                <div class="stat-content">
+                  <h3>{{ totalEntries }}</h3>
+                  <p>Total Entries</p>
+                  <span class="stat-trend positive">
+                    <i class="fas fa-arrow-up"></i> All time
+                  </span>
+                </div>
+              </div>
+              
+              <div class="stat-card success">
+                <div class="stat-icon">
+                  <i class="fas fa-trophy"></i>
+                </div>
+                <div class="stat-content">
+                  <h3>{{ totalWinners }}</h3>
+                  <p>Total Winners</p>
+                  <span class="stat-trend positive">
+                    <i class="fas fa-arrow-up"></i> All time
+                  </span>
+                </div>
+              </div>
             </div>
 
             <div class="card">
@@ -450,6 +476,113 @@
           </app-manage-results>
         }
 
+        <!-- Payments Section -->
+        @if (activeSection === 'payments') {
+          <section class="payments-section">
+            <div class="card">
+              <div class="card-header">
+                <h3>Winner Payments</h3>
+              </div>
+              <div class="table-responsive">
+                <table class="data-table">
+                  <thead>
+                    <tr>
+                      <th>#</th>
+                      <th>Winner</th>
+                      <th>Contact</th>
+                      <th>Lottery</th>
+                      <th>Prize</th>
+                      <th>Status</th>
+                      <th>Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    @for (winner of filteredWinners; track winner.id; let i = $index) {
+                      <tr>
+                        <td>{{ i + 1 }}</td>
+                        <td>{{ winner.full_name }}</td>
+                        <td>
+                          <div>{{ winner.email || '-' }}</div>
+                          <div><small>{{ winner.phone || '-' }}</small></div>
+                        </td>
+                        <td>{{ winner.lottery }}</td>
+                        <td class="prize-amount">${{ winner.prize_amount }}</td>
+                        <td>
+                          <span class="status-badge" [class]="winner.status">
+                            {{ winner.status }}
+                          </span>
+                        </td>
+                        <td>
+                          @if (winner.status === 'pending') {
+                            <button class="btn-icon success" title="Mark as Paid" (click)="markAsPaid(winner)">
+                              <i class="fas fa-check"></i>
+                            </button>
+                          }
+                        </td>
+                      </tr>
+                    }
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </section>
+        }
+
+        <!-- Notifications Section -->
+        @if (activeSection === 'notifications') {
+          <section class="notifications-section">
+            <div class="card">
+              <div class="card-header">
+                <h3>Send Notifications</h3>
+              </div>
+              <div class="card-body">
+                <div class="notification-form">
+                  <div class="form-group">
+                    <label>Recipient Type</label>
+                    <select class="form-control" [(ngModel)]="notificationRecipient">
+                      <option value="all_users">All Users</option>
+                      <option value="winners">All Winners</option>
+                      <option value="pending_winners">Pending Winners</option>
+                    </select>
+                  </div>
+                  <div class="form-group">
+                    <label>Message</label>
+                    <textarea class="form-control" rows="5" [(ngModel)]="notificationMessage" placeholder="Enter notification message..."></textarea>
+                  </div>
+                  <button class="btn btn-primary" (click)="sendNotification()">
+                    <i class="fas fa-paper-plane"></i> Send Notification
+                  </button>
+                </div>
+              </div>
+            </div>
+            
+            <div class="card" style="margin-top: 2rem;">
+              <div class="card-header">
+                <h3>Recent Notifications</h3>
+              </div>
+              <div class="table-responsive">
+                <table class="data-table">
+                  <thead>
+                    <tr>
+                      <th>#</th>
+                      <th>Recipient</th>
+                      <th>Message</th>
+                      <th>Sent At</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td colspan="4" style="text-align: center; padding: 2rem; color: #a0aec0;">
+                        No notifications sent yet
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </section>
+        }
+
         <!-- User Management Section -->
         @if (activeSection === 'users') {
           <app-user-management
@@ -540,7 +673,7 @@
                     </tr>
                   </thead>
                   <tbody>
-                    @for (winner of winners; track winner.id; let i = $index) {
+                    @for (winner of filteredWinners; track winner.id; let i = $index) {
                       <tr>
                         <td>{{ i + 1 }}</td>
                         <td>{{ winner.full_name }}</td>

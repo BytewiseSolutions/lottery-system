@@ -126,29 +126,38 @@ try {
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         INDEX idx_ip_action (ip_address, action_type)
     );
+
+    -- Payments
+    CREATE TABLE IF NOT EXISTS payments (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        winner_id INT NOT NULL,
+        amount DECIMAL(10,2) NOT NULL,
+        status VARCHAR(20) DEFAULT 'pending',
+        payment_method VARCHAR(50),
+        transaction_id VARCHAR(100),
+        approved_by INT,
+        approved_at TIMESTAMP NULL,
+        notes TEXT,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (winner_id) REFERENCES winners(id) ON DELETE CASCADE,
+        FOREIGN KEY (approved_by) REFERENCES users(id)
+    );
+
+    -- Notifications
+    CREATE TABLE IF NOT EXISTS notifications (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        recipient_type VARCHAR(20) NOT NULL,
+        message TEXT NOT NULL,
+        sent_by INT NOT NULL,
+        sent_count INT DEFAULT 0,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (sent_by) REFERENCES users(id)
+    );
     ";
     
     $db->exec($sql);
     echo "✅ All tables created\n\n";
-    
-    // Create admin user
-    echo "Creating admin user...\n";
-    $adminEmail = 'admin@totalfreelotto.com';
-    $adminPassword = password_hash('Admin@2026!', PASSWORD_BCRYPT);
-    
-    $stmt = $db->prepare("INSERT IGNORE INTO users (full_name, email, password, role, email_verified, is_active) VALUES (?, ?, ?, 'admin', TRUE, TRUE)");
-    $stmt->execute(['Admin User', $adminEmail, $adminPassword]);
-    
-    if ($stmt->rowCount() > 0) {
-        echo "✅ Admin user created\n";
-    } else {
-        echo "ℹ️  Admin user already exists\n";
-    }
-    
-    echo "\n=== Setup Complete ===\n";
-    echo "Admin Login:\n";
-    echo "  Email: admin@totalfreelotto.com\n";
-    echo "  Password: Admin@2026!\n";
+    echo "=== Setup Complete ===\n";
     
 } catch (Exception $e) {
     echo "❌ Error: " . $e->getMessage() . "\n";

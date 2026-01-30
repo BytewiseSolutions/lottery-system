@@ -141,4 +141,12 @@ export class LotteryService {
       headers: { 'Authorization': `Bearer ${token}` }
     });
   }
+
+  sendNotification(recipientType: string, message: string): Observable<any> {
+    const token = localStorage.getItem('token');
+    return this.http.post<any>(`${this.apiUrl}/send-notification`, 
+      { recipient_type: recipientType, message },
+      { headers: { 'Authorization': `Bearer ${token}` } }
+    );
+  }
 }
