@@ -17,6 +17,7 @@ export class AdminSidebarComponent {
   @Input() storagePercentage = 12;
   @Input() memoryUsage = 45;
   @Input() lastLogin = 'Today, 09:30';
+  @Input() adminName = 'Administrator';
 
   @Output() sectionChange = new EventEmitter<string>();
   @Output() logoutClick = new EventEmitter<void>();

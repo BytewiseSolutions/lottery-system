@@ -12,6 +12,7 @@
           [storagePercentage]="storagePercentage"
           [memoryUsage]="memoryUsage"
           [lastLogin]="lastLogin"
+          [adminName]="adminName"
           (sectionChange)="onSectionChange($event); closeMobileSidebar()"
           (logoutClick)="onSidebarLogout()">
         </app-admin-sidebar>
@@ -21,13 +22,16 @@
 
         <header class="top-bar">
           <div class="breadcrumb">
-            <button class="mobile-sidebar-toggle" (click)="toggleMobileSidebar()">
-              <i class="fas fa-bars"></i>
-            </button>
-            <a (click)="goHome()">Home</a>
-            <i class="fas fa-chevron-right"></i>
+            @if (activeSection !== 'dashboard') {
+              <a (click)="onSectionChange('dashboard')" style="cursor: pointer;">Dashboard</a>
+              <i class="fas fa-chevron-right"></i>
+            }
             <span>{{ getPageTitle() }}</span>
           </div>
+          
+          <button class="mobile-sidebar-toggle" (click)="toggleMobileSidebar()">
+            <i class="fas fa-bars"></i>
+          </button>
           
           <div class="top-bar-actions">
             <div class="search-box">
@@ -96,6 +100,32 @@
                   <p>Pending Actions</p>
                   <span class="stat-trend neutral">
                     <i class="fas fa-minus"></i> Needs attention
+                  </span>
+                </div>
+              </div>
+              
+              <div class="stat-card warning">
+                <div class="stat-icon">
+                  <i class="fas fa-ticket-alt"></i>
+                </div>
+                <div class="stat-content">
+                  <h3>{{ totalEntries }}</h3>
+                  <p>Total Entries</p>
+                  <span class="stat-trend positive">
+                    <i class="fas fa-arrow-up"></i> All time
+                  </span>
+                </div>
+              </div>
+              
+              <div class="stat-card success">
+                <div class="stat-icon">
+                  <i class="fas fa-trophy"></i>
+                </div>
+                <div class="stat-content">
+                  <h3>{{ totalWinners }}</h3>
+                  <p>Total Winners</p>
+                  <span class="stat-trend positive">
+                    <i class="fas fa-arrow-up"></i> All time
                   </span>
                 </div>
               </div>
@@ -231,10 +261,12 @@
                         <label>Draw Date:</label>
                         <span>{{ uploadSuccessData.drawDate | date:'medium' }}</span>
                       </div>
-                      <div class="summary-item">
-                        <label>Jackpot:</label>
-                        <span>${{ uploadSuccessData.jackpot }}</span>
-                      </div>
+                      @if (uploadSuccessData.jackpot && uploadSuccessData.jackpot !== 'N/A') {
+                        <div class="summary-item">
+                          <label>Jackpot:</label>
+                          <span>${{ uploadSuccessData.jackpot }}</span>
+                        </div>
+                      }
                       <div class="summary-item">
                         <label>Status:</label>
                         <span class="status-badge published">{{ uploadSuccessData.status || 'Published' }}</span>
@@ -446,6 +478,136 @@
           </app-manage-results>
         }
 
+        <!-- Payments Section -->
+        @if (activeSection === 'payments') {
+          <section class="payments-section">
+            <div class="card">
+              <div class="card-header">
+                <h3>Winner Payments</h3>
+              </div>
+              <div class="table-responsive">
+                <table class="data-table">
+                  <thead>
+                    <tr>
+                      <th>#</th>
+                      <th>Winner</th>
+                      <th>Contact</th>
+                      <th>Lottery</th>
+                      <th>Prize</th>
+                      <th>Status</th>
+                      <th>Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    @for (winner of filteredWinners; track winner.id; let i = $index) {
+                      <tr>
+                        <td>{{ i + 1 }}</td>
+                        <td>{{ winner.full_name }}</td>
+                        <td>
+                          <div>{{ winner.email || '-' }}</div>
+                          <div><small>{{ winner.phone || '-' }}</small></div>
+                        </td>
+                        <td>{{ winner.lottery }}</td>
+                        <td class="prize-amount">${{ winner.prize_amount }}</td>
+                        <td>
+                          <span class="status-badge" [class]="winner.status">
+                            {{ winner.status }}
+                          </span>
+                        </td>
+                        <td>
+                          @if (winner.status === 'pending') {
+                            <button class="btn-icon success" title="Mark as Paid" (click)="markAsPaid(winner)">
+                              <i class="fas fa-check"></i>
+                            </button>
+                          }
+                        </td>
+                      </tr>
+                    }
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </section>
+        }
+
+        <!-- Notifications Section -->
+        @if (activeSection === 'notifications') {
+          <section class="notifications-section">
+            <div class="card">
+              <div class="card-header">
+                <h3>Send Notifications</h3>
+              </div>
+              <div class="card-body">
+                <div class="notification-form">
+                  <div class="form-group">
+                    <label>Recipient Type</label>
+                    <select class="form-control" [(ngModel)]="notificationRecipient">
+                      <option value="all_users">All Users</option>
+                      <option value="winners">All Winners</option>
+                      <option value="pending_winners">Pending Winners</option>
+                    </select>
+                  </div>
+                  <div class="form-group">
+                    <label>Message</label>
+                    <textarea class="form-control" rows="5" [(ngModel)]="notificationMessage" placeholder="Enter notification message..."></textarea>
+                  </div>
+                  <button class="btn btn-primary" (click)="sendNotification()">
+                    <i class="fas fa-paper-plane"></i> Send Notification
+                  </button>
+                </div>
+              </div>
+            </div>
+            
+            <div class="card" style="margin-top: 2rem;">
+              <div class="card-header">
+                <h3>Recent Notifications</h3>
+              </div>
+              <div class="table-responsive">
+                <table class="data-table">
+                  <thead>
+                    <tr>
+                      <th>#</th>
+                      <th>Recipient Type</th>
+                      <th>Message</th>
+                      <th>Sent Count</th>
+                      <th>Sent By</th>
+                      <th>Sent At</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    @if (notifications.length === 0) {
+                      <tr>
+                        <td colspan="6" style="text-align: center; padding: 2rem; color: #a0aec0;">
+                          No notifications sent yet
+                        </td>
+                      </tr>
+                    } @else {
+                      @for (notification of notifications; track notification.id; let i = $index) {
+                        <tr>
+                          <td>{{ i + 1 }}</td>
+                          <td>
+                            <span class="status-badge">
+                              {{ notification.recipient_type.replace('_', ' ') }}
+                            </span>
+                          </td>
+                          <td>
+                            <div style="max-width: 300px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+                              {{ notification.message }}
+                            </div>
+                          </td>
+                          <td>{{ notification.sent_count }}</td>
+                          <td>{{ notification.sent_by_name }}</td>
+                          <td>{{ notification.created_at | date:'short' }}</td>
+                        </tr>
+                      }
+                    }
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </section>
+        }
+
         <!-- User Management Section -->
         @if (activeSection === 'users') {
           <app-user-management
@@ -460,6 +622,111 @@
             (deleteUser)="onDeleteUser($event)"
             (pageChange)="onUsersPageChange($event)">
           </app-user-management>
+        }
+
+        <!-- Entries Section -->
+        @if (activeSection === 'entries') {
+          <section class="entries-section">
+            <div class="card">
+              <div class="card-header">
+                <h3>All Entries</h3>
+              </div>
+              <div class="table-responsive">
+                <table class="data-table">
+                  <thead>
+                    <tr>
+                      <th>#</th>
+                      <th>User</th>
+                      <th>Lottery</th>
+                      <th class="hide-on-desktop">Date</th>
+                      <th>Numbers</th>
+                      <th>Bonus</th>
+                      <th>Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    @for (entry of entries; track entry.id; let i = $index) {
+                      <tr>
+                        <td data-label="#">{{ i + 1 }}</td>
+                        <td data-label="User">{{ entry.user_name || 'User ' + entry.user_id }}</td>
+                        <td data-label="Lottery">{{ entry.lottery }}</td>
+                        <td data-label="Date" class="hide-on-desktop">{{ entry.created_at | date:'dd/MM/yy, HH:mm' }}</td>
+                        <td data-label="Numbers">
+                          <div class="numbers-row">
+                            @for (num of parseNumbers(entry.numbers); track $index) {
+                              <span class="number-badge small">{{ num }}</span>
+                            }
+                          </div>
+                        </td>
+                        <td data-label="Bonus">
+                          <div class="numbers-row">
+                            @for (num of parseNumbers(entry.bonus_numbers); track $index) {
+                              <span class="number-badge small bonus">{{ num }}</span>
+                            }
+                          </div>
+                        </td>
+                        <td data-label="Actions">
+                          <button class="btn-icon" title="View Details" (click)="viewEntry(entry)">
+                            <i class="fas fa-eye"></i>
+                          </button>
+                        </td>
+                      </tr>
+                    }
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </section>
+        }
+
+        <!-- Winners Section -->
+        @if (activeSection === 'winners') {
+          <section class="winners-section">
+            <div class="card">
+              <div class="card-header">
+                <h3>All Winners</h3>
+              </div>
+              <div class="table-responsive">
+                <table class="data-table">
+                  <thead>
+                    <tr>
+                      <th>#</th>
+                      <th>User</th>
+                      <th>Contact</th>
+                      <th>Lottery</th>
+                      <th>Prize</th>
+                      <th>Status</th>
+                      <th>Draw Date</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    @for (winner of filteredWinners; track winner.id; let i = $index) {
+                      <tr>
+                        <td data-label="#">{{ i + 1 }}</td>
+                        <td data-label="User">
+                          <div class="winner-name-mobile">{{ winner.full_name }}</div>
+                          <div class="winner-email-mobile">{{ winner.email || '-' }}</div>
+                        </td>
+                        <td data-label="Phone" class="winner-phone-mobile">{{ winner.phone || '-' }}</td>
+                        <td data-label="Contact">
+                          <div>{{ winner.email || '-' }}</div>
+                          <div><small>{{ winner.phone || '-' }}</small></div>
+                        </td>
+                        <td data-label="Lottery">{{ winner.lottery }}</td>
+                        <td data-label="Status">
+                          <span class="status-badge" [class]="winner.status">
+                            {{ winner.status }}
+                          </span>
+                        </td>
+                        <td data-label="Prize">${{ winner.prize_amount }}</td>
+                        <td data-label="Draw Date">{{ winner.draw_date | date:'short' }}</td>
+                      </tr>
+                    }
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </section>
         }
 
         <!-- Activity Logs Section -->
@@ -588,6 +855,42 @@
               <div class="modal-actions">
                 <button type="button" class="btn btn-outline" (click)="cancelCustomDateRange()">Cancel</button>
                 <button type="button" class="btn btn-primary" (click)="applyCustomDateRange()" [disabled]="!customDateFrom || !customDateTo">Apply Range</button>
+              </div>
+            </div>
+          </div>
+        }
+
+        <!-- Add User Modal -->
+        @if (showAddUserModal) {
+          <div class="modal-overlay" (click)="cancelAddUser()">
+            <div class="modal-content" (click)="$event.stopPropagation()">
+              <div class="modal-header">
+                <h3>Add New User</h3>
+                <button class="btn-close" (click)="cancelAddUser()">
+                  <i class="fas fa-times"></i>
+                </button>
+              </div>
+              <div class="modal-body">
+                <div class="form-group">
+                  <label for="newUserFullName">Full Name</label>
+                  <input type="text" id="newUserFullName" [(ngModel)]="newUserData.full_name" class="form-control" required>
+                </div>
+                <div class="form-group">
+                  <label for="newUserEmail">Email</label>
+                  <input type="email" id="newUserEmail" [(ngModel)]="newUserData.email" class="form-control" required>
+                </div>
+                <div class="form-group">
+                  <label for="newUserPhone">Phone</label>
+                  <input type="tel" id="newUserPhone" [(ngModel)]="newUserData.phone" class="form-control">
+                </div>
+                <div class="form-group">
+                  <label for="newUserPassword">Password (min 6 characters)</label>
+                  <input type="password" id="newUserPassword" [(ngModel)]="newUserData.password" class="form-control" required>
+                </div>
+              </div>
+              <div class="modal-actions">
+                <button type="button" class="btn btn-outline" (click)="cancelAddUser()">Cancel</button>
+                <button type="button" class="btn btn-primary" (click)="submitAddUser()" [disabled]="!newUserData.full_name || !newUserData.email || !newUserData.password || newUserData.password.length < 6">Add User</button>
               </div>
             </div>
           </div>

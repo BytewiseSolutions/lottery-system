@@ -161,10 +161,10 @@
         <span class="close" (click)="onCloseHumanVerification()">&times;</span>
         <h3 style="color: #5949b3; margin-bottom: 20px;">Human Verification</h3>
         <p style="margin-bottom: 30px;">You've played 4+ times today. Please verify you're human to continue.</p>
-        <div style="margin: 20px 0;">
-          <p>Complete the CAPTCHA to verify:</p>
-          <div class="g-recaptcha" data-sitekey="6LeIxAcTAAAAAJcZVRqyHh71UMIEGNQ_MXjiZKhI" data-callback="onCaptchaSuccess"></div>
-          <button class="custom-button2" (click)="onHumanVerified()" [disabled]="!captchaVerified" style="padding: 15px 30px; opacity: 0.5;" [style.opacity]="captchaVerified ? '1' : '0.5'">Submit Entry</button>
+        <div style="margin: 20px 0; display: flex; flex-direction: column; align-items: center;">
+          <p style="margin-bottom: 15px;">Complete the CAPTCHA to verify:</p>
+          <div id="recaptcha-container" class="g-recaptcha" style="display: inline-block;"></div>
+          <button class="custom-button2" (click)="onHumanVerified()" [disabled]="!captchaVerified" style="margin-top: 20px; padding: 15px 30px;" [style.opacity]="captchaVerified ? '1' : '0.5'">Submit Entry</button>
         </div>
       </div>
     </div>

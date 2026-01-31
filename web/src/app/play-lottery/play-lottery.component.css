@@ -373,3 +373,103 @@
   margin-bottom: 20px;
   text-align: center;
 }
+
+@media (max-width: 768px) {
+  .play-section {
+    margin-bottom: 20px;
+  }
+  
+  .play-section h3 {
+    font-size: 22px;
+  }
+  
+  .play-section h4 {
+    font-size: 16px;
+  }
+  
+  .review-section {
+    padding: 15px;
+  }
+  
+  .section-header {
+    padding: 10px 0;
+  }
+  
+  .button-group-fixed {
+    padding: 15px;
+  }
+  
+  .button-group-fixed button {
+    min-width: unset !important;
+  }
+  
+  .success-content {
+    padding: 25px 15px;
+    width: 95%;
+    max-width: none;
+  }
+  
+  .success-content h3 {
+    font-size: 20px;
+  }
+  
+  .success-content p {
+    font-size: 14px;
+  }
+  
+  .success-icon {
+    width: 50px;
+    height: 50px;
+    font-size: 24px;
+  }
+  
+  .success-details {
+    padding: 12px;
+  }
+  
+  .success-number {
+    padding: 3px 6px;
+    font-size: 12px;
+  }
+  
+  .preview-number {
+    padding: 4px 8px;
+    font-size: 13px;
+  }
+}
+
+@media (max-width: 480px) {
+  .play-section h3 {
+    font-size: 20px;
+  }
+  
+  .play-section h4 {
+    font-size: 14px;
+  }
+  
+  .button-group-fixed {
+    padding: 12px;
+  }
+  
+  .button-group-fixed button {
+    padding: 12px 20px;
+    font-size: 14px;
+  }
+  
+  .success-content {
+    padding: 20px 12px;
+  }
+  
+  .success-content h3 {
+    font-size: 18px;
+  }
+  
+  .modal-body {
+    padding: 15px !important;
+  }
+  
+  .quick-pick-btn {
+    font-size: 13px;
+    padding: 10px;
+  }
+}

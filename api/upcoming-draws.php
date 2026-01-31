@@ -1,4 +1,6 @@
 <?php
+error_reporting(0);
+ini_set('display_errors', 0);
 header('Content-Type: application/json');
 header('Access-Control-Allow-Origin: *');
 header('Access-Control-Allow-Methods: GET');
@@ -10,19 +12,17 @@ try {
     $database = new Database();
     $db = $database->getConnection();
     
-    // Archive draws that are 1 hour past their draw time (at 20:00 for 19:00 draws)
     $archiveQuery = "INSERT INTO past_draws (lottery, draw_date, winning_numbers, bonus_numbers, jackpot, winners, status)
                      SELECT lottery, draw_date, '[]', '[]', jackpot, 0, 'completed'
                      FROM upcoming_draws 
-                     WHERE draw_date < DATE_SUB(NOW(), INTERVAL 1 HOUR)";
+                     WHERE draw_date <= NOW()";
     try {
         $db->prepare($archiveQuery)->execute();
     } catch(PDOException $e) {
-        // Ignore duplicate errors
+
     }
     
-    // Delete archived draws (1 hour after draw time)
-    $deleteQuery = "DELETE FROM upcoming_draws WHERE draw_date < DATE_SUB(NOW(), INTERVAL 1 HOUR)";
+    $deleteQuery = "DELETE FROM upcoming_draws WHERE draw_date <= NOW()";
     $db->prepare($deleteQuery)->execute();
     
     // Check how many upcoming draws exist
@@ -56,11 +56,16 @@ try {
             
             error_log("Current day: $currentDay, Current time: $currentTime, Target day: $dayOfWeek");
             
+            // If it's the same day but before draw time, use today
             if ($currentDay == $dayOfWeek && $currentTime < $drawTime) {
                 $nextDraw = date('Y-m-d 19:00:00');
             } else {
-                $dayName = array_search($dayOfWeek, [1 => 'monday', 3 => 'wednesday', 5 => 'friday']);
-                $nextDraw = date('Y-m-d 19:00:00', strtotime('next ' . $dayName));
+                // Otherwise, get next occurrence of this day
+                $daysAhead = ($dayOfWeek - $currentDay + 7) % 7;
+                if ($daysAhead == 0) {
+                    $daysAhead = 7; // If same day but after draw time, go to next week
+                }
+                $nextDraw = date('Y-m-d 19:00:00', strtotime("+$daysAhead days"));
             }
             
             error_log("Creating new draw: $lotteryName on $nextDraw");

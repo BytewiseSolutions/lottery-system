@@ -127,4 +127,41 @@ export class LotteryService {
       bonusNumbers
     });
   }
+
+  getEntries(): Observable<any> {
+    const token = localStorage.getItem('token');
+    return this.http.get<any>(`${this.apiUrl}/entries`, {
+      headers: { 'Authorization': `Bearer ${token}` }
+    });
+  }
+
+  getWinners(): Observable<any> {
+    const token = localStorage.getItem('token');
+    return this.http.get<any>(`${this.apiUrl}/winners`, {
+      headers: { 'Authorization': `Bearer ${token}` }
+    });
+  }
+
+  sendNotification(recipientType: string, message: string): Observable<any> {
+    const token = localStorage.getItem('token');
+    return this.http.post<any>(`${this.apiUrl}/send-notification`, 
+      { recipient_type: recipientType, message },
+      { headers: { 'Authorization': `Bearer ${token}` } }
+    );
+  }
+
+  markAsPaid(winnerId: number): Observable<any> {
+    const token = localStorage.getItem('token');
+    return this.http.post<any>(`${this.apiUrl}/mark-paid`,
+      { winner_id: winnerId },
+      { headers: { 'Authorization': `Bearer ${token}` } }
+    );
+  }
+
+  getNotifications(): Observable<any> {
+    const token = localStorage.getItem('token');
+    return this.http.get<any>(`${this.apiUrl}/notifications`, {
+      headers: { 'Authorization': `Bearer ${token}` }
+    });
+  }
 }

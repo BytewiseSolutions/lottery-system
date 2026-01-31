@@ -34,9 +34,28 @@
                   <strong>{{group.entries[0].lottery}} for {{formatDrawDate(group.entries[0].draw_date)}}</strong>
                   <span class="entry-time">Entry Recorded at: {{formatTime(group.entries[0].created_at)}}</span>
                 </div>
-                <div class="numbers">
-                  <span *ngFor="let num of group.entries[0].numbers" class="number">{{num}}</span>
-                  <span *ngFor="let bonus of group.entries[0].bonus_numbers" class="bonus-number">{{bonus}}</span>
+                <div class="numbers-row">
+                  <div class="numbers">
+                    <span *ngFor="let num of group.entries[0].numbers" 
+                          class="number"
+                          [class.matched]="group.entries[0].matchedNumbers?.includes(num)"
+                          [class.unmatched]="group.entries[0].unmatchedNumbers?.includes(num)">
+                      {{num}}
+                      <i *ngIf="group.entries[0].matchedNumbers?.includes(num)" class="fas fa-check"></i>
+                      <i *ngIf="group.entries[0].unmatchedNumbers?.includes(num)" class="fas fa-times"></i>
+                    </span>
+                    <span *ngFor="let bonus of group.entries[0].bonus_numbers" 
+                          class="bonus-number"
+                          [class.matched]="group.entries[0].matchedBonus?.includes(bonus)"
+                          [class.unmatched]="group.entries[0].unmatchedBonus?.includes(bonus)">
+                      {{bonus}}
+                      <i *ngIf="group.entries[0].matchedBonus?.includes(bonus)" class="fas fa-check"></i>
+                      <i *ngIf="group.entries[0].unmatchedBonus?.includes(bonus)" class="fas fa-times"></i>
+                    </span>
+                  </div>
+                  <div *ngIf="group.entries[0].status" class="entry-status" [class]="group.entries[0].status?.toLowerCase()">
+                    {{group.entries[0].status}}
+                  </div>
                 </div>
                 <button *ngIf="group.hasMoreEntries" 
                         class="more-entries-btn" 
@@ -53,9 +72,28 @@
                     <strong>{{entry.lottery}} for {{formatDrawDate(entry.draw_date)}}</strong>
                     <span class="entry-time">Entry Recorded at: {{formatTime(entry.created_at)}}</span>
                   </div>
-                  <div class="numbers">
-                    <span *ngFor="let num of entry.numbers" class="number">{{num}}</span>
-                    <span *ngFor="let bonus of entry.bonus_numbers" class="bonus-number">{{bonus}}</span>
+                  <div class="numbers-row">
+                    <div class="numbers">
+                      <span *ngFor="let num of entry.numbers" 
+                            class="number"
+                            [class.matched]="entry.matchedNumbers?.includes(num)"
+                            [class.unmatched]="entry.unmatchedNumbers?.includes(num)">
+                        {{num}}
+                        <i *ngIf="entry.matchedNumbers?.includes(num)" class="fas fa-check"></i>
+                        <i *ngIf="entry.unmatchedNumbers?.includes(num)" class="fas fa-times"></i>
+                      </span>
+                      <span *ngFor="let bonus of entry.bonus_numbers" 
+                            class="bonus-number"
+                            [class.matched]="entry.matchedBonus?.includes(bonus)"
+                            [class.unmatched]="entry.unmatchedBonus?.includes(bonus)">
+                        {{bonus}}
+                        <i *ngIf="entry.matchedBonus?.includes(bonus)" class="fas fa-check"></i>
+                        <i *ngIf="entry.unmatchedBonus?.includes(bonus)" class="fas fa-times"></i>
+                      </span>
+                    </div>
+                    <div *ngIf="entry.status" class="entry-status" [class]="entry.status?.toLowerCase()">
+                      {{entry.status}}
+                    </div>
                   </div>
                 </div>
               </div>
@@ -118,11 +156,18 @@
   font-size: 14px;
 }
 
+.numbers-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 15px;
+  margin-bottom: 10px;
+}
+
 .numbers {
   display: flex;
   gap: 8px;
   flex-wrap: wrap;
-  margin-bottom: 10px;
 }
 
 .number {
@@ -133,6 +178,30 @@
   font-weight: 600;
   min-width: 30px;
   text-align: center;
+  position: relative;
+}
+
+.number.matched {
+  background: #28a745;
+}
+
+.number.unmatched {
+  background: #dc3545;
+}
+
+.number i, .bonus-number i {
+  position: absolute;
+  top: -5px;
+  right: -5px;
+  background: white;
+  color: #28a745;
+  border-radius: 50%;
+  width: 16px;
+  height: 16px;
+  font-size: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .bonus-number {
@@ -143,6 +212,39 @@
   font-weight: 600;
   min-width: 30px;
   text-align: center;
+  position: relative;
+}
+
+.bonus-number.matched {
+  background: #218838;
+}
+
+.bonus-number.unmatched {
+  background: #c82333;
+}
+
+.entry-status {
+  display: inline-block;
+  padding: 5px 15px;
+  border-radius: 20px;
+  font-weight: 600;
+  font-size: 14px;
+  white-space: nowrap;
+}
+
+.entry-status.won {
+  background: #28a745;
+  color: white;
+}
+
+.entry-status.lost {
+  background: #dc3545;
+  color: white;
+}
+
+.entry-status.pending {
+  background: #ffc107;
+  color: #333;
 }
 
 .more-entries-btn {
