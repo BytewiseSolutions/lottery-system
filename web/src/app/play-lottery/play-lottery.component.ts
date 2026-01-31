@@ -46,6 +46,15 @@ export class PlayLotteryComponent implements OnInit {
       this.numbers.push(i);
     }
     
+    // Load reCAPTCHA script if not loaded
+    if (!(window as any).grecaptcha) {
+      const script = document.createElement('script');
+      script.src = 'https://www.google.com/recaptcha/api.js';
+      script.async = true;
+      script.defer = true;
+      document.head.appendChild(script);
+    }
+    
     // Setup CAPTCHA callback
     (window as any).onCaptchaSuccess = () => {
       this.captchaVerified = true;
@@ -175,13 +184,32 @@ export class PlayLotteryComponent implements OnInit {
           this.humanVerified = false;
           this.captchaVerified = false;
           this.showHumanVerification = true;
+          this.isLoading = false;
+          
+          // Wait for modal and reCAPTCHA to be ready
+          const renderCaptcha = () => {
+            const container = document.getElementById('recaptcha-container');
+            if (container && (window as any).grecaptcha && (window as any).grecaptcha.render) {
+              try {
+                container.innerHTML = '';
+                (window as any).grecaptcha.render('recaptcha-container', {
+                  'sitekey': '6LeIxAcTAAAAAJcZVRqyHh71UMIEGNQ_MXjiZKhI',
+                  'callback': (token: string) => {
+                    this.captchaVerified = true;
+                  }
+                });
+              } catch (e) {
+                console.error('reCAPTCHA render error:', e);
+              }
+            } else {
+              setTimeout(renderCaptcha, 200);
+            }
+          };
+          setTimeout(renderCaptcha, 300);
           return;
         }
         
         if (result.success) {
-          this.toastService.showSuccess('Entry submitted successfully!');
-          
-          // Trigger navbar to refresh jackpot immediately
           window.dispatchEvent(new CustomEvent('jackpotUpdated'));
           
           this.showSuccessPopup = true;
@@ -215,9 +243,13 @@ export class PlayLotteryComponent implements OnInit {
   }
 
   onHumanVerified() {
+    if (!this.captchaVerified) {
+      this.toastService.showError('Please complete the CAPTCHA verification');
+      return;
+    }
     this.humanVerified = true;
     this.showHumanVerification = false;
-    this.submitEntry(); // Retry submission
+    this.submitEntry();
   }
 
   onCloseHumanVerification() {

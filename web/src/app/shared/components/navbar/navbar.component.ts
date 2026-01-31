@@ -5,6 +5,7 @@ import { LotteryService } from '../../../services/lottery.service';
 import { LoginComponent } from '../login/login.component';
 import { SignupComponent } from '../signup/signup.component';
 import { filter } from 'rxjs/operators';
+import { timeout, catchError } from 'rxjs/operators';
 
 @Component({
   selector: 'app-navbar',
@@ -13,7 +14,7 @@ import { filter } from 'rxjs/operators';
   styleUrl: './navbar.component.css'
 })
 export class NavbarComponent implements OnInit {
-  totalPoolMoney = 30;
+  totalPoolMoney = 0;
   isLoggedIn = false;
   userEmail = '';
   showLoginModal = false;
@@ -29,6 +30,13 @@ export class NavbarComponent implements OnInit {
 
   ngOnInit() {
     this.checkAuthStatus();
+    
+    // Load cached jackpot immediately
+    const cached = localStorage.getItem('cachedJackpot');
+    if (cached) {
+      this.totalPoolMoney = parseFloat(cached);
+    }
+    
     this.updatePoolMoney();
     setInterval(() => this.updatePoolMoney(), 60000);
     this.initStickyHeader();
@@ -139,12 +147,26 @@ export class NavbarComponent implements OnInit {
   }
 
   private updatePoolMoney() {
-    this.lotteryService.getDraws().subscribe({
+    this.lotteryService.getDraws().pipe(
+      timeout(5000),
+      catchError(error => {
+        console.error('Error fetching jackpot:', error);
+        this.isLoading = false;
+        // Try to use cached value
+        const cached = localStorage.getItem('cachedJackpot');
+        if (cached) {
+          this.totalPoolMoney = parseFloat(cached);
+        }
+        return [];
+      })
+    ).subscribe({
       next: (draws) => {
         this.isLoading = false;
         if (draws.length > 0) {
-          // Show only the first (next) lottery jackpot, not the total
-          this.totalPoolMoney = parseFloat(draws[0].jackpot.replace('$', ''));
+          const jackpot = parseFloat(draws[0].jackpot.replace('$', ''));
+          this.totalPoolMoney = jackpot;
+          // Cache the value
+          localStorage.setItem('cachedJackpot', jackpot.toString());
         }
       },
       error: (error) => {

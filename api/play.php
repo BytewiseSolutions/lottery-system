@@ -49,7 +49,18 @@ foreach ($data->bonusNumbers as $num) {
 try {
     $lotteryName = ucfirst($data->lottery) . ' Lotto';
     
-    // Check if draw time has passed
+    if (!isset($data->humanVerified) || !$data->humanVerified) {
+        $checkPlaysQuery = "SELECT COUNT(*) as play_count FROM entries WHERE user_id = ? AND DATE(created_at) = CURDATE()";
+        $stmt = $db->prepare($checkPlaysQuery);
+        $stmt->execute([$user['id']]);
+        $playCount = $stmt->fetch(PDO::FETCH_ASSOC)['play_count'];
+        
+        if ($playCount >= 4) {
+            echo json_encode(['requireHumanVerification' => true]);
+            exit;
+        }
+    }
+    
     $checkDrawQuery = "SELECT draw_date FROM upcoming_draws WHERE lottery = ? AND draw_date = ?";
     $stmt = $db->prepare($checkDrawQuery);
     $stmt->execute([$lotteryName, $data->drawDate]);
@@ -60,8 +71,7 @@ try {
         echo json_encode(['error' => 'This draw is no longer available for play']);
         exit;
     }
-    
-    // Check if current time is past the draw time
+
     $drawDateTime = new DateTime($draw['draw_date']);
     $now = new DateTime();
     
@@ -85,7 +95,6 @@ try {
     
     error_log("Entry created: lottery=$lotteryName, date=$data->drawDate");
     
-    // Update jackpot - add $0.01 per entry
     $updateJackpot = "UPDATE upcoming_draws SET jackpot = jackpot + 0.01 
                       WHERE lottery = ? AND DATE(draw_date) = DATE(?) LIMIT 1";
     $stmt = $db->prepare($updateJackpot);
@@ -96,8 +105,7 @@ try {
     if ($rowsAffected === 0) {
         error_log("WARNING: No rows updated! Check if lottery name and date match in upcoming_draws table");
     }
-    
-    // Get updated jackpot
+
     $getJackpot = "SELECT jackpot FROM upcoming_draws WHERE lottery = ? AND DATE(draw_date) = DATE(?) LIMIT 1";
     $stmt = $db->prepare($getJackpot);
     $stmt->execute([$lotteryName, $data->drawDate]);
