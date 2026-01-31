@@ -5,7 +5,6 @@ require_once 'config/jwt.php';
 
 $user = JWT::authenticate();
 
-// Check if user is admin
 if (!isset($user['role']) || $user['role'] !== 'admin') {
     http_response_code(403);
     echo json_encode(['error' => 'Admin access required']);
