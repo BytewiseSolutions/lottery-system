@@ -1,27 +1,202 @@
-#container {
+ion-content {
+  --background: transparent;
+}
+
+ion-header {
+  ion-toolbar {
+    --padding-top: 10px;
+    --padding-bottom: 10px;
+    --background: transparent;
+  }
+
+  .header-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 10px;
+  }
+
+  .prize-header {
+    color: #333;
+    text-align: left;
+
+    h1 {
+      font-size: 18px;
+      font-weight: bold;
+      margin: 0;
+    }
+  }
+
+  ion-button {
+    --color: white;
+  }
+}
+
+.prize-section {
+  color: white;
+  padding: 40px 20px;
   text-align: center;
 
-  position: absolute;
-  left: 0;
-  right: 0;
-  top: 50%;
-  transform: translateY(-50%);
+  h3 {
+    font-size: 16px;
+    font-weight: 500;
+    margin-bottom: 10px;
+    opacity: 0.9;
+  }
+
+  h1 {
+    font-size: 48px;
+    font-weight: bold;
+    margin: 10px 0;
+  }
+
+  p {
+    font-size: 14px;
+    opacity: 0.8;
+  }
 }
 
-#container strong {
-  font-size: 20px;
-  line-height: 26px;
+ion-card {
+  margin: 15px;
+  border-radius: 10px;
+
+  ion-card-title {
+    font-size: 18px;
+    font-weight: 600;
+  }
+
+  ion-button {
+    margin-top: 10px;
+  }
+
+  .draw-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 0;
+    border-bottom: 1px solid #f0f0f0;
+
+    &:last-child {
+      border-bottom: none;
+    }
+
+    .draw-info {
+      h3 {
+        font-size: 16px;
+        font-weight: 600;
+        margin: 0 0 5px 0;
+      }
+
+      p {
+        font-size: 14px;
+        color: #666;
+        margin: 0;
+      }
+    }
+  }
 }
 
-#container p {
-  font-size: 16px;
-  line-height: 22px;
+.lottery-card {
+  border-radius: 16px;
+  margin: 12px;
+  padding: 0;
+  box-shadow: 0 4px 16px rgba(108, 0, 146, 0.15);
+  overflow: hidden;
 
-  color: #8c8c8c;
+  .lottery-header {
+    padding: 16px;
+    border-bottom: 1px solid #e0e0e0;
 
-  margin: 0;
+    h2 {
+      font-size: 18px;
+      font-weight: 700;
+      margin: 0 0 4px 0;
+      color: #333;
+    }
+
+    .draw-date {
+      font-size: 12px;
+      color: #666;
+      margin: 0;
+    }
+  }
+
+  .lottery-body {
+    padding: 16px;
+
+    .jackpot {
+      font-size: 28px;
+      font-weight: 800;
+      color: #6c0092;
+      margin-bottom: 12px;
+    }
+
+    ion-button {
+      --border-radius: 10px;
+      font-weight: 600;
+      margin-bottom: 12px;
+      height: 40px;
+      font-size: 14px;
+    }
+
+    .countdown {
+      border-radius: 10px;
+      padding: 12px;
+      text-align: center;
+      border: 1.5px solid #e0d4f0;
+      
+      p {
+        font-size: 11px;
+        color: #6c0092;
+        margin: 0 0 6px 0;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.8px;
+      }
+
+      .timer {
+        font-size: 18px;
+        font-weight: 800;
+        color: #6c0092;
+        font-family: 'Courier New', monospace;
+      }
+    }
+  }
 }
 
-#container a {
-  text-decoration: none;
+.no-draws {
+  text-align: center;
+  padding: 40px 20px;
+  color: #666;
+}
+
+.bottom-nav {
+  border-top: 1px solid #e0e0e0;
+
+  ion-tab-bar {
+    border: none;
+  }
+
+  ion-tab-button {
+    --color: #666;
+    --color-selected: #6c0092;
+
+    &.active {
+      color: #6c0092;
+      
+      ion-icon {
+        color: #6c0092;
+      }
+    }
+
+    ion-icon {
+      font-size: 24px;
+      margin-bottom: 4px;
+    }
+
+    ion-label {
+      font-size: 12px;
+      font-weight: 500;
+    }
+  }
 }
