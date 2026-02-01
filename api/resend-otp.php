@@ -17,7 +17,7 @@ if (!$data->userId || !$data->otpType) {
 
 try {
     // Get user details
-    $query = "SELECT email, phone FROM users WHERE id = ?";
+    $query = "SELECT email, phone FROM user WHERE id = ?";
     $stmt = $db->prepare($query);
     $stmt->execute([$data->userId]);
     

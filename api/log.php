@@ -22,7 +22,7 @@ try {
             ip_address VARCHAR(45),
             user_agent TEXT,
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-            FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE SET NULL
+            FOREIGN KEY (user_id) REFERENCES user(id) ON DELETE SET NULL
         )
     ");
 } catch (Exception $e) {
@@ -49,8 +49,8 @@ try {
             
             $stmt = $db->prepare("
                 SELECT al.*, u.full_name, u.email 
-                FROM activity_logs al 
-                LEFT JOIN users u ON al.user_id = u.id 
+                FROM activity_log al 
+                LEFT JOIN user u ON al.user_id = u.id 
                 $whereClause 
                 ORDER BY al.created_at DESC 
                 LIMIT ? OFFSET ?
@@ -59,7 +59,7 @@ try {
             $logs = $stmt->fetchAll(PDO::FETCH_ASSOC);
             
             // Get total count
-            $stmt = $db->prepare("SELECT COUNT(*) FROM activity_logs al $whereClause");
+            $stmt = $db->prepare("SELECT COUNT(*) FROM activity_log al $whereClause");
             $stmt->execute($params);
             $total = $stmt->fetchColumn();
             
@@ -75,7 +75,7 @@ try {
             $data = json_decode(file_get_contents('php://input'), true);
             
             $stmt = $db->prepare("
-                INSERT INTO activity_logs (user_id, action, description, ip_address, user_agent) 
+                INSERT INTO activity_log (user_id, action, description, ip_address, user_agent) 
                 VALUES (?, ?, ?, ?, ?)
             ");
             $stmt->execute([

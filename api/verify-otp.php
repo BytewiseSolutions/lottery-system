@@ -19,11 +19,11 @@ if (!$data || !isset($data->userId) || !isset($data->otpCode) || !isset($data->o
 try {
     if ($otpHandler->verifyOTP($data->userId, $data->otpCode, $data->otpType)) {
         $column = $data->otpType === 'email' ? 'email_verified' : 'phone_verified';
-        $query = "UPDATE users SET $column = TRUE WHERE id = ?";
+        $query = "UPDATE user SET $column = TRUE WHERE id = ?";
         $stmt = $db->prepare($query);
         $stmt->execute([$data->userId]);
         
-        $userQuery = "SELECT id, full_name, email, phone, email_verified, phone_verified, role FROM users WHERE id = ?";
+        $userQuery = "SELECT id, full_name, email, phone, email_verified, phone_verified, role FROM user WHERE id = ?";
         $userStmt = $db->prepare($userQuery);
         $userStmt->execute([$data->userId]);
         $user = $userStmt->fetch(PDO::FETCH_ASSOC);
@@ -37,7 +37,7 @@ try {
         if (!empty($user['phone']) && !$user['phone_verified']) $isFullyVerified = false;
         
         if ($hasVerifiedContact) {
-            $activateQuery = "UPDATE users SET is_active = TRUE WHERE id = ?";
+            $activateQuery = "UPDATE user SET is_active = TRUE WHERE id = ?";
             $activateStmt = $db->prepare($activateQuery);
             $activateStmt->execute([$data->userId]);
             

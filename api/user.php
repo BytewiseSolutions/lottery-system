@@ -35,14 +35,14 @@ try {
             }
             
             // Get total count
-            $countSql = "SELECT COUNT(*) as total FROM users " . $searchCondition;
+            $countSql = "SELECT COUNT(*) as total FROM user " . $searchCondition;
             $stmt = $db->prepare($countSql);
             $stmt->execute($params);
             $total = $stmt->fetch(PDO::FETCH_ASSOC)['total'];
             
             // Get users
             $sql = "SELECT id, full_name, email, phone, email_verified, phone_verified, 
-                           is_active, created_at FROM users " . $searchCondition . 
+                           is_active, created_at FROM user " . $searchCondition . 
                    " ORDER BY created_at DESC LIMIT ? OFFSET ?";
             $params[] = (int)$limit;
             $params[] = (int)$offset;
@@ -72,7 +72,7 @@ try {
             }
             
             // Check if email already exists
-            $checkStmt = $db->prepare("SELECT id FROM users WHERE email = ?");
+            $checkStmt = $db->prepare("SELECT id FROM user WHERE email = ?");
             $checkStmt->execute([$input['email']]);
             if ($checkStmt->fetch()) {
                 http_response_code(400);
@@ -83,7 +83,7 @@ try {
             // Hash password
             $hashedPassword = password_hash($input['password'], PASSWORD_DEFAULT);
             
-            $stmt = $db->prepare("INSERT INTO users (full_name, email, phone, password_hash, is_active, email_verified) VALUES (?, ?, ?, ?, ?, ?)");
+            $stmt = $db->prepare("INSERT INTO user (full_name, email, phone, password_hash, is_active, email_verified) VALUES (?, ?, ?, ?, ?, ?)");
             $stmt->execute([
                 $input['full_name'],
                 $input['email'],
@@ -100,7 +100,7 @@ try {
             // Update user
             $input = json_decode(file_get_contents('php://input'), true);
             
-            $stmt = $db->prepare("UPDATE users SET full_name = ?, email = ?, phone = ?, is_active = ? WHERE id = ?");
+            $stmt = $db->prepare("UPDATE user SET full_name = ?, email = ?, phone = ?, is_active = ? WHERE id = ?");
             $stmt->execute([
                 $input['full_name'],
                 $input['email'],
@@ -116,7 +116,7 @@ try {
             // Delete user
             $input = json_decode(file_get_contents('php://input'), true);
             
-            $stmt = $db->prepare("DELETE FROM users WHERE id = ?");
+            $stmt = $db->prepare("DELETE FROM user WHERE id = ?");
             $stmt->execute([$input['id']]);
             
             echo json_encode(['success' => true]);

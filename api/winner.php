@@ -15,19 +15,18 @@ $database = new Database();
 $db = $database->getConnection();
 
 try {
-    $query = "SELECT n.*, u.full_name as sent_by_name 
-              FROM notifications n 
-              JOIN users u ON n.sent_by = u.id 
-              ORDER BY n.created_at DESC 
-              LIMIT 20";
+    $query = "SELECT w.*, u.full_name, u.email, u.phone 
+              FROM winner w 
+              JOIN user u ON w.user_id = u.id 
+              ORDER BY w.created_at DESC";
     
     $stmt = $db->query($query);
-    $notifications = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    $winners = $stmt->fetchAll(PDO::FETCH_ASSOC);
     
-    echo json_encode($notifications);
+    echo json_encode($winners);
     
 } catch(PDOException $exception) {
     http_response_code(500);
-    echo json_encode(['error' => 'Failed to fetch notifications']);
+    echo json_encode(['error' => 'Failed to fetch winners']);
 }
 ?>

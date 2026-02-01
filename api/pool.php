@@ -15,7 +15,7 @@ try {
     ];
     
     $query = "SELECT lottery, COUNT(*) * 0.01 as pool_amount 
-              FROM entries 
+              FROM entry 
               GROUP BY lottery";
     $stmt = $db->prepare($query);
     $stmt->execute();

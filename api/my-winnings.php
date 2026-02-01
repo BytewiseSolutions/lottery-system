@@ -10,7 +10,7 @@ $db = $database->getConnection();
 
 try {
     $query = "SELECT COALESCE(SUM(prize_amount), 0) as total_winnings 
-              FROM winners 
+              FROM winner 
               WHERE user_id = ?";
     
     $stmt = $db->prepare($query);

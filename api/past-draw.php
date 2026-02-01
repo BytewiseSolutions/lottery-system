@@ -13,7 +13,7 @@ if (!$db) {
 
 try {
     // Get past draws from database
-    $query = "SELECT * FROM past_draws ORDER BY draw_date DESC LIMIT 50";
+    $query = "SELECT * FROM past_draw ORDER BY draw_date DESC LIMIT 50";
     $stmt = $db->prepare($query);
     $stmt->execute();
     $draws = $stmt->fetchAll(PDO::FETCH_ASSOC);

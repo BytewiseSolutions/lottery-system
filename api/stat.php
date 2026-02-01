@@ -7,19 +7,19 @@ $db = $database->getConnection();
 
 try {
     // Get total entries
-    $query = "SELECT COUNT(*) as total FROM entries";
+    $query = "SELECT COUNT(*) as total FROM entry";
     $stmt = $db->prepare($query);
     $stmt->execute();
     $totalEntries = $stmt->fetch(PDO::FETCH_ASSOC)['total'];
     
     // Get total payouts
-    $query = "SELECT SUM(total_pool_money) as total FROM results";
+    $query = "SELECT SUM(total_pool_money) as total FROM result";
     $stmt = $db->prepare($query);
     $stmt->execute();
     $totalPayouts = $stmt->fetch(PDO::FETCH_ASSOC)['total'] ?: 0;
     
     // Get winners last month (assuming winners table exists)
-    $query = "SELECT COUNT(*) as winners FROM winners 
+    $query = "SELECT COUNT(*) as winners FROM winner 
               WHERE created_at >= DATE_SUB(NOW(), INTERVAL 1 MONTH)";
     $stmt = $db->prepare($query);
     $stmt->execute();

@@ -26,7 +26,13 @@ export class AuthService {
   }
 
   register(data: any): Observable<any> {
-    return this.http.post(`${environment.apiUrl}/register.php`, data);
+    return this.http.post(`${environment.apiUrl}/register.php`, {
+      fullName: data.name,
+      email: data.email,
+      phone: data.phone,
+      password: data.password,
+      confirmPassword: data.repeatPassword || data.password
+    });
   }
 
   verifyOtp(email: string, otp: string): Observable<any> {
