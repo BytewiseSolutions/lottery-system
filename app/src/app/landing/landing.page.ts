@@ -17,6 +17,14 @@ export class LandingPage implements OnInit {
     }
   }
 
+  startMakingMoney() {
+    if (this.auth.isAuthenticated()) {
+      this.router.navigate(['/home']);
+    } else {
+      this.router.navigate(['/login']);
+    }
+  }
+
   openLogin() {
     this.router.navigate(['/login']);
   }

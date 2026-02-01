@@ -14,7 +14,7 @@ export class AuthService {
   }
 
   login(email: string, password: string): Observable<any> {
-    return this.http.post(`${environment.apiUrl}/login.php`, { identifier: email, password }).pipe(
+    return this.http.post(`${environment.apiUrl}/api/login`, { identifier: email, password }).pipe(
       tap((res: any) => {
         if (res.token) {
           localStorage.setItem('token', res.token);
@@ -26,7 +26,7 @@ export class AuthService {
   }
 
   register(data: any): Observable<any> {
-    return this.http.post(`${environment.apiUrl}/register.php`, {
+    return this.http.post(`${environment.apiUrl}/api/register`, {
       fullName: data.name,
       email: data.email,
       phone: data.phone,
@@ -36,7 +36,7 @@ export class AuthService {
   }
 
   verifyOtp(email: string, otp: string): Observable<any> {
-    return this.http.post(`${environment.apiUrl}/verify-otp.php`, { email, otp }).pipe(
+    return this.http.post(`${environment.apiUrl}/api/verify-otp`, { email, otp }).pipe(
       tap((res: any) => {
         if (res.token) {
           localStorage.setItem('token', res.token);

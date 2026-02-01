@@ -50,6 +50,16 @@ try {
             ];
             $token = JWT::encode($payload);
             
+            // Log verification activity
+            $logQuery = "INSERT INTO activity_log (user_id, action, details, ip_address) VALUES (?, ?, ?, ?)";
+            $logStmt = $db->prepare($logQuery);
+            $logStmt->execute([
+                $data->userId,
+                'otp_verified',
+                json_encode(['type' => $data->otpType]),
+                $_SERVER['REMOTE_ADDR'] ?? null
+            ]);
+            
             // Return success with token and user data for auto-login
             echo json_encode([
                 'success' => true,

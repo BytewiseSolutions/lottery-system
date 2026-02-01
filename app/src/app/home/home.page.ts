@@ -23,6 +23,12 @@ export class HomePage implements OnInit {
   ) {}
 
   ngOnInit() {
+    // Check if user is authenticated
+    if (!this.auth.isAuthenticated()) {
+      this.router.navigate(['/login']);
+      return;
+    }
+    
     this.auth.user$.subscribe(user => {
       if (user) {
         this.userName = user.name || 'Player';
@@ -67,6 +73,10 @@ export class HomePage implements OnInit {
 
   ngOnDestroy() {
     if (this.countdownInterval) clearInterval(this.countdownInterval);
+  }
+
+  playLottery(draw: any) {
+    this.router.navigate(['/play'], { state: { lottery: draw } });
   }
 
   logout() {

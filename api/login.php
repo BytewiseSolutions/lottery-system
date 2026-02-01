@@ -28,7 +28,7 @@ if (!isset($data->identifier) || !isset($data->password) ||
 
 try {
     // Check if identifier is email or phone - only select needed fields
-    $query = "SELECT id, full_name, email, phone, password, role FROM user WHERE (email = ? OR phone = ?) AND is_active = TRUE LIMIT 1";
+    $query = "SELECT id, full_name, email, phone, password_hash, role FROM user WHERE (email = ? OR phone = ?) AND is_active = TRUE LIMIT 1";
     $stmt = $db->prepare($query);
     $stmt->execute([$data->identifier, $data->identifier]);
     
@@ -41,7 +41,7 @@ try {
     $user = $stmt->fetch(PDO::FETCH_ASSOC);
     
     // Verify password first (same for all users)
-    if (!password_verify($data->password, $user['password'])) {
+    if (!password_verify($data->password, $user['password_hash'])) {
         http_response_code(400);
         echo json_encode(['error' => 'Invalid credentials']);
         exit;
@@ -78,6 +78,16 @@ try {
     }
     
     $token = JWT::encode($payload);
+    
+    // Log login activity
+    $logQuery = "INSERT INTO activity_log (user_id, action, details, ip_address) VALUES (?, ?, ?, ?)";
+    $logStmt = $db->prepare($logQuery);
+    $logStmt->execute([
+        $user['id'],
+        'user_login',
+        json_encode(['identifier' => $data->identifier]),
+        $_SERVER['REMOTE_ADDR'] ?? null
+    ]);
     
     echo json_encode([
         'success' => true,

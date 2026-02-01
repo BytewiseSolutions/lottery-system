@@ -18,7 +18,7 @@
         </div>
         <div class="lottery-body">
           <div class="jackpot">${{ draw.jackpot }}</div>
-          <ion-button expand="block" color="primary">Play</ion-button>
+          <ion-button expand="block" color="primary" (click)="playLottery(draw)">Play</ion-button>
           <div class="countdown">
             <p>Next Draw :</p>
             <div class="timer">{{ getCountdown(draw.draw_date) }}</div>
