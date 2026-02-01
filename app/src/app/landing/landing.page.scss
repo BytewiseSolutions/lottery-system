@@ -1,0 +1,72 @@
+.landing-header {
+  background: #6c0092 !important;
+}
+
+.landing-content {
+  --background: url('/assets/hero-bg.png') no-repeat center/cover, #6c0092;
+}
+
+ion-header.landing-header {
+  ion-toolbar {
+    --background: transparent;
+    --ion-background-color: transparent;
+    --border-width: 0;
+    padding: 10px 0;
+  }
+
+  ion-title {
+    color: white;
+    font-weight: bold;
+    font-size: 18px;
+  }
+
+  ion-button {
+    --color: white;
+  }
+
+  ion-icon {
+    font-size: 32px;
+    color: white;
+  }
+}
+
+.landing-container {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  min-height: calc(100vh - 60px);
+  padding: 20px;
+  text-align: center;
+}
+
+.info-section {
+  color: white;
+  max-width: 500px;
+
+  h1 {
+    font-size: 32px;
+    font-weight: bold;
+    margin-bottom: 10px;
+  }
+
+  h2 {
+    font-size: 28px;
+    font-weight: 600;
+    margin-bottom: 20px;
+  }
+
+  p {
+    font-size: 16px;
+    margin-bottom: 10px;
+    opacity: 0.9;
+  }
+
+  .start-btn {
+    margin-top: 30px;
+    --background: #ffc107;
+    --color: #000;
+    --border-radius: 8px;
+    font-weight: 700;
+  }
+}

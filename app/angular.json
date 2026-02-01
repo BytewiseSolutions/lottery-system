@@ -143,7 +143,17 @@
       "styleext": "scss"
     },
     "@ionic/angular-toolkit:page": {
-      "styleext": "scss"
+      "styleext": "scss",
+      "standalone": false
+    },
+    "@schematics/angular:component": {
+      "standalone": false
+    },
+    "@schematics/angular:directive": {
+      "standalone": false
+    },
+    "@schematics/angular:pipe": {
+      "standalone": false
     }
   }
 }
