@@ -1,0 +1,43 @@
+.logo-container {
+  text-align: center;
+  margin: 20px 0 30px;
+}
+
+.logo {
+  max-width: 200px;
+  height: auto;
+}
+
+ion-item {
+  --background: #f6f6fa;
+  --border-radius: 10px;
+  --padding-start: 15px;
+  --padding-end: 15px;
+  --inner-padding-end: 0;
+  margin-bottom: 15px;
+  border-radius: 10px;
+  align-items: center;
+
+  ion-button {
+    --padding-start: 0;
+    --padding-end: 0;
+    margin: 0;
+    height: auto;
+    align-self: center;
+  }
+
+  ion-icon {
+    color: #666;
+    font-size: 22px;
+  }
+}
+
+ion-input {
+  --padding-start: 10px;
+}
+
+ion-button {
+  margin-top: 20px;
+  --border-radius: 10px;
+  font-weight: 600;
+}

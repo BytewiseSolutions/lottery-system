@@ -1,0 +1,34 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/landing"></ion-back-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  <div class="logo-container">
+    <img src="/assets/logo1.png" class="logo" />
+  </div>
+  <ion-item>
+    <ion-label position="floating">Email</ion-label>
+    <ion-input type="email" [(ngModel)]="email"></ion-input>
+  </ion-item>
+  <ion-item>
+    <ion-label position="floating">Password</ion-label>
+    <ion-input [type]="showPassword ? 'text' : 'password'" [(ngModel)]="password"></ion-input>
+    <ion-button slot="end" fill="clear" (click)="togglePassword()">
+      <ion-icon slot="icon-only" [name]="showPassword ? 'eye-off' : 'eye'"></ion-icon>
+    </ion-button>
+  </ion-item>
+  <div style="display: flex; align-items: center; margin-bottom: 15px;">
+    <ion-checkbox [(ngModel)]="rememberMe" style="margin-right: 10px;"></ion-checkbox>
+    <span>Remember Me</span>
+    <ion-icon name="help-circle-outline" (click)="showRememberMeInfo()" style="cursor: pointer; color: #666; font-size: 18px; margin-left: 3px;"></ion-icon>
+  </div>
+  <ion-button expand="block" (click)="login()" class="ion-margin-top">Login</ion-button>
+  <div style="display: flex; justify-content: space-between; margin-top: 15px;">
+    <a href="#" style="color: #666; text-decoration: none;">Forgot Password?</a>
+    <a routerLink="/signup" style="color: #6c0092; text-decoration: none; font-weight: 600;">Register</a>
+  </div>
+</ion-content>
