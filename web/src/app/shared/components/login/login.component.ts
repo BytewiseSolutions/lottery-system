@@ -1,6 +1,7 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { Router } from '@angular/router';
 import { environment } from '../../../../environments/environment';
 
 @Component({
@@ -16,6 +17,8 @@ export class LoginComponent {
   @Output() switchToSignupEvent = new EventEmitter<void>();
   @Output() switchToVerificationEvent = new EventEmitter<void>();
   @Output() switchToPasswordRecoveryEvent = new EventEmitter<void>();
+
+  constructor(private router: Router) {}
 
   identifier = '';
   password = '';
@@ -109,7 +112,7 @@ export class LoginComponent {
         
         // Check if admin and redirect to admin dashboard
         if (result.user.role === 'admin' || result.user.email === 'admin@totalfreelotto.com') {
-          window.location.href = '/app/#/dashboard';
+          this.router.navigate(['/dashboard']);
           return;
         }
         

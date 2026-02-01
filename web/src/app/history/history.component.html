@@ -53,7 +53,7 @@
                       <i *ngIf="group.entries[0].unmatchedBonus?.includes(bonus)" class="fas fa-times"></i>
                     </span>
                   </div>
-                  <div *ngIf="group.entries[0].status" class="entry-status" [class]="group.entries[0].status?.toLowerCase()">
+                  <div *ngIf="group.entries[0].status" class="entry-status" [class]="group.entries[0].status.toLowerCase()">
                     {{group.entries[0].status}}
                   </div>
                 </div>
@@ -91,7 +91,7 @@
                         <i *ngIf="entry.unmatchedBonus?.includes(bonus)" class="fas fa-times"></i>
                       </span>
                     </div>
-                    <div *ngIf="entry.status" class="entry-status" [class]="entry.status?.toLowerCase()">
+                    <div *ngIf="entry.status" class="entry-status" [class]="entry.status.toLowerCase()">
                       {{entry.status}}
                     </div>
                   </div>

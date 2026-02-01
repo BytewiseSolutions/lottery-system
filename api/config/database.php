@@ -4,6 +4,8 @@ class Database {
     private $db_name;
     private $username;
     private $password;
+    private $driver;
+    private $db_path;
     public $conn;
 
     public function __construct() {
