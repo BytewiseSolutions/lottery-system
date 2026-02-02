@@ -9,7 +9,7 @@ import { LotteryService } from '../services/lottery.service';
   styleUrls: ['home.page.scss'],
   standalone: false,
 })
-export class HomePage implements OnInit {
+export class HomePage implements OnInit, OnDestroy {
   userName = '';
   selectedTab = 'home';
   upcomingDraws: any[] = [];
@@ -23,7 +23,6 @@ export class HomePage implements OnInit {
   ) {}
 
   ngOnInit() {
-    // Check if user is authenticated
     if (!this.auth.isAuthenticated()) {
       this.router.navigate(['/login']);
       return;
@@ -31,13 +30,17 @@ export class HomePage implements OnInit {
     
     this.auth.user$.subscribe(user => {
       if (user) {
-        this.userName = user.name || 'Player';
+        this.userName = user.fullName || user.name || 'Player';
       }
     });
     this.loadUpcomingDraws();
     this.countdownInterval = setInterval(() => {
-      this.upcomingDraws = [...this.upcomingDraws];
+      setTimeout(() => {
+        this.upcomingDraws = [...this.upcomingDraws];
+      });
     }, 1000);
+    
+    window.addEventListener('entrySubmitted', () => this.loadUpcomingDraws());
   }
 
   loadUpcomingDraws() {
@@ -52,8 +55,8 @@ export class HomePage implements OnInit {
     });
   }
 
-  loadWinnings() {
-    // Removed - using next draw jackpot instead
+  playLottery(draw: any) {
+    this.router.navigate(['/play'], { state: { lottery: draw } });
   }
 
   getCountdown(drawDate: string): string {
@@ -73,10 +76,6 @@ export class HomePage implements OnInit {
 
   ngOnDestroy() {
     if (this.countdownInterval) clearInterval(this.countdownInterval);
-  }
-
-  playLottery(draw: any) {
-    this.router.navigate(['/play'], { state: { lottery: draw } });
   }
 
   logout() {

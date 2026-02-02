@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { LotteryService } from '../services/lottery.service';
 import { AlertController, LoadingController } from '@ionic/angular';
+import { environment } from '../../environments/environment';
 
 @Component({
   selector: 'app-play',
@@ -15,6 +16,9 @@ export class PlayPage implements OnInit {
   selectedBonusNumbers: number[] = [];
   lottery: any;
   currentStep = 1;
+  showSuccessModal = false;
+  submittedNumbers: number[] = [];
+  submittedBonusNumbers: number[] = [];
 
   constructor(
     private route: ActivatedRoute,
@@ -26,13 +30,15 @@ export class PlayPage implements OnInit {
 
   ngOnInit() {
     this.lottery = history.state.lottery;
-    if (!this.lottery) {
-      this.router.navigate(['/home']);
-      return;
-    }
     
+    // Generate numbers 1-75 regardless
     for (let i = 1; i <= 75; i++) {
       this.numbers.push(i);
+    }
+    
+    if (!this.lottery) {
+      console.warn('No lottery data');
+      // Don't redirect immediately, let user see the error when they try to submit
     }
   }
 
@@ -72,35 +78,94 @@ export class PlayPage implements OnInit {
     if (this.selectedNumbers.length !== 5 || this.selectedBonusNumbers.length !== 2) {
       return;
     }
+    
+    if (!this.lottery) {
+      const alert = await this.alertCtrl.create({
+        header: 'Error',
+        message: 'Lottery data is missing. Please go back and try again.',
+        buttons: ['OK']
+      });
+      await alert.present();
+      return;
+    }
 
     const loading = await this.loadingCtrl.create({ message: 'Submitting entry...' });
     await loading.present();
 
-    this.lotteryService.playLottery(this.lottery.id, [...this.selectedNumbers, ...this.selectedBonusNumbers]).subscribe({
-      next: async (response) => {
+    const token = localStorage.getItem('token');
+    
+    try {
+      const payload = {
+        lottery: this.lottery.name.replace(' Lotto', '').toLowerCase(),
+        numbers: this.selectedNumbers,
+        bonusNumbers: this.selectedBonusNumbers,
+        drawDate: this.lottery.draw_date
+      };
+      
+      console.log('Submitting entry:', payload);
+      
+      const response = await fetch(`${environment.apiUrl}/api/play`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify(payload)
+      });
+
+      const result = await response.json();
+      console.log('Response:', response.status, result);
+
+      if (result.requireHumanVerification) {
         loading.dismiss();
         const alert = await this.alertCtrl.create({
-          header: 'Success!',
-          message: 'Your entry has been submitted successfully!',
-          buttons: [{
-            text: 'OK',
-            handler: () => {
-              this.router.navigate(['/home']);
-            }
-          }]
+          header: 'Verification Required',
+          message: 'You have played multiple times today. Please try again or contact support.',
+          buttons: ['OK']
         });
         await alert.present();
-      },
-      error: async (err) => {
+        return;
+      }
+
+      if (response.ok && result.success) {
+        console.log('Entry submitted successfully!');
+        
+        // Dismiss loading
+        await loading.dismiss();
+        
+        // Store submitted numbers
+        this.submittedNumbers = [...this.selectedNumbers];
+        this.submittedBonusNumbers = [...this.selectedBonusNumbers];
+        
+        // Show success modal
+        this.showSuccessModal = true;
+        
+        // Dispatch event
+        window.dispatchEvent(new CustomEvent('entrySubmitted'));
+        
+        // Auto redirect after 5 seconds
+        setTimeout(() => {
+          this.closeSuccessModal();
+        }, 5000);
+      } else {
         loading.dismiss();
         const alert = await this.alertCtrl.create({
           header: 'Error',
-          message: err.error?.error || 'Failed to submit entry',
+          message: result.error || 'Failed to submit entry',
           buttons: ['OK']
         });
         await alert.present();
       }
-    });
+    } catch (error) {
+      console.error('Submit error:', error);
+      loading.dismiss();
+      const alert = await this.alertCtrl.create({
+        header: 'Error',
+        message: 'Network error. Please try again.',
+        buttons: ['OK']
+      });
+      await alert.present();
+    }
   }
 
   quickPick() {
@@ -123,5 +188,10 @@ export class PlayPage implements OnInit {
       available.splice(randomIndex, 1);
     }
     this.selectedBonusNumbers.sort((a, b) => a - b);
+  }
+
+  closeSuccessModal() {
+    this.showSuccessModal = false;
+    this.router.navigate(['/home']);
   }
 }

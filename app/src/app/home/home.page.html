@@ -28,38 +28,16 @@
       <p *ngIf="upcomingDraws.length === 0" class="no-draws">No upcoming draws</p>
     </div>
 
-    <div *ngSwitchCase="'lotteries'">
-      <ion-card>
-        <ion-card-header>
-          <ion-card-title>Available Lotteries</ion-card-title>
-        </ion-card-header>
-        <ion-card-content>
-          <p>Coming soon</p>
-        </ion-card-content>
-      </ion-card>
+    <div *ngSwitchCase="'entries'">
+      <app-entries></app-entries>
     </div>
 
-    <div *ngSwitchCase="'history'">
-      <ion-card>
-        <ion-card-header>
-          <ion-card-title>My Entries</ion-card-title>
-        </ion-card-header>
-        <ion-card-content>
-          <p>You have no entries yet</p>
-        </ion-card-content>
-      </ion-card>
+    <div *ngSwitchCase="'results'">
+      <app-results></app-results>
     </div>
 
     <div *ngSwitchCase="'profile'">
-      <ion-card>
-        <ion-card-header>
-          <ion-card-title>My Profile</ion-card-title>
-        </ion-card-header>
-        <ion-card-content>
-          <p>Name: {{ userName }}</p>
-          <ion-button expand="block" fill="outline" (click)="logout()">Logout</ion-button>
-        </ion-card-content>
-      </ion-card>
+      <app-profile [userName]="userName" (logoutClick)="logout()"></app-profile>
     </div>
   </div>
 </ion-content>
@@ -71,13 +49,13 @@
         <ion-icon name="home"></ion-icon>
         <ion-label>Home</ion-label>
       </ion-tab-button>
-      <ion-tab-button (click)="selectedTab = 'lotteries'" [class.active]="selectedTab === 'lotteries'">
-        <ion-icon name="game-controller"></ion-icon>
-        <ion-label>Lotteries</ion-label>
+      <ion-tab-button (click)="selectedTab = 'entries'" [class.active]="selectedTab === 'entries'">
+        <ion-icon name="ticket"></ion-icon>
+        <ion-label>Entries</ion-label>
       </ion-tab-button>
-      <ion-tab-button (click)="selectedTab = 'history'" [class.active]="selectedTab === 'history'">
-        <ion-icon name="time"></ion-icon>
-        <ion-label>History</ion-label>
+      <ion-tab-button (click)="selectedTab = 'results'" [class.active]="selectedTab === 'results'">
+        <ion-icon name="trophy"></ion-icon>
+        <ion-label>Results</ion-label>
       </ion-tab-button>
       <ion-tab-button (click)="selectedTab = 'profile'" [class.active]="selectedTab === 'profile'">
         <ion-icon name="person"></ion-icon>

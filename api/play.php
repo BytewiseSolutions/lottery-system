@@ -49,17 +49,18 @@ foreach ($data->bonusNumbers as $num) {
 try {
     $lotteryName = ucfirst($data->lottery) . ' Lotto';
     
-    if (!isset($data->humanVerified) || !$data->humanVerified) {
-        $checkPlaysQuery = "SELECT COUNT(*) as play_count FROM entry WHERE user_id = ? AND DATE(created_at) = CURDATE()";
-        $stmt = $db->prepare($checkPlaysQuery);
-        $stmt->execute([$user['id']]);
-        $playCount = $stmt->fetch(PDO::FETCH_ASSOC)['play_count'];
-        
-        if ($playCount >= 4) {
-            echo json_encode(['requireHumanVerification' => true]);
-            exit;
-        }
-    }
+    // Temporarily disable play count check for development
+    // if (!isset($data->humanVerified) || !$data->humanVerified) {
+    //     $checkPlaysQuery = "SELECT COUNT(*) as play_count FROM entry WHERE user_id = ? AND DATE(created_at) = CURDATE()";
+    //     $stmt = $db->prepare($checkPlaysQuery);
+    //     $stmt->execute([$user['id']]);
+    //     $playCount = $stmt->fetch(PDO::FETCH_ASSOC)['play_count'];
+    //     
+    //     if ($playCount >= 4) {
+    //         echo json_encode(['requireHumanVerification' => true]);
+    //         exit;
+    //     }
+    // }
     
     $checkDrawQuery = "SELECT draw_date FROM past_draw WHERE lottery = ? AND draw_date = ? 
                         UNION 

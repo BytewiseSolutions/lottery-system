@@ -55,11 +55,26 @@ try {
         
         sort($entryNums);
         sort($entryBonus);
-        sort($winningNums);
-        sort($bonusNums);
+        $sortedWinning = $winningNums;
+        $sortedBonus = $bonusNums;
+        sort($sortedWinning);
+        sort($sortedBonus);
         
-        if ($entryNums === $winningNums && $entryBonus === $bonusNums) {
+        if ($entryNums === $sortedWinning && $entryBonus === $sortedBonus) {
             $winners++;
+            
+            // Insert into winner table
+            $winnerQuery = "INSERT INTO winner (user_id, result_id, entry_id, lottery, draw_date, prize_amount, status) 
+                           VALUES (?, ?, ?, ?, ?, ?, 'pending')";
+            $winnerStmt = $db->prepare($winnerQuery);
+            $winnerStmt->execute([
+                $entry['user_id'],
+                $resultId,
+                $entry['id'],
+                $data->lottery,
+                $data->drawDate,
+                $data->jackpot
+            ]);
         }
     }
     

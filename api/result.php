@@ -23,8 +23,10 @@ if (isset($headers['Authorization'])) {
         $user = JWT::authenticate();
         $isAdmin = isset($user['role']) && $user['role'] === 'admin';
     } catch (Exception $e) {
-
+        error_log('JWT auth failed: ' . $e->getMessage());
     }
+} else {
+    error_log('No Authorization header found');
 }
 
 if ($method === 'GET') {
@@ -62,6 +64,43 @@ if ($method === 'GET') {
     } catch(PDOException $exception) {
         http_response_code(500);
         echo json_encode(['error' => 'Failed to fetch results']);
+    }
+} elseif ($method === 'POST') {
+    try {
+        $user = JWT::authenticate();
+        if (!isset($user['role']) || $user['role'] !== 'admin') {
+            http_response_code(403);
+            echo json_encode(['error' => 'Admin access required']);
+            exit;
+        }
+    } catch (Exception $e) {
+        http_response_code(401);
+        echo json_encode(['error' => 'Authentication failed']);
+        exit;
+    }
+
+    try {
+        $data = json_decode(file_get_contents('php://input'), true);
+        
+        if (!isset($data['id']) || !isset($data['status'])) {
+            http_response_code(400);
+            echo json_encode(['error' => 'ID and status are required']);
+            exit;
+        }
+
+        $query = "UPDATE result SET status = ? WHERE id = ?";
+        $stmt = $db->prepare($query);
+        
+        if ($stmt->execute([$data['status'], $data['id']])) {
+            echo json_encode(['success' => true, 'message' => 'Status updated successfully']);
+        } else {
+            http_response_code(500);
+            echo json_encode(['error' => 'Failed to update status']);
+        }
+
+    } catch(PDOException $exception) {
+        http_response_code(500);
+        echo json_encode(['error' => 'Database error: ' . $exception->getMessage()]);
     }
 } elseif ($method === 'PUT') {
     // Only admin can update results

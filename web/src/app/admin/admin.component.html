@@ -703,22 +703,18 @@
                     @for (winner of filteredWinners; track winner.id; let i = $index) {
                       <tr>
                         <td data-label="#">{{ i + 1 }}</td>
-                        <td data-label="User">
-                          <div class="winner-name-mobile">{{ winner.full_name }}</div>
-                          <div class="winner-email-mobile">{{ winner.email || '-' }}</div>
-                        </td>
-                        <td data-label="Phone" class="winner-phone-mobile">{{ winner.phone || '-' }}</td>
+                        <td data-label="User">{{ winner.full_name }}</td>
                         <td data-label="Contact">
                           <div>{{ winner.email || '-' }}</div>
                           <div><small>{{ winner.phone || '-' }}</small></div>
                         </td>
                         <td data-label="Lottery">{{ winner.lottery }}</td>
+                        <td data-label="Prize">${{ winner.prize_amount }}</td>
                         <td data-label="Status">
                           <span class="status-badge" [class]="winner.status">
                             {{ winner.status }}
                           </span>
                         </td>
-                        <td data-label="Prize">${{ winner.prize_amount }}</td>
                         <td data-label="Draw Date">{{ winner.draw_date | date:'short' }}</td>
                       </tr>
                     }

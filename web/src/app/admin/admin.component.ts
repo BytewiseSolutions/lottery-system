@@ -521,6 +521,7 @@ export class AdminComponent implements OnInit, OnDestroy {
   }
 
   formatLotteryName(type: string): string {
+    if (!type) return '';
     const names: { [key: string]: string } = {
       'monday': 'Monday Lotto',
       'wednesday': 'Wednesday Lotto', 

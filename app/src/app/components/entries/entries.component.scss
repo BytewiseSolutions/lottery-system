@@ -1,0 +1,116 @@
+.no-data {
+  text-align: center;
+  padding: 40px 20px;
+  color: #666;
+}
+
+.entry-card {
+  border-radius: 16px;
+  margin: 12px;
+  padding: 16px;
+  box-shadow: 0 4px 16px rgba(108, 0, 146, 0.15);
+  background: white;
+
+  .entry-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid #e0e0e0;
+
+    h3 {
+      font-size: 16px;
+      font-weight: 700;
+      margin: 0;
+      color: #333;
+    }
+
+    .entry-date {
+      font-size: 11px;
+      color: #666;
+    }
+  }
+
+  .entry-body {
+    .numbers-section {
+      margin-bottom: 16px;
+
+      .label {
+        font-size: 12px;
+        font-weight: 600;
+        color: #6c0092;
+        margin: 0 0 8px 0;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+      }
+
+      .numbers-grid {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+
+        .number-badge {
+          width: 36px;
+          height: 36px;
+          border-radius: 50%;
+          background: #6c0092;
+          color: white;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-weight: 700;
+          font-size: 14px;
+          position: relative;
+
+          &.matched {
+            background: #28a745;
+          }
+
+          &.unmatched {
+            background: #dc3545;
+          }
+
+          &.bonus {
+            background: #ff6b35;
+
+            &.matched {
+              background: #28a745;
+            }
+
+            &.unmatched {
+              background: #dc3545;
+            }
+          }
+
+          .check-icon, .close-icon {
+            position: absolute;
+            top: -4px;
+            right: -4px;
+            background: white;
+            border-radius: 50%;
+            width: 14px;
+            height: 14px;
+            font-size: 10px;
+          }
+
+          .check-icon {
+            color: #28a745;
+          }
+
+          .close-icon {
+            color: #dc3545;
+          }
+        }
+      }
+    }
+
+    .draw-info {
+      font-size: 12px;
+      color: #666;
+      margin: 12px 0 0 0;
+      padding-top: 12px;
+      border-top: 1px solid #f0f0f0;
+    }
+  }
+}

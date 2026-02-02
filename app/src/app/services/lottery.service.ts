@@ -27,4 +27,8 @@ export class LotteryService {
   getMyWinnings(): Observable<any> {
     return this.http.get(`${environment.apiUrl}/api/my-winnings`, { headers: this.getHeaders() });
   }
+
+  getResults(): Observable<any> {
+    return this.http.get(`${environment.apiUrl}/api/results`);
+  }
 }

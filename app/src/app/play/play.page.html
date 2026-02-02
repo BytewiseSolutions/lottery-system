@@ -74,5 +74,36 @@
         Submit Entry
       </ion-button>
     </div>
+
+    <!-- Success Modal -->
+    <div class="success-modal" *ngIf="showSuccessModal">
+      <div class="success-content">
+        <ion-icon name="checkmark-circle" color="success" class="success-icon"></ion-icon>
+        <h2>Entry Submitted Successfully!</h2>
+        <p>Your lottery entry has been submitted. Good luck!</p>
+        
+        <div class="submitted-numbers">
+          <div class="numbers-section">
+            <strong>Main Numbers:</strong>
+            <div class="number-display">
+              <span *ngFor="let num of submittedNumbers" class="num-badge">{{ num }}</span>
+            </div>
+          </div>
+          
+          <div class="numbers-section">
+            <strong>Bonus Numbers:</strong>
+            <div class="number-display">
+              <span *ngFor="let num of submittedBonusNumbers" class="num-badge bonus">{{ num }}</span>
+            </div>
+          </div>
+        </div>
+        
+        <ion-button expand="block" (click)="closeSuccessModal()">
+          Continue
+        </ion-button>
+        
+        <p class="redirect-text">Auto-redirecting in 5 seconds...</p>
+      </div>
+    </div>
   </div>
 </ion-content>
