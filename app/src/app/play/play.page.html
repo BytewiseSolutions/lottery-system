@@ -1,0 +1,109 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/home"></ion-back-button>
+    </ion-buttons>
+    <ion-title>{{ lottery?.name || 'Play Lottery' }}</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <div class="play-container">
+    <div *ngIf="currentStep === 1">
+      <div class="section-header">
+        <h2>Select 5 Numbers</h2>
+        <p>Choose 5 numbers from 1 to 75</p>
+        <ion-button size="small" fill="outline" (click)="quickPick()">Quick Pick</ion-button>
+      </div>
+
+      <div class="selected-numbers">
+        <div class="number-slot" *ngFor="let i of [0,1,2,3,4]">
+          {{ selectedNumbers[i] || '-' }}
+        </div>
+      </div>
+
+      <div class="numbers-grid">
+        <div 
+          *ngFor="let num of numbers" 
+          class="number-ball"
+          [class.selected]="selectedNumbers.includes(num)"
+          (click)="toggleNumber(num)">
+          {{ num }}
+        </div>
+      </div>
+
+      <ion-button 
+        expand="block" 
+        [disabled]="selectedNumbers.length !== 5"
+        (click)="nextStep()">
+        Next: Select Bonus Numbers
+      </ion-button>
+    </div>
+
+    <div *ngIf="currentStep === 2">
+      <div class="section-header">
+        <h2>Select 2 Bonus Numbers</h2>
+        <p>Choose 2 bonus numbers from 1 to 75</p>
+        <ion-button size="small" fill="outline" (click)="quickPickBonus()">Quick Pick</ion-button>
+      </div>
+
+      <div class="selected-numbers">
+        <div class="number-slot bonus" *ngFor="let i of [0,1]">
+          {{ selectedBonusNumbers[i] || '-' }}
+        </div>
+      </div>
+
+      <div class="numbers-grid">
+        <div 
+          *ngFor="let num of numbers" 
+          class="number-ball bonus"
+          [class.selected]="selectedBonusNumbers.includes(num)"
+          (click)="toggleBonusNumber(num)">
+          {{ num }}
+        </div>
+      </div>
+
+      <ion-button fill="outline" expand="block" (click)="previousStep()">
+        Back
+      </ion-button>
+      
+      <ion-button 
+        expand="block" 
+        [disabled]="selectedBonusNumbers.length !== 2"
+        (click)="submitEntry()">
+        Submit Entry
+      </ion-button>
+    </div>
+
+    <!-- Success Modal -->
+    <div class="success-modal" *ngIf="showSuccessModal">
+      <div class="success-content">
+        <ion-icon name="checkmark-circle" color="success" class="success-icon"></ion-icon>
+        <h2>Entry Submitted Successfully!</h2>
+        <p>Your lottery entry has been submitted. Good luck!</p>
+        
+        <div class="submitted-numbers">
+          <div class="numbers-section">
+            <strong>Main Numbers:</strong>
+            <div class="number-display">
+              <span *ngFor="let num of submittedNumbers" class="num-badge">{{ num }}</span>
+            </div>
+          </div>
+          
+          <div class="numbers-section">
+            <strong>Bonus Numbers:</strong>
+            <div class="number-display">
+              <span *ngFor="let num of submittedBonusNumbers" class="num-badge bonus">{{ num }}</span>
+            </div>
+          </div>
+        </div>
+        
+        <ion-button expand="block" (click)="closeSuccessModal()">
+          Continue
+        </ion-button>
+        
+        <p class="redirect-text">Auto-redirecting in 5 seconds...</p>
+      </div>
+    </div>
+  </div>
+</ion-content>

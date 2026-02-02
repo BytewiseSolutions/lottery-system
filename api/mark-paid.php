@@ -35,7 +35,7 @@ try {
     $db->beginTransaction();
     
     // Get winner details
-    $stmt = $db->prepare("SELECT * FROM winners WHERE id = ?");
+    $stmt = $db->prepare("SELECT * FROM winner WHERE id = ?");
     $stmt->execute([$data['winner_id']]);
     $winner = $stmt->fetch(PDO::FETCH_ASSOC);
     
@@ -44,7 +44,7 @@ try {
     }
     
     // Update winner status
-    $stmt = $db->prepare("UPDATE winners SET status = 'paid', paid_at = NOW() WHERE id = ?");
+    $stmt = $db->prepare("UPDATE winner SET status = 'paid', paid_at = NOW() WHERE id = ?");
     $stmt->execute([$data['winner_id']]);
     
     // Create payment record

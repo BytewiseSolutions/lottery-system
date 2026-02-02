@@ -25,7 +25,7 @@ if (!$data->lottery || !$data->drawDate || !$data->jackpot || !$data->numbers ||
 try {
     $status = isset($data->publishNow) && $data->publishNow ? 'published' : 'draft';
     
-    $query = "INSERT INTO results (lottery, draw_date, winning_numbers, bonus_numbers, jackpot, winners, status, notes) 
+    $query = "INSERT INTO result (lottery, draw_date, winning_numbers, bonus_numbers, jackpot, winners, status, notes) 
               VALUES (?, ?, ?, ?, ?, 0, ?, ?)";
     $stmt = $db->prepare($query);
     $stmt->execute([
@@ -40,7 +40,7 @@ try {
     
     $resultId = $db->lastInsertId();
     
-    $entriesQuery = "SELECT * FROM entries WHERE lottery = ? AND DATE(draw_date) = DATE(?)";
+    $entriesQuery = "SELECT * FROM entry WHERE lottery = ? AND DATE(draw_date) = DATE(?)";
     $stmt = $db->prepare($entriesQuery);
     $stmt->execute([$data->lottery, $data->drawDate]);
     $entries = $stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -55,15 +55,30 @@ try {
         
         sort($entryNums);
         sort($entryBonus);
-        sort($winningNums);
-        sort($bonusNums);
+        $sortedWinning = $winningNums;
+        $sortedBonus = $bonusNums;
+        sort($sortedWinning);
+        sort($sortedBonus);
         
-        if ($entryNums === $winningNums && $entryBonus === $bonusNums) {
+        if ($entryNums === $sortedWinning && $entryBonus === $sortedBonus) {
             $winners++;
+            
+            // Insert into winner table
+            $winnerQuery = "INSERT INTO winner (user_id, result_id, entry_id, lottery, draw_date, prize_amount, status) 
+                           VALUES (?, ?, ?, ?, ?, ?, 'pending')";
+            $winnerStmt = $db->prepare($winnerQuery);
+            $winnerStmt->execute([
+                $entry['user_id'],
+                $resultId,
+                $entry['id'],
+                $data->lottery,
+                $data->drawDate,
+                $data->jackpot
+            ]);
         }
     }
     
-    $updateQuery = "UPDATE results SET winners = ? WHERE id = ?";
+    $updateQuery = "UPDATE result SET winners = ? WHERE id = ?";
     $db->prepare($updateQuery)->execute([$winners, $resultId]);
     
     echo json_encode([

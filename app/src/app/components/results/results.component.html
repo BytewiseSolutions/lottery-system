@@ -1,0 +1,28 @@
+<div *ngFor="let result of results" class="result-card">
+  <div class="result-header">
+    <h3>{{ result.lottery }}</h3>
+    <span class="result-date">{{ result.drawDate | date:'MMM d, y' }}</span>
+  </div>
+  <div class="result-body">
+    <div class="jackpot-section">
+      <p class="label">Jackpot</p>
+      <p class="jackpot">${{ result.jackpot }}M</p>
+    </div>
+    <div class="numbers-section">
+      <p class="label">Winning Numbers</p>
+      <div class="numbers-grid">
+        <span *ngFor="let num of parseNumbers(result.numbers)" class="number-badge">{{ num }}</span>
+      </div>
+    </div>
+    <div class="numbers-section">
+      <p class="label">Bonus Numbers</p>
+      <div class="numbers-grid">
+        <span *ngFor="let num of parseNumbers(result.bonusNumbers)" class="number-badge bonus">{{ num }}</span>
+      </div>
+    </div>
+    <div class="winners-section">
+      <p class="winners-count">{{ result.winners }} Winner{{ result.winners !== 1 ? 's' : '' }}</p>
+    </div>
+  </div>
+</div>
+<p *ngIf="results.length === 0" class="no-data">No results available</p>

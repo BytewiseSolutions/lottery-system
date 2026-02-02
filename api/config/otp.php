@@ -11,11 +11,11 @@ class OTP {
     }
     
     public function saveOTP($userId, $otpCode, $otpType) {
-        $expiresAt = date('Y-m-d H:i:s', time() + 600); // 10 minutes instead of 60 seconds
+        $expiresAt = date('Y-m-d H:i:s', time() + 600); // 10 minutes
         
-        $query = "INSERT INTO otp_verifications (user_id, otp_code, otp_type, expires_at) VALUES (?, ?, ?, ?)";
+        $query = "INSERT INTO otp_code (user_id, code, expires_at) VALUES (?, ?, ?)";
         $stmt = $this->db->prepare($query);
-        return $stmt->execute([$userId, $otpCode, $otpType, $expiresAt]);
+        return $stmt->execute([$userId, $otpCode, $expiresAt]);
     }
     
     public function verifyEmailToken($token) {
@@ -98,18 +98,18 @@ class OTP {
     }
     
     public function verifyOTP($userId, $otpCode, $otpType) {
-        $query = "SELECT id FROM otp_verifications 
-                  WHERE user_id = ? AND otp_code = ? AND otp_type = ? 
-                  AND expires_at > NOW() AND is_used = FALSE";
+        $query = "SELECT id FROM otp_code 
+                  WHERE user_id = ? AND code = ? 
+                  AND expires_at > NOW() AND verified = FALSE";
         $stmt = $this->db->prepare($query);
-        $stmt->execute([$userId, $otpCode, $otpType]);
+        $stmt->execute([$userId, $otpCode]);
         
         if ($stmt->rowCount() > 0) {
             // Mark OTP as used
-            $updateQuery = "UPDATE otp_verifications SET is_used = TRUE 
-                           WHERE user_id = ? AND otp_code = ? AND otp_type = ?";
+            $updateQuery = "UPDATE otp_code SET verified = TRUE 
+                           WHERE user_id = ? AND code = ?";
             $updateStmt = $this->db->prepare($updateQuery);
-            $updateStmt->execute([$userId, $otpCode, $otpType]);
+            $updateStmt->execute([$userId, $otpCode]);
             return true;
         }
         return false;

@@ -12,9 +12,9 @@ try {
     $database = new Database();
     $db = $database->getConnection();
     
-    $archiveQuery = "INSERT INTO past_draws (lottery, draw_date, winning_numbers, bonus_numbers, jackpot, winners, status)
+    $archiveQuery = "INSERT INTO past_draw (lottery, draw_date, winning_numbers, bonus_numbers, jackpot, winners, status)
                      SELECT lottery, draw_date, '[]', '[]', jackpot, 0, 'completed'
-                     FROM upcoming_draws 
+                     FROM upcoming_draw 
                      WHERE draw_date <= NOW()";
     try {
         $db->prepare($archiveQuery)->execute();
@@ -22,11 +22,11 @@ try {
 
     }
     
-    $deleteQuery = "DELETE FROM upcoming_draws WHERE draw_date <= NOW()";
+    $deleteQuery = "DELETE FROM upcoming_draw WHERE draw_date <= NOW()";
     $db->prepare($deleteQuery)->execute();
     
     // Check how many upcoming draws exist
-    $checkQuery = "SELECT lottery, draw_date FROM upcoming_draws";
+    $checkQuery = "SELECT lottery, draw_date FROM upcoming_draw";
     $stmt = $db->prepare($checkQuery);
     $stmt->execute();
     $existingDraws = $stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -70,7 +70,7 @@ try {
             
             error_log("Creating new draw: $lotteryName on $nextDraw");
             try {
-                $stmt = $db->prepare("INSERT INTO upcoming_draws (lottery, draw_date, jackpot, status) VALUES (?, ?, 10.00, 'scheduled')");
+                $stmt = $db->prepare("INSERT INTO upcoming_draw (lottery, draw_date, jackpot, status) VALUES (?, ?, 10.00, 'scheduled')");
                 $stmt->execute([$lotteryName, $nextDraw]);
                 error_log("Successfully created draw for $lotteryName");
             } catch(PDOException $e) {
@@ -79,8 +79,8 @@ try {
         }
     }
     
-    $query = "SELECT lottery as lottery_type, draw_date, jackpot 
-              FROM upcoming_draws 
+    $query = "SELECT lottery as name, draw_date, jackpot 
+              FROM upcoming_draw 
               ORDER BY draw_date";
     
     $stmt = $db->prepare($query);

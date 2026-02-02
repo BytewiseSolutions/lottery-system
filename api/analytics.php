@@ -51,7 +51,7 @@ try {
     }
     
     // Get total plays (entries)
-    $stmt = $db->prepare("SELECT COUNT(*) as total_plays FROM entries WHERE created_at >= ? AND created_at <= ?");
+    $stmt = $db->prepare("SELECT COUNT(*) as total_plays FROM entry WHERE created_at >= ? AND created_at <= ?");
     $stmt->execute([$startDate, $endDate]);
     $totalPlays = $stmt->fetch(PDO::FETCH_ASSOC)['total_plays'];
     
@@ -59,7 +59,7 @@ try {
     $totalRevenue = 0;
     
     // Get number of draws in period
-    $stmt = $db->prepare("SELECT COUNT(DISTINCT lottery, DATE(draw_date)) as total_draws FROM results WHERE draw_date >= ? AND draw_date <= ?");
+    $stmt = $db->prepare("SELECT COUNT(DISTINCT lottery, DATE(draw_date)) as total_draws FROM result WHERE draw_date >= ? AND draw_date <= ?");
     $stmt->execute([$startDate, $endDate]);
     $totalDraws = $stmt->fetch(PDO::FETCH_ASSOC)['total_draws'];
     
@@ -67,7 +67,7 @@ try {
     $averagePlayersPerDraw = $totalDraws > 0 ? round($totalPlays / $totalDraws) : 0;
     
     // Get winner count
-    $stmt = $db->prepare("SELECT COUNT(*) as total_winners FROM winners WHERE created_at >= ? AND created_at <= ?");
+    $stmt = $db->prepare("SELECT COUNT(*) as total_winners FROM winner WHERE created_at >= ? AND created_at <= ?");
     $stmt->execute([$startDate, $endDate]);
     $totalWinners = $stmt->fetch(PDO::FETCH_ASSOC)['total_winners'];
     

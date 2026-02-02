@@ -32,7 +32,7 @@ try {
     ];
     
     foreach ($defaults as $default) {
-        $stmt = $db->prepare("INSERT IGNORE INTO site_settings (setting_key, setting_value) VALUES (?, ?)");
+        $stmt = $db->prepare("INSERT IGNORE INTO site_setting (setting_key, setting_value) VALUES (?, ?)");
         $stmt->execute($default);
     }
 } catch (Exception $e) {
@@ -44,7 +44,7 @@ $method = $_SERVER['REQUEST_METHOD'];
 try {
     switch ($method) {
         case 'GET':
-            $stmt = $db->prepare("SELECT setting_key, setting_value FROM site_settings");
+            $stmt = $db->prepare("SELECT setting_key, setting_value FROM site_setting");
             $stmt->execute();
             $settings = $stmt->fetchAll(PDO::FETCH_KEY_PAIR);
             
@@ -56,7 +56,7 @@ try {
             
             foreach ($data as $key => $value) {
                 $stmt = $db->prepare("
-                    INSERT INTO site_settings (setting_key, setting_value) 
+                    INSERT INTO site_setting (setting_key, setting_value) 
                     VALUES (?, ?) 
                     ON DUPLICATE KEY UPDATE setting_value = ?
                 ");

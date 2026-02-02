@@ -49,21 +49,24 @@ foreach ($data->bonusNumbers as $num) {
 try {
     $lotteryName = ucfirst($data->lottery) . ' Lotto';
     
-    if (!isset($data->humanVerified) || !$data->humanVerified) {
-        $checkPlaysQuery = "SELECT COUNT(*) as play_count FROM entries WHERE user_id = ? AND DATE(created_at) = CURDATE()";
-        $stmt = $db->prepare($checkPlaysQuery);
-        $stmt->execute([$user['id']]);
-        $playCount = $stmt->fetch(PDO::FETCH_ASSOC)['play_count'];
-        
-        if ($playCount >= 4) {
-            echo json_encode(['requireHumanVerification' => true]);
-            exit;
-        }
-    }
+    // Temporarily disable play count check for development
+    // if (!isset($data->humanVerified) || !$data->humanVerified) {
+    //     $checkPlaysQuery = "SELECT COUNT(*) as play_count FROM entry WHERE user_id = ? AND DATE(created_at) = CURDATE()";
+    //     $stmt = $db->prepare($checkPlaysQuery);
+    //     $stmt->execute([$user['id']]);
+    //     $playCount = $stmt->fetch(PDO::FETCH_ASSOC)['play_count'];
+    //     
+    //     if ($playCount >= 4) {
+    //         echo json_encode(['requireHumanVerification' => true]);
+    //         exit;
+    //     }
+    // }
     
-    $checkDrawQuery = "SELECT draw_date FROM upcoming_draws WHERE lottery = ? AND draw_date = ?";
+    $checkDrawQuery = "SELECT draw_date FROM past_draw WHERE lottery = ? AND draw_date = ? 
+                        UNION 
+                        SELECT draw_date FROM upcoming_draw WHERE lottery = ? AND draw_date = ?";
     $stmt = $db->prepare($checkDrawQuery);
-    $stmt->execute([$lotteryName, $data->drawDate]);
+    $stmt->execute([$lotteryName, $data->drawDate, $lotteryName, $data->drawDate]);
     $draw = $stmt->fetch(PDO::FETCH_ASSOC);
     
     if (!$draw) {
@@ -81,7 +84,7 @@ try {
         exit;
     }
     
-    $query = "INSERT INTO entries (user_id, lottery, numbers, bonus_numbers, draw_date) VALUES (?, ?, ?, ?, ?)";
+    $query = "INSERT INTO entry (user_id, lottery, numbers, bonus_numbers, draw_date) VALUES (?, ?, ?, ?, ?)";
     $stmt = $db->prepare($query);
     $stmt->execute([
         $user['id'],
@@ -93,9 +96,18 @@ try {
     
     $entryId = $db->lastInsertId();
     
-    error_log("Entry created: lottery=$lotteryName, date=$data->drawDate");
+    error_log("Entry created: lottery=$lotteryName, date=$data->drawDate, user_id={$user['id']}");
     
-    $updateJackpot = "UPDATE upcoming_draws SET jackpot = jackpot + 0.01 
+    $logQuery = "INSERT INTO activity_log (user_id, action, details, ip_address) VALUES (?, ?, ?, ?)";
+    $logStmt = $db->prepare($logQuery);
+    $logStmt->execute([
+        $user['id'],
+        'lottery_played',
+        json_encode(['lottery' => $lotteryName, 'draw_date' => $data->drawDate, 'entry_id' => $entryId]),
+        $_SERVER['REMOTE_ADDR'] ?? null
+    ]);
+    
+    $updateJackpot = "UPDATE upcoming_draw SET jackpot = jackpot + 0.01 
                       WHERE lottery = ? AND DATE(draw_date) = DATE(?) LIMIT 1";
     $stmt = $db->prepare($updateJackpot);
     $result = $stmt->execute([$lotteryName, $data->drawDate]);
@@ -106,7 +118,7 @@ try {
         error_log("WARNING: No rows updated! Check if lottery name and date match in upcoming_draws table");
     }
 
-    $getJackpot = "SELECT jackpot FROM upcoming_draws WHERE lottery = ? AND DATE(draw_date) = DATE(?) LIMIT 1";
+    $getJackpot = "SELECT jackpot FROM upcoming_draw WHERE lottery = ? AND DATE(draw_date) = DATE(?) LIMIT 1";
     $stmt = $db->prepare($getJackpot);
     $stmt->execute([$lotteryName, $data->drawDate]);
     $updatedJackpot = $stmt->fetchColumn();

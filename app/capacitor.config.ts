@@ -1,8 +1,8 @@
 import type { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
-  appId: 'com.bytewise.lottery',
-  appName: 'Lottery System',
+  appId: 'com.totalfreelotto.app',
+  appName: 'Total Free Lotto',
   webDir: 'www'
 };
 

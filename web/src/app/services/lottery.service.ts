@@ -95,7 +95,10 @@ export class LotteryService {
   }
 
   updateResultStatus(id: number, status: string): Observable<any> {
-    return this.http.post<any>(`${this.apiUrl}/update-result-status`, { id, status });
+    const token = localStorage.getItem('token');
+    return this.http.post<any>(`${this.apiUrl}/update-result-status`, { id, status }, {
+      headers: { 'Authorization': `Bearer ${token}` }
+    });
   }
 
   updateResult(id: number, result: any): Observable<any> {
