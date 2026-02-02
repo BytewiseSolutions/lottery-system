@@ -49,13 +49,26 @@ try {
     
     // Create payment record
     $stmt = $db->prepare("
-        INSERT INTO payments (winner_id, amount, status, approved_by, approved_at) 
-        VALUES (?, ?, 'completed', ?, NOW())
+        INSERT INTO payments (winner_id, user_id, amount, status, approved_by, approved_at) 
+        VALUES (?, ?, ?, 'completed', ?, NOW())
     ");
     $stmt->execute([
         $data['winner_id'],
+        $winner['user_id'],
         $winner['prize_amount'],
         $user['id']
+    ]);
+    
+    // Create notification for payment
+    $stmt = $db->prepare("
+        INSERT INTO notification (user_id, sent_by, title, message, type) 
+        VALUES (?, ?, ?, ?, 'success')
+    ");
+    $stmt->execute([
+        $winner['user_id'],
+        $user['id'],
+        'Payment Processed',
+        'Your prize of $' . number_format($winner['prize_amount'], 2) . ' has been paid!'
     ]);
     
     $db->commit();

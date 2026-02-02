@@ -34,6 +34,30 @@ const routes: Routes = [
   {
     path: 'play',
     loadChildren: () => import('./play/play.module').then( m => m.PlayPageModule)
+  },
+  {
+    path: 'winnings',
+    loadChildren: () => import('./winnings/winnings.module').then( m => m.WinningsPageModule)
+  },
+  {
+    path: 'notifications',
+    loadChildren: () => import('./notifications/notifications.module').then( m => m.NotificationsPageModule)
+  },
+  {
+    path: 'settings',
+    loadChildren: () => import('./settings/settings.module').then( m => m.SettingsPageModule)
+  },
+  {
+    path: 'past-draws',
+    loadChildren: () => import('./past-draws/past-draws.module').then( m => m.PastDrawsPageModule)
+  },
+  {
+    path: 'edit-profile',
+    loadChildren: () => import('./edit-profile/edit-profile.module').then( m => m.EditProfilePageModule)
+  },
+  {
+    path: 'change-password',
+    loadChildren: () => import('./change-password/change-password.module').then( m => m.ChangePasswordPageModule)
   }
 ];
 

@@ -39,6 +39,27 @@
       </div>
     </div>
 
+    <ion-button expand="block" fill="outline" color="primary" routerLink="/notifications">
+      <ion-icon name="notifications" slot="start"></ion-icon>
+      Notifications
+      <ion-badge *ngIf="unreadCount > 0" color="danger" style="margin-left: 8px;">{{ unreadCount }}</ion-badge>
+    </ion-button>
+
+    <ion-button expand="block" fill="outline" color="primary" routerLink="/settings">
+      <ion-icon name="settings" slot="start"></ion-icon>
+      Settings
+    </ion-button>
+
+    <ion-button expand="block" fill="outline" color="primary" routerLink="/past-draws">
+      <ion-icon name="calendar" slot="start"></ion-icon>
+      Past Draws
+    </ion-button>
+
+    <ion-button expand="block" fill="outline" color="primary" (click)="viewWinnings()">
+      <ion-icon name="trophy" slot="start"></ion-icon>
+      My Winnings
+    </ion-button>
+
     <ion-button expand="block" color="danger" (click)="onLogout()">
       <ion-icon name="log-out" slot="start"></ion-icon>
       Logout

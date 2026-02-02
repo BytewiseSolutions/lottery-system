@@ -1,7 +1,42 @@
-<div *ngFor="let entry of entries" class="entry-card">
+<div class="entries-header">
+  <div class="entry-limit-badge">
+    <ion-icon name="ticket"></ion-icon>
+    <span>{{ entryLimit.remaining }}/{{ entryLimit.limit }} entries remaining today</span>
+  </div>
+  <ion-item *ngIf="lotteryTypes.length > 1">
+    <ion-label>Filter</ion-label>
+    <ion-select [(ngModel)]="selectedLottery" (ionChange)="filterByLottery()">
+      <ion-select-option *ngFor="let type of lotteryTypes" [value]="type">
+        {{ type === 'all' ? 'All' : type }}
+      </ion-select-option>
+    </ion-select>
+  </ion-item>
+</div>
+
+<div *ngIf="loading" class="loading-container">
+  <div *ngFor="let i of [1,2,3]" class="entry-card skeleton">
+    <ion-skeleton-text animated style="width: 60%; height: 24px;"></ion-skeleton-text>
+    <ion-skeleton-text animated style="width: 100%; height: 40px; margin-top: 12px;"></ion-skeleton-text>
+    <ion-skeleton-text animated style="width: 80%; height: 40px; margin-top: 8px;"></ion-skeleton-text>
+  </div>
+</div>
+
+<div *ngIf="error && !loading" class="error-state">
+  <ion-icon name="cloud-offline-outline"></ion-icon>
+  <p>Failed to load entries</p>
+  <ion-button (click)="loadEntries()" fill="outline" size="small">
+    <ion-icon name="refresh" slot="start"></ion-icon>
+    Retry
+  </ion-button>
+</div>
+
+<div *ngFor="let entry of filteredEntries" class="entry-card">
   <div class="entry-header">
     <h3>{{ entry.lottery }}</h3>
-    <span class="entry-date">{{ entry.created_at | date:'MMM d, y h:mm a' }}</span>
+    <div class="header-right">
+      <span class="status-badge" [ngClass]="getEntryStatus(entry)">{{ getEntryStatus(entry) | uppercase }}</span>
+      <span class="entry-date">{{ entry.created_at | date:'MMM d, y h:mm a' }}</span>
+    </div>
   </div>
   <div class="entry-body">
     <div class="numbers-section">
@@ -33,4 +68,4 @@
     <p class="draw-info">Draw: {{ entry.draw_date | date:'EEEE, MMMM d, y' }}</p>
   </div>
 </div>
-<p *ngIf="entries.length === 0" class="no-data">You have no entries yet</p>
+<p *ngIf="!loading && !error && entries.length === 0" class="no-data">You have no entries yet</p>

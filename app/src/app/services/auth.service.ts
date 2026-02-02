@@ -60,4 +60,45 @@ export class AuthService {
   isAuthenticated(): boolean {
     return !!this.getToken();
   }
+
+  getProfile(): Observable<any> {
+    const user = this.userSubject.value;
+    return new Observable(observer => {
+      observer.next({
+        full_name: user?.fullName || user?.name || '',
+        email: user?.email || '',
+        phone: user?.phone || '',
+        notification_enabled: 1
+      });
+      observer.complete();
+    });
+  }
+
+  updateProfile(data: any): Observable<any> {
+    return this.http.put(`${environment.apiUrl}/api/profile`, data, {
+      headers: { Authorization: `Bearer ${this.getToken()}` }
+    }).pipe(tap(() => {
+      const user = this.userSubject.value;
+      if (user) {
+        user.fullName = data.full_name;
+        user.phone = data.phone;
+        localStorage.setItem('user', JSON.stringify(user));
+        this.userSubject.next(user);
+      }
+    }));
+  }
+
+  changePassword(currentPassword: string, newPassword: string): Observable<any> {
+    return this.http.post(`${environment.apiUrl}/api/change-password`, 
+      { currentPassword, newPassword },
+      { headers: { Authorization: `Bearer ${this.getToken()}` } }
+    );
+  }
+
+  updateNotificationPreferences(enabled: boolean): Observable<any> {
+    return new Observable(observer => {
+      observer.next({ success: true });
+      observer.complete();
+    });
+  }
 }

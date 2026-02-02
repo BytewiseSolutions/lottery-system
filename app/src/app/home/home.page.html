@@ -9,6 +9,10 @@
 </ion-header>
 
 <ion-content color="none">
+  <ion-refresher slot="fixed" (ionRefresh)="handleRefresh($event)">
+    <ion-refresher-content></ion-refresher-content>
+  </ion-refresher>
+  
   <div [ngSwitch]="selectedTab">
     <div *ngSwitchCase="'home'">
       <div *ngFor="let draw of upcomingDraws" class="lottery-card">
@@ -60,6 +64,7 @@
       <ion-tab-button (click)="selectedTab = 'profile'" [class.active]="selectedTab === 'profile'">
         <ion-icon name="person"></ion-icon>
         <ion-label>Profile</ion-label>
+        <ion-badge *ngIf="unreadNotifications > 0" color="danger">{{ unreadNotifications }}</ion-badge>
       </ion-tab-button>
     </ion-tab-bar>
   </ion-toolbar>

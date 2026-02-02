@@ -1,0 +1,61 @@
+<ion-header>
+  <ion-toolbar color="primary">
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/home"></ion-back-button>
+    </ion-buttons>
+    <ion-title>Notifications</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <ion-refresher slot="fixed" (ionRefresh)="handleRefresh($event)">
+    <ion-refresher-content></ion-refresher-content>
+  </ion-refresher>
+
+  <div *ngIf="loading" class="loading-container">
+    <ion-list>
+      <ion-item *ngFor="let i of [1,2,3,4,5]">
+        <ion-skeleton-text animated style="width: 40px; height: 40px; border-radius: 50%;" slot="start"></ion-skeleton-text>
+        <ion-label>
+          <ion-skeleton-text animated style="width: 60%;"></ion-skeleton-text>
+          <ion-skeleton-text animated style="width: 80%;"></ion-skeleton-text>
+          <ion-skeleton-text animated style="width: 40%;"></ion-skeleton-text>
+        </ion-label>
+      </ion-item>
+    </ion-list>
+  </div>
+
+  <div *ngIf="error && !loading" class="error-state">
+    <ion-icon name="cloud-offline-outline"></ion-icon>
+    <p>Failed to load notifications</p>
+    <ion-button (click)="loadNotifications()" fill="outline">
+      <ion-icon name="refresh" slot="start"></ion-icon>
+      Retry
+    </ion-button>
+  </div>
+
+  <ion-list *ngIf="!loading && !error">
+    <ion-item *ngFor="let notification of notifications" 
+              [class.unread]="!notification.is_read"
+              (click)="markAsRead(notification)">
+      <ion-icon [name]="notification.type === 'success' ? 'checkmark-circle' : 
+                        notification.type === 'warning' ? 'warning' : 
+                        notification.type === 'error' ? 'close-circle' : 'information-circle'"
+                [color]="notification.type === 'success' ? 'success' : 
+                         notification.type === 'warning' ? 'warning' : 
+                         notification.type === 'error' ? 'danger' : 'primary'"
+                slot="start"></ion-icon>
+      <ion-label>
+        <h2>{{ notification.title }}</h2>
+        <p>{{ notification.message }}</p>
+        <p class="timestamp">{{ notification.created_at | date:'short' }}</p>
+      </ion-label>
+      <ion-badge *ngIf="!notification.is_read" color="primary" slot="end">New</ion-badge>
+    </ion-item>
+  </ion-list>
+
+  <div *ngIf="!loading && !error && notifications.length === 0" class="empty-state">
+    <ion-icon name="notifications-off-outline"></ion-icon>
+    <p>No notifications yet</p>
+  </div>
+</ion-content>

@@ -1,0 +1,60 @@
+<ion-header>
+  <ion-toolbar color="primary">
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/home"></ion-back-button>
+    </ion-buttons>
+    <ion-title>Past Draws</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <div class="past-draws-container">
+    <ion-card>
+      <ion-card-content>
+        <ion-item>
+          <ion-label>Filter by Lottery</ion-label>
+          <ion-select [(ngModel)]="selectedLottery" (ionChange)="filterByLottery()">
+            <ion-select-option *ngFor="let type of lotteryTypes" [value]="type">
+              {{ type === 'all' ? 'All Lotteries' : type }}
+            </ion-select-option>
+          </ion-select>
+        </ion-item>
+      </ion-card-content>
+    </ion-card>
+
+    <ion-spinner *ngIf="loading"></ion-spinner>
+
+    <ion-card *ngFor="let draw of filteredDraws">
+      <ion-card-header>
+        <ion-card-title>{{ draw.lottery }}</ion-card-title>
+        <ion-card-subtitle>{{ (draw.drawDate || draw.draw_date) | date:'medium' }}</ion-card-subtitle>
+      </ion-card-header>
+      <ion-card-content>
+        <div class="numbers-container">
+          <div class="numbers">
+            <span *ngFor="let num of parseNumbers(draw.numbers || draw.winning_numbers)" class="number">{{ num }}</span>
+          </div>
+          <div class="bonus-numbers" *ngIf="parseNumbers(draw.bonusNumbers || draw.bonus_numbers).length">
+            <strong>Bonus:</strong>
+            <span *ngFor="let num of parseNumbers(draw.bonusNumbers || draw.bonus_numbers)" class="number bonus">{{ num }}</span>
+          </div>
+        </div>
+        <div class="jackpot">
+          <ion-icon name="trophy"></ion-icon>
+          Jackpot: R{{ draw.jackpot | number:'1.2-2' }}
+        </div>
+        <ion-button expand="block" fill="outline" (click)="shareWinningNumbers(draw)">
+          <ion-icon name="share-social" slot="start"></ion-icon>
+          Share Results
+        </ion-button>
+      </ion-card-content>
+    </ion-card>
+
+    <ion-card *ngIf="!loading && filteredDraws.length === 0">
+      <ion-card-content class="empty-state">
+        <ion-icon name="calendar-outline"></ion-icon>
+        <p>No past draws found</p>
+      </ion-card-content>
+    </ion-card>
+  </div>
+</ion-content>

@@ -1,0 +1,56 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/home"></ion-back-button>
+    </ion-buttons>
+    <ion-title>My Winnings</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <ion-refresher slot="fixed" (ionRefresh)="handleRefresh($event)">
+    <ion-refresher-content></ion-refresher-content>
+  </ion-refresher>
+  
+  <div class="winnings-container">
+    <div class="total-card">
+      <p class="total-label">Total Winnings</p>
+      <h1 class="total-amount">${{ totalWinnings.toFixed(2) }}</h1>
+    </div>
+
+    <div *ngIf="loading" class="loading-state">
+      <ion-spinner></ion-spinner>
+    </div>
+
+    <div *ngIf="!loading && winnings.length > 0">
+      <div *ngFor="let win of winnings" class="winning-card">
+        <div class="winning-header">
+          <h3>{{ win.lottery }}</h3>
+          <ion-badge [color]="getStatusColor(win.status)">{{ win.status | uppercase }}</ion-badge>
+        </div>
+        <div class="winning-body">
+          <div class="prize-amount">
+            <span class="label">Prize Amount</span>
+            <span class="amount">${{ win.prize_amount }}</span>
+          </div>
+          <div class="numbers-section">
+            <p class="label">Winning Numbers</p>
+            <div class="numbers-grid">
+              <span *ngFor="let num of parseNumbers(win.numbers)" class="number-badge">{{ num }}</span>
+            </div>
+          </div>
+          <div class="numbers-section">
+            <p class="label">Bonus Numbers</p>
+            <div class="numbers-grid">
+              <span *ngFor="let num of parseNumbers(win.bonus_numbers)" class="number-badge bonus">{{ num }}</span>
+            </div>
+          </div>
+          <p class="draw-date">Draw: {{ win.drawDate | date:'EEEE, MMMM d, y' }}</p>
+          <p *ngIf="win.paid_at" class="paid-date">Paid: {{ win.paid_at | date:'MMM d, y h:mm a' }}</p>
+        </div>
+      </div>
+    </div>
+
+    <p *ngIf="!loading && winnings.length === 0" class="no-data">No winnings yet. Keep playing!</p>
+  </div>
+</ion-content>

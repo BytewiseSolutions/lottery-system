@@ -64,22 +64,49 @@ try {
             $winners++;
             
             // Insert into winner table
-            $winnerQuery = "INSERT INTO winner (user_id, result_id, entry_id, lottery, draw_date, prize_amount, status) 
-                           VALUES (?, ?, ?, ?, ?, ?, 'pending')";
+            $winnerQuery = "INSERT INTO winner (user_id, result_id, entry_id, prize_amount, status) 
+                           VALUES (?, ?, ?, ?, 'pending')";
             $winnerStmt = $db->prepare($winnerQuery);
             $winnerStmt->execute([
                 $entry['user_id'],
                 $resultId,
                 $entry['id'],
-                $data->lottery,
-                $data->drawDate,
                 $data->jackpot
             ]);
+            
+            // Create notification for winner
+            if ($status === 'published') {
+                $notifQuery = "INSERT INTO notification (user_id, sent_by, title, message, type) 
+                              VALUES (?, ?, ?, ?, 'success')";
+                $notifStmt = $db->prepare($notifQuery);
+                $notifStmt->execute([
+                    $entry['user_id'],
+                    $user['id'],
+                    'Congratulations! You Won!',
+                    "You won $" . number_format($data->jackpot, 2) . " in the {$data->lottery} draw!"
+                ]);
+            }
         }
     }
     
     $updateQuery = "UPDATE result SET winners = ? WHERE id = ?";
     $db->prepare($updateQuery)->execute([$winners, $resultId]);
+    
+    // Notify all participants about results being published
+    if ($status === 'published' && count($entries) > 0) {
+        $userIds = array_unique(array_column($entries, 'user_id'));
+        $notifQuery = "INSERT INTO notification (user_id, sent_by, title, message, type) 
+                      VALUES (?, ?, ?, ?, 'info')";
+        $notifStmt = $db->prepare($notifQuery);
+        foreach ($userIds as $userId) {
+            $notifStmt->execute([
+                $userId,
+                $user['id'],
+                'Results Published',
+                "Results for {$data->lottery} on " . date('M d, Y', strtotime($data->drawDate)) . " are now available."
+            ]);
+        }
+    }
     
     echo json_encode([
         'success' => true,

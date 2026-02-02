@@ -31,4 +31,23 @@ export class LotteryService {
   getResults(): Observable<any> {
     return this.http.get(`${environment.apiUrl}/api/results`);
   }
+
+  getNotifications(): Observable<any> {
+    return this.http.get(`${environment.apiUrl}/api/user-notifications`, { headers: this.getHeaders() });
+  }
+
+  markNotificationRead(id: number): Observable<any> {
+    return this.http.post(`${environment.apiUrl}/api/mark-notification-read`, { id }, { headers: this.getHeaders() });
+  }
+
+  getPastDraws(): Observable<any> {
+    return this.getResults();
+  }
+
+  getEntryLimit(): Observable<any> {
+    return new Observable(observer => {
+      observer.next({ limit: 10, used: 0, remaining: 10 });
+      observer.complete();
+    });
+  }
 }
