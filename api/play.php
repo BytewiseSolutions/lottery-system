@@ -2,18 +2,13 @@
 require_once 'config/cors.php';
 require_once 'config/database.php';
 require_once 'config/jwt.php';
-// require_once 'config/ratelimit.php'; // Disabled for performance
 
-date_default_timezone_set('Africa/Johannesburg'); // Set to South Africa timezone (UTC+2)
+date_default_timezone_set('Africa/Johannesburg');
 
 $user = JWT::authenticate();
 
 $database = new Database();
 $db = $database->getConnection();
-
-// Rate limiting - disabled for performance
-// $rateLimit = new RateLimit($db);
-// $rateLimit->checkLimit($user['id'], 'play', 100, 3600);
 
 $data = json_decode(file_get_contents("php://input"));
 
@@ -48,19 +43,6 @@ foreach ($data->bonusNumbers as $num) {
 
 try {
     $lotteryName = ucfirst($data->lottery) . ' Lotto';
-    
-    // Temporarily disable play count check for development
-    // if (!isset($data->humanVerified) || !$data->humanVerified) {
-    //     $checkPlaysQuery = "SELECT COUNT(*) as play_count FROM entry WHERE user_id = ? AND DATE(created_at) = CURDATE()";
-    //     $stmt = $db->prepare($checkPlaysQuery);
-    //     $stmt->execute([$user['id']]);
-    //     $playCount = $stmt->fetch(PDO::FETCH_ASSOC)['play_count'];
-    //     
-    //     if ($playCount >= 4) {
-    //         echo json_encode(['requireHumanVerification' => true]);
-    //         exit;
-    //     }
-    // }
     
     $checkDrawQuery = "SELECT draw_date FROM past_draw WHERE lottery = ? AND draw_date = ? 
                         UNION 
