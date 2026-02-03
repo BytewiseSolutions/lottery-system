@@ -77,6 +77,12 @@ switch ($path) {
     case 'api/notifications':
         require 'notification.php';
         break;
+    case 'api/user-notifications':
+        require 'user-notifications.php';
+        break;
+    case 'api/mark-notification-read':
+        require 'mark-notification-read.php';
+        break;
     case 'api/my-winnings':
         require 'my-winnings.php';
         break;

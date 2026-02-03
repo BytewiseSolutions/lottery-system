@@ -2,6 +2,8 @@ import { Component, OnInit, OnDestroy } from '@angular/core';
 import { Router } from '@angular/router';
 import { AuthService } from '../services/auth.service';
 import { LotteryService } from '../services/lottery.service';
+import { ToastService } from '../services/toast.service';
+import { NotificationService } from '../services/notification.service';
 
 @Component({
   selector: 'app-home',
@@ -14,12 +16,15 @@ export class HomePage implements OnInit, OnDestroy {
   selectedTab = 'home';
   upcomingDraws: any[] = [];
   totalWinnings = 0;
+  unreadNotifications = 0;
   private countdownInterval: any;
 
   constructor(
     private auth: AuthService,
     private router: Router,
-    private lottery: LotteryService
+    private lottery: LotteryService,
+    private notificationService: NotificationService,
+    private toast: ToastService
   ) {}
 
   ngOnInit() {
@@ -33,6 +38,11 @@ export class HomePage implements OnInit, OnDestroy {
         this.userName = user.fullName || user.name || 'Player';
       }
     });
+    
+    this.notificationService.unreadCount$.subscribe(count => {
+      this.unreadNotifications = count;
+    });
+    
     this.loadUpcomingDraws();
     this.countdownInterval = setInterval(() => {
       setTimeout(() => {
@@ -51,7 +61,7 @@ export class HomePage implements OnInit, OnDestroy {
           this.totalWinnings = parseFloat(this.upcomingDraws[0].jackpot) || 0;
         }
       },
-      error: (err) => console.error('Error loading draws:', err)
+      error: () => this.toast.showError('Failed to load draws')
     });
   }
 
@@ -78,8 +88,25 @@ export class HomePage implements OnInit, OnDestroy {
     if (this.countdownInterval) clearInterval(this.countdownInterval);
   }
 
+  handleRefresh(event: any) {
+    this.loadUpcomingDraws();
+    
+    // Trigger refresh on child components
+    if (this.selectedTab === 'entries' || this.selectedTab === 'results') {
+      window.dispatchEvent(new CustomEvent('refreshData'));
+    }
+    
+    setTimeout(() => {
+      event.target.complete();
+    }, 1000);
+  }
+
   logout() {
-    this.auth.logout();
-    this.router.navigate(['/landing']);
+    this.toast.confirm('Are you sure you want to logout?', 'Logout').then(confirmed => {
+      if (confirmed) {
+        this.auth.logout();
+        this.router.navigate(['/landing']);
+      }
+    });
   }
 }

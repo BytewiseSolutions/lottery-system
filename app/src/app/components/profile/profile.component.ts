@@ -1,5 +1,7 @@
 import { Component, OnInit, Input, Output, EventEmitter } from '@angular/core';
+import { Router } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
+import { NotificationService } from '../../services/notification.service';
 
 @Component({
   selector: 'app-profile',
@@ -11,8 +13,13 @@ export class ProfileComponent  implements OnInit {
   @Input() userName: string = '';
   @Output() logoutClick = new EventEmitter<void>();
   userDetails: any = {};
+  unreadCount = 0;
 
-  constructor(private auth: AuthService) {}
+  constructor(
+    private auth: AuthService, 
+    private router: Router,
+    private notificationService: NotificationService
+  ) {}
 
   ngOnInit() {
     this.auth.user$.subscribe(user => {
@@ -25,6 +32,14 @@ export class ProfileComponent  implements OnInit {
         };
       }
     });
+    
+    this.notificationService.unreadCount$.subscribe(count => {
+      this.unreadCount = count;
+    });
+  }
+
+  viewWinnings() {
+    this.router.navigate(['/winnings']);
   }
 
   onLogout() {

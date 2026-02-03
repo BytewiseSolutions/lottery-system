@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { LotteryService } from '../services/lottery.service';
 import { AlertController, LoadingController } from '@ionic/angular';
+import { ToastService } from '../services/toast.service';
 import { environment } from '../../environments/environment';
 
 @Component({
@@ -25,7 +26,8 @@ export class PlayPage implements OnInit {
     private router: Router,
     private lotteryService: LotteryService,
     private alertCtrl: AlertController,
-    private loadingCtrl: LoadingController
+    private loadingCtrl: LoadingController,
+    private toast: ToastService
   ) {}
 
   ngOnInit() {
@@ -80,12 +82,7 @@ export class PlayPage implements OnInit {
     }
     
     if (!this.lottery) {
-      const alert = await this.alertCtrl.create({
-        header: 'Error',
-        message: 'Lottery data is missing. Please go back and try again.',
-        buttons: ['OK']
-      });
-      await alert.present();
+      this.toast.showError('Lottery data is missing. Please go back and try again.');
       return;
     }
 
@@ -118,53 +115,25 @@ export class PlayPage implements OnInit {
 
       if (result.requireHumanVerification) {
         loading.dismiss();
-        const alert = await this.alertCtrl.create({
-          header: 'Verification Required',
-          message: 'You have played multiple times today. Please try again or contact support.',
-          buttons: ['OK']
-        });
-        await alert.present();
+        this.toast.showError('You have played multiple times today. Please try again later.');
         return;
       }
 
       if (response.ok && result.success) {
-        console.log('Entry submitted successfully!');
-        
-        // Dismiss loading
         await loading.dismiss();
-        
-        // Store submitted numbers
         this.submittedNumbers = [...this.selectedNumbers];
         this.submittedBonusNumbers = [...this.selectedBonusNumbers];
-        
-        // Show success modal
         this.showSuccessModal = true;
-        
-        // Dispatch event
+        this.toast.showSuccess('Entry submitted successfully!');
         window.dispatchEvent(new CustomEvent('entrySubmitted'));
-        
-        // Auto redirect after 5 seconds
-        setTimeout(() => {
-          this.closeSuccessModal();
-        }, 5000);
+        setTimeout(() => this.closeSuccessModal(), 5000);
       } else {
         loading.dismiss();
-        const alert = await this.alertCtrl.create({
-          header: 'Error',
-          message: result.error || 'Failed to submit entry',
-          buttons: ['OK']
-        });
-        await alert.present();
+        this.toast.showError(result.error || 'Failed to submit entry');
       }
     } catch (error) {
-      console.error('Submit error:', error);
       loading.dismiss();
-      const alert = await this.alertCtrl.create({
-        header: 'Error',
-        message: 'Network error. Please try again.',
-        buttons: ['OK']
-      });
-      await alert.present();
+      this.toast.showError('Network error. Please check your connection and try again.');
     }
   }
 

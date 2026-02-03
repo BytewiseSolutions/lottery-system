@@ -1,0 +1,33 @@
+<ion-header>
+  <ion-toolbar color="primary">
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/settings"></ion-back-button>
+    </ion-buttons>
+    <ion-title>Edit Profile</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <div class="edit-profile-container">
+    <ion-card>
+      <ion-card-content>
+        <ion-item>
+          <ion-label position="stacked">Full Name</ion-label>
+          <ion-input [(ngModel)]="profile.full_name" placeholder="Enter your name"></ion-input>
+        </ion-item>
+        <ion-item>
+          <ion-label position="stacked">Email</ion-label>
+          <ion-input [(ngModel)]="profile.email" disabled></ion-input>
+        </ion-item>
+        <ion-item>
+          <ion-label position="stacked">Phone</ion-label>
+          <ion-input [(ngModel)]="profile.phone" type="tel" placeholder="Enter phone number"></ion-input>
+        </ion-item>
+        <ion-button expand="block" (click)="save()" [disabled]="loading">
+          <ion-icon name="save" slot="start"></ion-icon>
+          Save Changes
+        </ion-button>
+      </ion-card-content>
+    </ion-card>
+  </div>
+</ion-content>

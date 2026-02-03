@@ -1,15 +1,69 @@
+.entries-header {
+  padding: 12px;
+  background: #f8f9fa;
+  border-bottom: 1px solid #e0e0e0;
+
+  .entry-limit-badge {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px;
+    background: linear-gradient(135deg, #6c0092 0%, #8e24aa 100%);
+    color: white;
+    border-radius: 12px;
+    font-weight: 600;
+    margin-bottom: 12px;
+
+    ion-icon {
+      font-size: 24px;
+    }
+  }
+
+  ion-item {
+    --background: white;
+    --border-radius: 8px;
+  }
+}
+
 .no-data {
   text-align: center;
   padding: 40px 20px;
   color: #666;
 }
 
-.entry-card {
+.loading-container {
+  padding: 12px;
+}
+
+.error-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 40px 20px;
+  text-align: center;
+  
+  ion-icon {
+    font-size: 60px;
+    color: var(--ion-color-danger);
+    margin-bottom: 12px;
+  }
+  
+  p {
+    color: var(--ion-color-medium);
+    margin-bottom: 12px;
+  }
+}
+
+  .entry-card {
   border-radius: 16px;
   margin: 12px;
   padding: 16px;
   box-shadow: 0 4px 16px rgba(108, 0, 146, 0.15);
   background: white;
+
+  &.skeleton {
+    padding: 20px;
+  }
 
   .entry-header {
     display: flex;
@@ -24,6 +78,36 @@
       font-weight: 700;
       margin: 0;
       color: #333;
+    }
+
+    .header-right {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 4px;
+    }
+
+    .status-badge {
+      padding: 4px 12px;
+      border-radius: 12px;
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+      
+      &.pending {
+        background: #ffc107;
+        color: #000;
+      }
+      
+      &.won {
+        background: #28a745;
+        color: white;
+      }
+      
+      &.lost {
+        background: #dc3545;
+        color: white;
+      }
     }
 
     .entry-date {
