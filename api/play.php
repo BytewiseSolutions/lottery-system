@@ -2,13 +2,18 @@
 require_once 'config/cors.php';
 require_once 'config/database.php';
 require_once 'config/jwt.php';
+// require_once 'config/ratelimit.php'; // Disabled for performance
 
-date_default_timezone_set('Africa/Johannesburg');
+date_default_timezone_set('Africa/Johannesburg'); // Set to South Africa timezone (UTC+2)
 
 $user = JWT::authenticate();
 
 $database = new Database();
 $db = $database->getConnection();
+
+// Rate limiting - disabled for performance
+// $rateLimit = new RateLimit($db);
+// $rateLimit->checkLimit($user['id'], 'play', 100, 3600);
 
 $data = json_decode(file_get_contents("php://input"));
 
@@ -44,11 +49,9 @@ foreach ($data->bonusNumbers as $num) {
 try {
     $lotteryName = ucfirst($data->lottery) . ' Lotto';
     
-    $checkDrawQuery = "SELECT draw_date FROM past_draw WHERE lottery = ? AND draw_date = ? 
-                        UNION 
-                        SELECT draw_date FROM upcoming_draw WHERE lottery = ? AND draw_date = ?";
+    $checkDrawQuery = "SELECT draw_date FROM upcoming_draw WHERE lottery = ? AND draw_date = ?";
     $stmt = $db->prepare($checkDrawQuery);
-    $stmt->execute([$lotteryName, $data->drawDate, $lotteryName, $data->drawDate]);
+    $stmt->execute([$lotteryName, $data->drawDate]);
     $draw = $stmt->fetch(PDO::FETCH_ASSOC);
     
     if (!$draw) {
@@ -78,16 +81,7 @@ try {
     
     $entryId = $db->lastInsertId();
     
-    error_log("Entry created: lottery=$lotteryName, date=$data->drawDate, user_id={$user['id']}");
-    
-    $logQuery = "INSERT INTO activity_log (user_id, action, details, ip_address) VALUES (?, ?, ?, ?)";
-    $logStmt = $db->prepare($logQuery);
-    $logStmt->execute([
-        $user['id'],
-        'lottery_played',
-        json_encode(['lottery' => $lotteryName, 'draw_date' => $data->drawDate, 'entry_id' => $entryId]),
-        $_SERVER['REMOTE_ADDR'] ?? null
-    ]);
+    error_log("Entry created: lottery=$lotteryName, date=$data->drawDate");
     
     $updateJackpot = "UPDATE upcoming_draw SET jackpot = jackpot + 0.01 
                       WHERE lottery = ? AND DATE(draw_date) = DATE(?) LIMIT 1";

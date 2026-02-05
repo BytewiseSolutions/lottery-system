@@ -16,7 +16,6 @@ try {
     
     $range = $_GET['range'] ?? '30d';
     
-    // Calculate date range
     $days = 30;
     switch ($range) {
         case '7d':
@@ -29,11 +28,10 @@ try {
             $days = 90;
             break;
         case 'custom':
-            $days = 30; // Default for custom
+            $days = 30; 
             break;
     }
     
-    // Handle custom date range
     if ($range === 'custom') {
         $dateFrom = $_GET['dateFrom'] ?? null;
         $dateTo = $_GET['dateTo'] ?? null;

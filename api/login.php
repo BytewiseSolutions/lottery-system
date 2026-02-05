@@ -79,16 +79,6 @@ try {
     
     $token = JWT::encode($payload);
     
-    // Log login activity
-    $logQuery = "INSERT INTO activity_log (user_id, action, details, ip_address) VALUES (?, ?, ?, ?)";
-    $logStmt = $db->prepare($logQuery);
-    $logStmt->execute([
-        $user['id'],
-        'user_login',
-        json_encode(['identifier' => $data->identifier]),
-        $_SERVER['REMOTE_ADDR'] ?? null
-    ]);
-    
     echo json_encode([
         'success' => true,
         'message' => $message,

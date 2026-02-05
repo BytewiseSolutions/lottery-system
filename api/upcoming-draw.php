@@ -79,7 +79,7 @@ try {
         }
     }
     
-    $query = "SELECT lottery as name, draw_date, jackpot 
+    $query = "SELECT lottery as lottery_type, draw_date, jackpot 
               FROM upcoming_draw 
               ORDER BY draw_date";
     

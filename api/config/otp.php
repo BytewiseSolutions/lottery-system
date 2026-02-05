@@ -34,7 +34,7 @@ class OTP {
             $updateStmt->execute([$token]);
             
             // Mark user as verified
-            $userQuery = "UPDATE users SET email_verified = TRUE WHERE id = ?";
+            $userQuery = "UPDATE user SET email_verified = TRUE WHERE id = ?";
             $userStmt = $this->db->prepare($userQuery);
             $userStmt->execute([$userId]);
             

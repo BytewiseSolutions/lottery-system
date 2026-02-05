@@ -26,7 +26,7 @@ try {
         exit;
     }
     
-    // Delete the draw from upcoming_draws table
+    // Delete the draw from upcoming_draw table
     $query = "DELETE FROM upcoming_draw WHERE id = ?";
     $stmt = $db->prepare($query);
     $result = $stmt->execute([$id]);
