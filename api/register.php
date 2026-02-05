@@ -42,7 +42,7 @@ if ($data->email && !filter_var($data->email, FILTER_VALIDATE_EMAIL)) {
 
 try {
     // Check if user exists
-    $checkQuery = "SELECT id FROM users WHERE email = ? OR phone = ?";
+    $checkQuery = "SELECT id FROM user WHERE email = ? OR phone = ?";
     $stmt = $db->prepare($checkQuery);
     $stmt->execute([$data->email ?? '', $data->phone ?? '']);
     
@@ -54,7 +54,7 @@ try {
     
     // Create user
     $hashedPassword = password_hash($data->password, PASSWORD_DEFAULT);
-    $query = "INSERT INTO users (full_name, email, phone, password) VALUES (?, ?, ?, ?)";
+    $query = "INSERT INTO user (full_name, email, phone, password) VALUES (?, ?, ?, ?)";
     $stmt = $db->prepare($query);
     $stmt->execute([
         $data->fullName,

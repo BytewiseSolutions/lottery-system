@@ -27,7 +27,7 @@ try {
     // Chart data for results over time
     $stmt = $db->prepare("
         SELECT DATE(created_at) as date, COUNT(*) as count 
-        FROM results 
+        FROM result 
         WHERE created_at >= ? 
         GROUP BY DATE(created_at) 
         ORDER BY date
@@ -38,7 +38,7 @@ try {
     // User registrations over time
     $stmt = $db->prepare("
         SELECT DATE(created_at) as date, COUNT(*) as count 
-        FROM users 
+        FROM user 
         WHERE created_at >= ? 
         GROUP BY DATE(created_at) 
         ORDER BY date
@@ -49,7 +49,7 @@ try {
     // Top lotteries by entries
     $stmt = $db->prepare("
         SELECT lottery, COUNT(*) as entries 
-        FROM entries 
+        FROM entry 
         WHERE created_at >= ? 
         GROUP BY lottery 
         ORDER BY entries DESC 
@@ -59,15 +59,15 @@ try {
     $topLotteries = $stmt->fetchAll(PDO::FETCH_ASSOC);
     
     // Summary stats
-    $stmt = $db->prepare("SELECT COUNT(*) as total FROM users WHERE created_at >= ?");
+    $stmt = $db->prepare("SELECT COUNT(*) as total FROM user WHERE created_at >= ?");
     $stmt->execute([$startDate]);
     $newUsers = $stmt->fetchColumn();
     
-    $stmt = $db->prepare("SELECT COUNT(*) as total FROM entries WHERE created_at >= ?");
+    $stmt = $db->prepare("SELECT COUNT(*) as total FROM entry WHERE created_at >= ?");
     $stmt->execute([$startDate]);
     $totalEntries = $stmt->fetchColumn();
     
-    $stmt = $db->prepare("SELECT COUNT(*) as total FROM results WHERE created_at >= ?");
+    $stmt = $db->prepare("SELECT COUNT(*) as total FROM result WHERE created_at >= ?");
     $stmt->execute([$startDate]);
     $totalResults = $stmt->fetchColumn();
     

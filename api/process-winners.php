@@ -6,7 +6,7 @@ $db = $database->getConnection();
 
 // Get the result
 $resultId = 17;
-$result = $db->query("SELECT * FROM results WHERE id = $resultId")->fetch(PDO::FETCH_ASSOC);
+$result = $db->query("SELECT * FROM result WHERE id = $resultId")->fetch(PDO::FETCH_ASSOC);
 
 echo "Processing result ID: $resultId\n";
 echo "Lottery: {$result['lottery']}\n";
@@ -15,7 +15,7 @@ echo "Winning Numbers: {$result['winning_numbers']}\n";
 echo "Bonus Numbers: {$result['bonus_numbers']}\n\n";
 
 // Get entries for this draw
-$entriesQuery = "SELECT * FROM entries WHERE lottery = ? AND DATE(draw_date) = DATE(?)";
+$entriesQuery = "SELECT * FROM entry WHERE lottery = ? AND DATE(draw_date) = DATE(?)";
 $stmt = $db->prepare($entriesQuery);
 $stmt->execute([$result['lottery'], $result['draw_date']]);
 $entries = $stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -58,7 +58,7 @@ if (count($winners) > 0) {
     foreach ($winners as $winner) {
         echo "Inserting winner: User {$winner['userId']}, Entry {$winner['entryId']}\n";
         try {
-            $insertWinner = "INSERT INTO winners (user_id, lottery, prize_amount, result_id, entry_id, status, draw_date) VALUES (?, ?, ?, ?, ?, 'pending', ?)";
+            $insertWinner = "INSERT INTO winner (user_id, lottery, prize_amount, result_id, entry_id, status, draw_date) VALUES (?, ?, ?, ?, ?, 'pending', ?)";
             $stmt = $db->prepare($insertWinner);
             $stmt->execute([
                 $winner['userId'], 

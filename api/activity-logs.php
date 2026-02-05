@@ -50,7 +50,7 @@ try {
             $stmt = $db->prepare("
                 SELECT al.*, u.full_name, u.email 
                 FROM activity_logs al 
-                LEFT JOIN users u ON al.user_id = u.id 
+                LEFT JOIN user u ON al.user_id = u.id 
                 $whereClause 
                 ORDER BY al.created_at DESC 
                 LIMIT ? OFFSET ?

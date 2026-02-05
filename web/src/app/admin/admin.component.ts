@@ -1143,31 +1143,28 @@ export class AdminComponent implements OnInit, OnDestroy {
   onLotteryTypeChange() {
     const lotteryType = this.uploadForm.get('lottery')?.value;
     console.log('Selected lottery:', lotteryType);
-    console.log('Upcoming draws:', this.upcomingDraws);
     
     if (!lotteryType) return;
 
-    // Find the corresponding upcoming draw
-    const upcomingDraw = this.upcomingDraws.find(d => d.lottery === lotteryType);
-    console.log('Found draw:', upcomingDraw);
-    
-    if (upcomingDraw) {
-      // Set draw date
-      const formattedDate = this.formatDateTimeForInput(upcomingDraw.drawDate);
-      console.log('Setting draw date to:', formattedDate);
-      this.uploadForm.patchValue({
-        drawDate: formattedDate
+    // Call API to get draw info for the selected lottery
+    this.lotteryService.getDrawInfo(lotteryType)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (response: any) => {
+          if (response.success) {
+            // Set draw date
+            const formattedDate = this.formatDateTimeForInput(response.drawDate);
+            console.log('Setting draw date to:', formattedDate);
+            this.uploadForm.patchValue({
+              drawDate: formattedDate,
+              jackpot: response.jackpot
+            });
+          }
+        },
+        error: (error) => {
+          console.error('Error fetching draw info:', error);
+        }
       });
-
-      // Set jackpot using raw value
-      const jackpotValue = upcomingDraw.jackpotValue || upcomingDraw.jackpot.replace('$', '').replace('M', '').trim();
-      console.log('Setting jackpot to:', jackpotValue);
-      this.uploadForm.patchValue({
-        jackpot: jackpotValue
-      });
-    } else {
-      console.log('No matching draw found for:', lotteryType);
-    }
   }
 
   loadEntries() {

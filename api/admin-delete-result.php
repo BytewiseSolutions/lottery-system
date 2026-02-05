@@ -27,7 +27,7 @@ try {
         exit;
     }
     
-    $query = "DELETE FROM results WHERE id = ?";
+    $query = "DELETE FROM result WHERE id = ?";
     $stmt = $db->prepare($query);
     $success = $stmt->execute([$input['id']]);
     

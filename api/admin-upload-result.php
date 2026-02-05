@@ -31,8 +31,7 @@ try {
     file_put_contents('/tmp/lottery-upload.log', date('Y-m-d H:i:s') . " - Upload started\n", FILE_APPEND);
     file_put_contents('/tmp/lottery-upload.log', "Data: " . json_encode($data) . "\n", FILE_APPEND);
     
-    // Find matching entries to calculate winners
-    $entriesQuery = "SELECT * FROM entries WHERE lottery = ? AND DATE(draw_date) = DATE(?)";
+    $entriesQuery = "SELECT * FROM entry WHERE lottery = ? AND DATE(draw_date) = DATE(?)";
     $stmt = $db->prepare($entriesQuery);
     $stmt->execute([$data->lottery, $data->drawDate]);
     $entries = $stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -60,7 +59,7 @@ try {
         }
     }
     
-    $query = "INSERT INTO results (lottery, draw_date, winning_numbers, bonus_numbers, jackpot, winners, status, notes) 
+    $query = "INSERT INTO result (lottery, draw_date, winning_numbers, bonus_numbers, jackpot, winners, status, notes) 
               VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
     $stmt = $db->prepare($query);
     $stmt->execute([
@@ -85,7 +84,7 @@ try {
         foreach ($winners as $winner) {
             file_put_contents('/tmp/lottery-upload.log', "Inserting winner: " . json_encode($winner) . "\n", FILE_APPEND);
             try {
-                $insertWinner = "INSERT INTO winners (user_id, lottery, prize_amount, result_id, entry_id, status, draw_date) VALUES (?, ?, ?, ?, ?, 'pending', ?)";
+                $insertWinner = "INSERT INTO winner (user_id, lottery, prize_amount, result_id, entry_id, status, draw_date) VALUES (?, ?, ?, ?, ?, 'pending', ?)";
                 $stmt = $db->prepare($insertWinner);
                 $result = $stmt->execute([$winner['userId'], $data->lottery, $prizePerWinner, $resultId, $winner['entryId'], $data->drawDate]);
                 $winnerId = $db->lastInsertId();

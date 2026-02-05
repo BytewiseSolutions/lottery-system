@@ -16,8 +16,8 @@ $db = $database->getConnection();
 
 try {
     $query = "SELECT w.*, u.full_name, u.email, u.phone 
-              FROM winners w 
-              JOIN users u ON w.user_id = u.id 
+              FROM winner w 
+              JOIN user u ON w.user_id = u.id 
               ORDER BY w.created_at DESC";
     
     $stmt = $db->query($query);

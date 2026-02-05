@@ -35,14 +35,14 @@ try {
     $recipients = [];
     switch ($data['recipient_type']) {
         case 'all_users':
-            $stmt = $db->query("SELECT email, full_name FROM users WHERE is_active = 1 AND email IS NOT NULL");
+            $stmt = $db->query("SELECT email, full_name FROM user WHERE is_active = 1 AND email IS NOT NULL");
             $recipients = $stmt->fetchAll(PDO::FETCH_ASSOC);
             break;
         case 'all_winners':
             $stmt = $db->query("
                 SELECT DISTINCT u.email, u.full_name 
-                FROM winners w 
-                JOIN users u ON w.user_id = u.id 
+                FROM winner w 
+                JOIN user u ON w.user_id = u.id 
                 WHERE u.email IS NOT NULL
             ");
             $recipients = $stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -50,8 +50,8 @@ try {
         case 'pending_winners':
             $stmt = $db->query("
                 SELECT DISTINCT u.email, u.full_name 
-                FROM winners w 
-                JOIN users u ON w.user_id = u.id 
+                FROM winner w 
+                JOIN user u ON w.user_id = u.id 
                 WHERE w.status = 'pending' AND u.email IS NOT NULL
             ");
             $recipients = $stmt->fetchAll(PDO::FETCH_ASSOC);

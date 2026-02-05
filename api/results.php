@@ -31,9 +31,9 @@ if ($method === 'GET') {
     try {
         // Admin sees all results, public sees only published
         if ($isAdmin) {
-            $query = "SELECT * FROM results ORDER BY draw_date DESC";
+            $query = "SELECT * FROM result ORDER BY draw_date DESC";
         } else {
-            $query = "SELECT * FROM results WHERE status = 'published' ORDER BY draw_date DESC";
+            $query = "SELECT * FROM result WHERE status = 'published' ORDER BY draw_date DESC";
         }
         
         $stmt = $db->prepare($query);
@@ -89,7 +89,7 @@ if ($method === 'GET') {
         }
 
         // Prepare update query
-        $query = "UPDATE results SET 
+        $query = "UPDATE result SET 
                     lottery = :lottery,
                     draw_date = :drawDate,
                     jackpot = :jackpot,

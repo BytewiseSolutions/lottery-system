@@ -34,20 +34,20 @@ try {
     
     switch ($action) {
         case 'delete':
-            $stmt = $db->prepare("DELETE FROM results WHERE id IN ($placeholders)");
+            $stmt = $db->prepare("DELETE FROM result WHERE id IN ($placeholders)");
             $stmt->execute($ids);
             $affected = $stmt->rowCount();
             break;
             
         case 'publish':
             // Assuming there's a status field
-            $stmt = $db->prepare("UPDATE results SET status = 'published' WHERE id IN ($placeholders)");
+            $stmt = $db->prepare("UPDATE result SET status = 'published' WHERE id IN ($placeholders)");
             $stmt->execute($ids);
             $affected = $stmt->rowCount();
             break;
             
         case 'unpublish':
-            $stmt = $db->prepare("UPDATE results SET status = 'draft' WHERE id IN ($placeholders)");
+            $stmt = $db->prepare("UPDATE result SET status = 'draft' WHERE id IN ($placeholders)");
             $stmt->execute($ids);
             $affected = $stmt->rowCount();
             break;

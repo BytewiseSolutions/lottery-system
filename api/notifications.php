@@ -17,7 +17,7 @@ $db = $database->getConnection();
 try {
     $query = "SELECT n.*, u.full_name as sent_by_name 
               FROM notifications n 
-              JOIN users u ON n.sent_by = u.id 
+              JOIN user u ON n.sent_by = u.id 
               ORDER BY n.created_at DESC 
               LIMIT 20";
     

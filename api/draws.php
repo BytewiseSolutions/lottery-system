@@ -14,9 +14,9 @@ if (!$db) {
 }
 
 try {
-    // Get draws from upcoming_draws table
+    // Get draws from upcoming_draw table
     $query = "SELECT id, lottery as name, lottery, draw_date as drawDate, draw_date as nextDraw, jackpot, status 
-              FROM upcoming_draws 
+              FROM upcoming_draw 
               WHERE draw_date >= NOW()
               ORDER BY draw_date";
     

@@ -25,7 +25,7 @@ if (!$data->drawId || !$data->winningNumbers || !$data->bonusNumbers) {
 
 try {
     // Get draw details
-    $drawQuery = "SELECT * FROM upcoming_draws WHERE id = ?";
+    $drawQuery = "SELECT * FROM upcoming_draw WHERE id = ?";
     $stmt = $db->prepare($drawQuery);
     $stmt->execute([$data->drawId]);
     $draw = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -37,7 +37,7 @@ try {
     }
     
     // Find matching entries
-    $entriesQuery = "SELECT * FROM entries WHERE lottery = ? AND draw_date = ?";
+    $entriesQuery = "SELECT * FROM entry WHERE lottery = ? AND draw_date = ?";
     $stmt = $db->prepare($entriesQuery);
     $stmt->execute([$draw['lottery'], $draw['draw_date']]);
     $entries = $stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -68,7 +68,7 @@ try {
     $prizePerWinner = count($winners) > 0 ? $prizePool / count($winners) : 0;
     
     // Insert result
-    $insertResult = "INSERT INTO results (lottery, draw_date, winning_numbers, bonus_numbers, jackpot, winners, status) 
+    $insertResult = "INSERT INTO result (lottery, draw_date, winning_numbers, bonus_numbers, jackpot, winners, status) 
                      VALUES (?, ?, ?, ?, ?, ?, 'published')";
     $stmt = $db->prepare($insertResult);
     $stmt->execute([
@@ -81,7 +81,7 @@ try {
     ]);
     
     // Update draw status
-    $updateDraw = "UPDATE upcoming_draws SET status = 'completed' WHERE id = ?";
+    $updateDraw = "UPDATE upcoming_draw SET status = 'completed' WHERE id = ?";
     $stmt = $db->prepare($updateDraw);
     $stmt->execute([$data->drawId]);
     

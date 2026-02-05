@@ -164,4 +164,8 @@ export class LotteryService {
       headers: { 'Authorization': `Bearer ${token}` }
     });
   }
+
+  getDrawInfo(lottery: string): Observable<any> {
+    return this.http.get<any>(`${this.apiUrl}/get-draw-info?lottery=${encodeURIComponent(lottery)}`);
+  }
 }

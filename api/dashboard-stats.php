@@ -11,35 +11,22 @@ try {
     $db = $database->getConnection();
     
     // Get total users
-    $stmt = $db->prepare("SELECT COUNT(*) as total FROM users");
+    $stmt = $db->prepare("SELECT COUNT(*) as total FROM user");
     $stmt->execute();
     $totalUsers = $stmt->fetch(PDO::FETCH_ASSOC)['total'];
     
     // Get active users (logged in last 30 days)
-    $stmt = $db->prepare("SELECT COUNT(*) as active FROM users WHERE is_active = 1");
+    $stmt = $db->prepare("SELECT COUNT(*) as active FROM user WHERE is_active = 1");
     $stmt->execute();
     $activeUsers = $stmt->fetch(PDO::FETCH_ASSOC)['active'];
     
-    // Get total plays (assuming plays table exists, otherwise return 0)
-    $totalPlays = 0;
-    try {
-        $stmt = $db->prepare("SELECT COUNT(*) as total FROM plays");
-        $stmt->execute();
-        $totalPlays = $stmt->fetch(PDO::FETCH_ASSOC)['total'];
-    } catch(Exception $e) {
-        // Table doesn't exist yet
-    }
+    // Get total plays from entry table
+    $stmt = $db->prepare("SELECT COUNT(*) as total FROM entry");
+    $stmt->execute();
+    $totalPlays = $stmt->fetch(PDO::FETCH_ASSOC)['total'];
     
-    // Get total revenue (assuming plays table with amount column)
+    // Revenue is always 0 (free lottery)
     $totalRevenue = 0;
-    try {
-        $stmt = $db->prepare("SELECT SUM(amount) as revenue FROM plays");
-        $stmt->execute();
-        $result = $stmt->fetch(PDO::FETCH_ASSOC);
-        $totalRevenue = $result['revenue'] ?? 0;
-    } catch(Exception $e) {
-        // Table doesn't exist yet
-    }
     
     $stats = [
         'totalUsers' => (int)$totalUsers,
