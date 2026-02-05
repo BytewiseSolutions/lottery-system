@@ -1,0 +1,71 @@
+<div class="entries-header">
+  <div class="entry-limit-badge">
+    <ion-icon name="ticket"></ion-icon>
+    <span>{{ entryLimit.remaining }}/{{ entryLimit.limit }} entries remaining today</span>
+  </div>
+  <ion-item *ngIf="lotteryTypes.length > 1">
+    <ion-label>Filter</ion-label>
+    <ion-select [(ngModel)]="selectedLottery" (ionChange)="filterByLottery()">
+      <ion-select-option *ngFor="let type of lotteryTypes" [value]="type">
+        {{ type === 'all' ? 'All' : type }}
+      </ion-select-option>
+    </ion-select>
+  </ion-item>
+</div>
+
+<div *ngIf="loading" class="loading-container">
+  <div *ngFor="let i of [1,2,3]" class="entry-card skeleton">
+    <ion-skeleton-text animated style="width: 60%; height: 24px;"></ion-skeleton-text>
+    <ion-skeleton-text animated style="width: 100%; height: 40px; margin-top: 12px;"></ion-skeleton-text>
+    <ion-skeleton-text animated style="width: 80%; height: 40px; margin-top: 8px;"></ion-skeleton-text>
+  </div>
+</div>
+
+<div *ngIf="error && !loading" class="error-state">
+  <ion-icon name="cloud-offline-outline"></ion-icon>
+  <p>Failed to load entries</p>
+  <ion-button (click)="loadEntries()" fill="outline" size="small">
+    <ion-icon name="refresh" slot="start"></ion-icon>
+    Retry
+  </ion-button>
+</div>
+
+<div *ngFor="let entry of filteredEntries" class="entry-card">
+  <div class="entry-header">
+    <h3>{{ entry.lottery }}</h3>
+    <div class="header-right">
+      <span class="status-badge" [ngClass]="getEntryStatus(entry)">{{ getEntryStatus(entry) | uppercase }}</span>
+      <span class="entry-date">{{ entry.created_at | date:'MMM d, y h:mm a' }}</span>
+    </div>
+  </div>
+  <div class="entry-body">
+    <div class="numbers-section">
+      <p class="label">Main Numbers</p>
+      <div class="numbers-grid">
+        <span *ngFor="let num of parseNumbers(entry.numbers)" 
+              class="number-badge"
+              [class.matched]="isNumberMatch(num, getResultForEntry(entry))"
+              [class.unmatched]="getResultForEntry(entry) && !isNumberMatch(num, getResultForEntry(entry))">
+          {{ num }}
+          <ion-icon *ngIf="isNumberMatch(num, getResultForEntry(entry))" name="checkmark" class="check-icon"></ion-icon>
+          <ion-icon *ngIf="getResultForEntry(entry) && !isNumberMatch(num, getResultForEntry(entry))" name="close" class="close-icon"></ion-icon>
+        </span>
+      </div>
+    </div>
+    <div class="numbers-section">
+      <p class="label">Bonus Numbers</p>
+      <div class="numbers-grid">
+        <span *ngFor="let num of parseNumbers(entry.bonus_numbers)" 
+              class="number-badge bonus"
+              [class.matched]="isBonusMatch(num, getResultForEntry(entry))"
+              [class.unmatched]="getResultForEntry(entry) && !isBonusMatch(num, getResultForEntry(entry))">
+          {{ num }}
+          <ion-icon *ngIf="isBonusMatch(num, getResultForEntry(entry))" name="checkmark" class="check-icon"></ion-icon>
+          <ion-icon *ngIf="getResultForEntry(entry) && !isBonusMatch(num, getResultForEntry(entry))" name="close" class="close-icon"></ion-icon>
+        </span>
+      </div>
+    </div>
+    <p class="draw-info">Draw: {{ entry.draw_date | date:'EEEE, MMMM d, y' }}</p>
+  </div>
+</div>
+<p *ngIf="!loading && !error && entries.length === 0" class="no-data">You have no entries yet</p>

@@ -27,55 +27,64 @@ switch ($path) {
         require 'resend-otp.php';
         break;
     case 'api/draws':
-        require 'draws.php';
+        require 'draw.php';
         break;
     case 'api/play':
         require 'play.php';
         break;
     case 'api/results':
-        require 'results.php';
+        require 'result.php';
         break;
     case 'api/entries':
-        require 'entries.php';
+        require 'entry.php';
         break;
     case 'api/pool':
         require 'pool.php';
         break;
     case 'api/stats':
-        require 'stats.php';
+        require 'stat.php';
         break;
     case 'api/dashboard-stats':
-        require 'dashboard-stats.php';
+        require 'stat.php';
         break;
     case 'api/upcoming-draws':
-        require 'upcoming-draws.php';
+        require 'upcoming-draw.php';
         break;
     case 'api/admin-upload-result':
-        require 'admin-upload-result.php';
+        require 'upload-result.php';
         break;
     case 'api/admin-delete-result':
-        require 'admin-delete-result.php';
+        require 'delete-result.php';
         break;
     case 'api/update-result-status':
-        require 'update-result-status.php';
+        require 'result.php';
         break;
     case 'api/analytics':
         require 'analytics.php';
         break;
     case 'api/users':
-        require 'users.php';
+        require 'user.php';
         break;
     case 'api/winners':
-        require 'winners.php';
+        require 'winner.php';
         break;
     case 'api/send-notification':
-        require 'send-notification.php';
+        require 'notification.php';
         break;
     case 'api/mark-paid':
         require 'mark-paid.php';
         break;
     case 'api/notifications':
-        require 'notifications.php';
+        require 'notification.php';
+        break;
+    case 'api/user-notifications':
+        require 'user-notifications.php';
+        break;
+    case 'api/mark-notification-read':
+        require 'mark-notification-read.php';
+        break;
+    case 'api/my-winnings':
+        require 'my-winnings.php';
         break;
     case 'api/get-draw-info':
         require 'get-draw-info.php';

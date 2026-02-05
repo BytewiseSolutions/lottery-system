@@ -14,7 +14,7 @@ export class AuthService {
   }
 
   login(email: string, password: string): Observable<any> {
-    return this.http.post(`${environment.apiUrl}/login.php`, { identifier: email, password }).pipe(
+    return this.http.post(`${environment.apiUrl}/api/login`, { identifier: email, password }).pipe(
       tap((res: any) => {
         if (res.token) {
           localStorage.setItem('token', res.token);
@@ -26,11 +26,17 @@ export class AuthService {
   }
 
   register(data: any): Observable<any> {
-    return this.http.post(`${environment.apiUrl}/register.php`, data);
+    return this.http.post(`${environment.apiUrl}/api/register`, {
+      fullName: data.name,
+      email: data.email,
+      phone: data.phone,
+      password: data.password,
+      confirmPassword: data.repeatPassword || data.password
+    });
   }
 
   verifyOtp(email: string, otp: string): Observable<any> {
-    return this.http.post(`${environment.apiUrl}/verify-otp.php`, { email, otp }).pipe(
+    return this.http.post(`${environment.apiUrl}/api/verify-otp`, { email, otp }).pipe(
       tap((res: any) => {
         if (res.token) {
           localStorage.setItem('token', res.token);
@@ -53,5 +59,46 @@ export class AuthService {
 
   isAuthenticated(): boolean {
     return !!this.getToken();
+  }
+
+  getProfile(): Observable<any> {
+    const user = this.userSubject.value;
+    return new Observable(observer => {
+      observer.next({
+        full_name: user?.fullName || user?.name || '',
+        email: user?.email || '',
+        phone: user?.phone || '',
+        notification_enabled: 1
+      });
+      observer.complete();
+    });
+  }
+
+  updateProfile(data: any): Observable<any> {
+    return this.http.put(`${environment.apiUrl}/api/profile`, data, {
+      headers: { Authorization: `Bearer ${this.getToken()}` }
+    }).pipe(tap(() => {
+      const user = this.userSubject.value;
+      if (user) {
+        user.fullName = data.full_name;
+        user.phone = data.phone;
+        localStorage.setItem('user', JSON.stringify(user));
+        this.userSubject.next(user);
+      }
+    }));
+  }
+
+  changePassword(currentPassword: string, newPassword: string): Observable<any> {
+    return this.http.post(`${environment.apiUrl}/api/change-password`, 
+      { currentPassword, newPassword },
+      { headers: { Authorization: `Bearer ${this.getToken()}` } }
+    );
+  }
+
+  updateNotificationPreferences(enabled: boolean): Observable<any> {
+    return new Observable(observer => {
+      observer.next({ success: true });
+      observer.complete();
+    });
   }
 }

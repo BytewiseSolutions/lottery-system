@@ -1,0 +1,63 @@
+.past-draws-container {
+  padding: 16px;
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.numbers-container {
+  margin: 16px 0;
+}
+
+.numbers, .bonus-numbers {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-wrap: wrap;
+  margin: 8px 0;
+}
+
+.number {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: var(--ion-color-primary);
+  color: white;
+  font-weight: bold;
+}
+
+.number.bonus {
+  background: var(--ion-color-secondary);
+}
+
+.jackpot {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 1.1em;
+  font-weight: bold;
+  color: var(--ion-color-success);
+  margin: 16px 0;
+}
+
+.empty-state {
+  text-align: center;
+  padding: 40px 20px;
+  
+  ion-icon {
+    font-size: 64px;
+    color: var(--ion-color-medium);
+  }
+  
+  p {
+    color: var(--ion-color-medium);
+    margin-top: 16px;
+  }
+}
+
+ion-spinner {
+  display: block;
+  margin: 40px auto;
+}

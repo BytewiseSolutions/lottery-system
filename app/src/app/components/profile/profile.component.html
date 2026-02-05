@@ -1,0 +1,68 @@
+<div class="profile-container">
+  <div class="profile-card">
+    <div class="profile-header">
+      <div class="avatar">
+        <ion-icon name="person-circle"></ion-icon>
+      </div>
+      <h2>{{ userDetails.name || userName }}</h2>
+    </div>
+    
+    <div class="profile-section">
+      <h3>Account Information</h3>
+      <div class="info-item">
+        <ion-icon name="person"></ion-icon>
+        <div class="info-content">
+          <span class="label">Full Name</span>
+          <span class="value">{{ userDetails.name || userName }}</span>
+        </div>
+      </div>
+      <div class="info-item" *ngIf="userDetails.email">
+        <ion-icon name="mail"></ion-icon>
+        <div class="info-content">
+          <span class="label">Email</span>
+          <span class="value">{{ userDetails.email }}</span>
+        </div>
+      </div>
+      <div class="info-item" *ngIf="userDetails.phone">
+        <ion-icon name="call"></ion-icon>
+        <div class="info-content">
+          <span class="label">Phone</span>
+          <span class="value">{{ userDetails.phone }}</span>
+        </div>
+      </div>
+      <div class="info-item" *ngIf="userDetails.role">
+        <ion-icon name="shield-checkmark"></ion-icon>
+        <div class="info-content">
+          <span class="label">Role</span>
+          <span class="value">{{ userDetails.role }}</span>
+        </div>
+      </div>
+    </div>
+
+    <ion-button expand="block" fill="outline" color="primary" routerLink="/notifications">
+      <ion-icon name="notifications" slot="start"></ion-icon>
+      Notifications
+      <ion-badge *ngIf="unreadCount > 0" color="danger" style="margin-left: 8px;">{{ unreadCount }}</ion-badge>
+    </ion-button>
+
+    <ion-button expand="block" fill="outline" color="primary" routerLink="/settings">
+      <ion-icon name="settings" slot="start"></ion-icon>
+      Settings
+    </ion-button>
+
+    <ion-button expand="block" fill="outline" color="primary" routerLink="/past-draws">
+      <ion-icon name="calendar" slot="start"></ion-icon>
+      Past Draws
+    </ion-button>
+
+    <ion-button expand="block" fill="outline" color="primary" (click)="viewWinnings()">
+      <ion-icon name="trophy" slot="start"></ion-icon>
+      My Winnings
+    </ion-button>
+
+    <ion-button expand="block" color="danger" (click)="onLogout()">
+      <ion-icon name="log-out" slot="start"></ion-icon>
+      Logout
+    </ion-button>
+  </div>
+</div>

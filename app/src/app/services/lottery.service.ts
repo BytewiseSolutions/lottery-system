@@ -13,14 +13,41 @@ export class LotteryService {
   }
 
   getUpcomingDraws(): Observable<any> {
-    return this.http.get(`${environment.apiUrl}/upcoming-draws.php`, { headers: this.getHeaders() });
+    return this.http.get(`${environment.apiUrl}/api/upcoming-draws`, { headers: this.getHeaders() });
   }
 
   playLottery(drawId: number, numbers: number[]): Observable<any> {
-    return this.http.post(`${environment.apiUrl}/play.php`, { draw_id: drawId, numbers }, { headers: this.getHeaders() });
+    return this.http.post(`${environment.apiUrl}/api/play`, { draw_id: drawId, numbers }, { headers: this.getHeaders() });
   }
 
   getMyEntries(): Observable<any> {
-    return this.http.get(`${environment.apiUrl}/entries.php`, { headers: this.getHeaders() });
+    return this.http.get(`${environment.apiUrl}/api/entries`, { headers: this.getHeaders() });
+  }
+
+  getMyWinnings(): Observable<any> {
+    return this.http.get(`${environment.apiUrl}/api/my-winnings`, { headers: this.getHeaders() });
+  }
+
+  getResults(): Observable<any> {
+    return this.http.get(`${environment.apiUrl}/api/results`);
+  }
+
+  getNotifications(): Observable<any> {
+    return this.http.get(`${environment.apiUrl}/api/user-notifications`, { headers: this.getHeaders() });
+  }
+
+  markNotificationRead(id: number): Observable<any> {
+    return this.http.post(`${environment.apiUrl}/api/mark-notification-read`, { id }, { headers: this.getHeaders() });
+  }
+
+  getPastDraws(): Observable<any> {
+    return this.getResults();
+  }
+
+  getEntryLimit(): Observable<any> {
+    return new Observable(observer => {
+      observer.next({ limit: 10, used: 0, remaining: 10 });
+      observer.complete();
+    });
   }
 }

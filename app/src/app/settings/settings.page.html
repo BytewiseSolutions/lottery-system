@@ -1,0 +1,74 @@
+<ion-header>
+  <ion-toolbar color="primary">
+    <ion-buttons slot="start">
+      <ion-button (click)="goBack()">
+        <ion-icon name="arrow-back"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+    <ion-title>Settings</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <div class="settings-container">
+    <ion-card>
+      <ion-card-header>
+        <ion-card-title>Account</ion-card-title>
+      </ion-card-header>
+      <ion-card-content>
+        <ion-list>
+          <ion-item>
+            <ion-icon name="person" slot="start"></ion-icon>
+            <ion-label>
+              <h3>{{ profile.full_name }}</h3>
+              <p>{{ profile.email }}</p>
+            </ion-label>
+          </ion-item>
+          <ion-item button routerLink="/edit-profile">
+            <ion-icon name="create" slot="start"></ion-icon>
+            <ion-label>Update Profile</ion-label>
+          </ion-item>
+          <ion-item button routerLink="/change-password">
+            <ion-icon name="key" slot="start"></ion-icon>
+            <ion-label>Change Password</ion-label>
+          </ion-item>
+        </ion-list>
+      </ion-card-content>
+    </ion-card>
+
+    <ion-card>
+      <ion-card-header>
+        <ion-card-title>Preferences</ion-card-title>
+      </ion-card-header>
+      <ion-card-content>
+        <ion-list>
+          <ion-item>
+            <ion-icon name="notifications" slot="start"></ion-icon>
+            <ion-label>Notifications</ion-label>
+            <ion-toggle [(ngModel)]="notificationEnabled" (ionChange)="toggleNotifications()"></ion-toggle>
+          </ion-item>
+        </ion-list>
+      </ion-card-content>
+    </ion-card>
+
+    <ion-card>
+      <ion-card-header>
+        <ion-card-title>Legal</ion-card-title>
+      </ion-card-header>
+      <ion-card-content>
+        <ion-list>
+          <ion-item button (click)="openTerms()">
+            <ion-icon name="document-text" slot="start"></ion-icon>
+            <ion-label>Terms & Conditions</ion-label>
+            <ion-icon name="open" slot="end"></ion-icon>
+          </ion-item>
+          <ion-item button (click)="openPrivacy()">
+            <ion-icon name="shield-checkmark" slot="start"></ion-icon>
+            <ion-label>Privacy Policy</ion-label>
+            <ion-icon name="open" slot="end"></ion-icon>
+          </ion-item>
+        </ion-list>
+      </ion-card-content>
+    </ion-card>
+  </div>
+</ion-content>

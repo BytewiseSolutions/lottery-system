@@ -50,7 +50,7 @@ export class SignupPage implements OnInit {
     const loading = await this.loadingCtrl.create({ message: 'Registering...' });
     await loading.present();
 
-    this.auth.register({ name: this.name, email: this.email, password: this.password, phone: this.phone }).subscribe({
+    this.auth.register({ name: this.name, email: this.email, password: this.password, repeatPassword: this.repeatPassword, phone: this.phone }).subscribe({
       next: () => {
         loading.dismiss();
         this.showOtp = true;

@@ -158,7 +158,7 @@ export class PlayLotteryComponent implements OnInit {
       
       try {
         const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 8000); // 8 second timeout
+        const timeoutId = setTimeout(() => controller.abort(), 8000); 
         
         const response = await fetch(`${environment.apiUrl}/play`, {
           method: 'POST',
@@ -186,7 +186,6 @@ export class PlayLotteryComponent implements OnInit {
           this.showHumanVerification = true;
           this.isLoading = false;
           
-          // Wait for modal and reCAPTCHA to be ready
           const renderCaptcha = () => {
             const container = document.getElementById('recaptcha-container');
             if (container && (window as any).grecaptcha && (window as any).grecaptcha.render) {
