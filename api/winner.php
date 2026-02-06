@@ -15,9 +15,10 @@ $database = new Database();
 $db = $database->getConnection();
 
 try {
-    $query = "SELECT w.*, u.full_name, u.email, u.phone 
+    $query = "SELECT w.*, u.full_name, u.email, u.phone, r.lottery, r.draw_date 
               FROM winner w 
               JOIN user u ON w.user_id = u.id 
+              LEFT JOIN result r ON w.result_id = r.id 
               ORDER BY w.created_at DESC";
     
     $stmt = $db->query($query);
@@ -27,6 +28,6 @@ try {
     
 } catch(PDOException $exception) {
     http_response_code(500);
-    echo json_encode(['error' => 'Failed to fetch winners']);
+    echo json_encode(['error' => 'Failed to fetch winners', 'details' => $exception->getMessage()]);
 }
 ?>

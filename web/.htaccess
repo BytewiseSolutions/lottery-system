@@ -1,5 +1,7 @@
 RewriteEngine On
-RewriteBase /app/
+
+# Route API requests to api folder
+RewriteRule ^api/(.*)$ api/$1 [L,QSA]
 
 <IfModule mod_headers.c>
   Header set X-Content-Type-Options "nosniff"

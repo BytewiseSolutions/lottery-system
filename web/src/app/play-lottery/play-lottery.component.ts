@@ -269,7 +269,7 @@ export class PlayLotteryComponent implements OnInit {
 
   dismissSuccessPopup() {
     this.showSuccessPopup = false;
-    window.location.href = '/lotteries';
+    this.router.navigate(['/lotteries']);
   }
 
   quickPick() {

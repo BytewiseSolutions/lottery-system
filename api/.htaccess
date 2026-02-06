@@ -1,10 +1,14 @@
 # API Directory Configuration
 RewriteEngine On
 
-# Remove .php extension from API endpoints
-RewriteCond %{REQUEST_FILENAME} !-d
+# Allow direct access to PHP files
+RewriteCond %{REQUEST_FILENAME} -f
+RewriteRule \.php$ - [L]
+
+# Route other requests through index.php
 RewriteCond %{REQUEST_FILENAME} !-f
-RewriteRule ^([^.]+)$ $1.php [NC,L]
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^(.*)$ index.php [L,QSA]
 
 # Security: Prevent access to sensitive files
 <Files ".env">
@@ -18,7 +22,7 @@ RewriteRule ^([^.]+)$ $1.php [NC,L]
 </Files>
 
 # Enable error logging but hide errors from users
-php_flag display_errors Off
+php_flag display_errors On
 php_flag log_errors On
 php_value error_log /home/u606331557/domains/totalfreelotto.com/logs/php_errors.log
 

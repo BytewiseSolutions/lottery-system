@@ -28,7 +28,7 @@ if (!isset($data->identifier) || !isset($data->password) ||
 
 try {
     // Check if identifier is email or phone - only select needed fields
-    $query = "SELECT id, full_name, email, phone, password_hash, role FROM user WHERE (email = ? OR phone = ?) AND is_active = TRUE LIMIT 1";
+    $query = "SELECT id, full_name, email, phone, password, role FROM user WHERE (email = ? OR phone = ?) AND is_active = TRUE LIMIT 1";
     $stmt = $db->prepare($query);
     $stmt->execute([$data->identifier, $data->identifier]);
     
@@ -41,7 +41,7 @@ try {
     $user = $stmt->fetch(PDO::FETCH_ASSOC);
     
     // Verify password first (same for all users)
-    if (!password_verify($data->password, $user['password_hash'])) {
+    if (!password_verify($data->password, $user['password'])) {
         http_response_code(400);
         echo json_encode(['error' => 'Invalid credentials']);
         exit;

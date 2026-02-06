@@ -53,8 +53,10 @@
 - setup-database-singular.sql
 - setup-database.sql
 
-## KEEP ONE SQL FILE FOR REFERENCE:
-- production-migration.sql (run this once, then can delete)
+## SQL FILES TO RUN ON HOSTINGER:
+1. hostinger-setup.sql - Run this FIRST to create the draws view
+
+After running, you can delete all .sql files from production
 
 ## UNUSED PHP FILES TO DELETE:
 - admin-upload-result-enhanced.php (duplicate)

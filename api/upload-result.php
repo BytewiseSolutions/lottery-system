@@ -1,9 +1,17 @@
 <?php
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
 require_once 'config/cors.php';
 require_once 'config/database.php';
 require_once 'config/jwt.php';
 
-$user = JWT::authenticate();
+try {
+    $user = JWT::authenticate();
+} catch (Exception $e) {
+    http_response_code(401);
+    echo json_encode(['error' => 'Authentication failed: ' . $e->getMessage()]);
+    exit;
+}
 
 if (!isset($user['role']) || $user['role'] !== 'admin') {
     http_response_code(403);
@@ -76,15 +84,19 @@ try {
             
             // Create notification for winner
             if ($status === 'published') {
-                $notifQuery = "INSERT INTO notification (user_id, sent_by, title, message, type) 
-                              VALUES (?, ?, ?, ?, 'success')";
-                $notifStmt = $db->prepare($notifQuery);
-                $notifStmt->execute([
-                    $entry['user_id'],
-                    $user['id'],
-                    'Congratulations! You Won!',
-                    "You won $" . number_format($data->jackpot, 2) . " in the {$data->lottery} draw!"
-                ]);
+                try {
+                    $notifQuery = "INSERT INTO notification (user_id, sent_by, title, message, type) 
+                                  VALUES (?, ?, ?, ?, 'success')";
+                    $notifStmt = $db->prepare($notifQuery);
+                    $notifStmt->execute([
+                        $entry['user_id'],
+                        $user['id'],
+                        'Congratulations! You Won!',
+                        "You won $" . number_format($data->jackpot, 2) . " in the {$data->lottery} draw!"
+                    ]);
+                } catch (PDOException $e) {
+                    error_log("Notification skipped: " . $e->getMessage());
+                }
             }
         }
     }
@@ -94,17 +106,22 @@ try {
     
     // Notify all participants about results being published
     if ($status === 'published' && count($entries) > 0) {
-        $userIds = array_unique(array_column($entries, 'user_id'));
-        $notifQuery = "INSERT INTO notification (user_id, sent_by, title, message, type) 
-                      VALUES (?, ?, ?, ?, 'info')";
-        $notifStmt = $db->prepare($notifQuery);
-        foreach ($userIds as $userId) {
-            $notifStmt->execute([
-                $userId,
-                $user['id'],
-                'Results Published',
-                "Results for {$data->lottery} on " . date('M d, Y', strtotime($data->drawDate)) . " are now available."
-            ]);
+        try {
+            $userIds = array_unique(array_column($entries, 'user_id'));
+            $notifQuery = "INSERT INTO notification (user_id, sent_by, title, message, type) 
+                          VALUES (?, ?, ?, ?, 'info')";
+            $notifStmt = $db->prepare($notifQuery);
+            foreach ($userIds as $userId) {
+                $notifStmt->execute([
+                    $userId,
+                    $user['id'],
+                    'Results Published',
+                    "Results for {$data->lottery} on " . date('M d, Y', strtotime($data->drawDate)) . " are now available."
+                ]);
+            }
+        } catch (PDOException $e) {
+            // Notification table doesn't exist, skip
+            error_log("Notification skipped: " . $e->getMessage());
         }
     }
     
@@ -117,6 +134,17 @@ try {
 } catch(PDOException $exception) {
     error_log("Upload result error: " . $exception->getMessage());
     http_response_code(500);
-    echo json_encode(['error' => 'Failed to upload result']);
+    echo json_encode([
+        'error' => 'Failed to upload result',
+        'details' => $exception->getMessage(),
+        'trace' => $exception->getTraceAsString()
+    ]);
+} catch(Exception $exception) {
+    error_log("Upload result error: " . $exception->getMessage());
+    http_response_code(500);
+    echo json_encode([
+        'error' => 'Failed to upload result',
+        'details' => $exception->getMessage()
+    ]);
 }
 ?>

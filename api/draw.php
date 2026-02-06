@@ -24,9 +24,15 @@ try {
     $stmt->execute();
     $draws = $stmt->fetchAll(PDO::FETCH_ASSOC);
     
-    // Format jackpot for display
+    // Format jackpot for display and ensure all fields are set
     foreach ($draws as &$draw) {
-        $draw['jackpot'] = '$' . number_format($draw['jackpot'], 2);
+        $draw['id'] = (int)$draw['id'];
+        $draw['name'] = (string)($draw['name'] ?: '');
+        $draw['lottery'] = (string)($draw['lottery'] ?: '');
+        $draw['drawDate'] = (string)($draw['drawDate'] ?: '');
+        $draw['nextDraw'] = (string)($draw['nextDraw'] ?: '');
+        $draw['status'] = (string)($draw['status'] ?: 'scheduled');
+        $draw['jackpot'] = '$' . number_format((float)$draw['jackpot'], 2);
     }
     
     echo json_encode($draws);
