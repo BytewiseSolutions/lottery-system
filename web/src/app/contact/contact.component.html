@@ -15,20 +15,28 @@
     <div class="row">
       <div class="col-lg-8 mx-auto">
         <div class="contact-form">
-          <form>
+          <div *ngIf="showSuccess" class="alert alert-success">
+            Thank you! Your message has been sent successfully.
+          </div>
+          <div *ngIf="errorMessage" class="alert alert-danger">
+            {{ errorMessage }}
+          </div>
+          <form (ngSubmit)="submitForm()">
             <div class="form-group">
               <label>Name</label>
-              <input type="text" class="form-control" placeholder="Your Name">
+              <input type="text" class="form-control" placeholder="Your Name" [(ngModel)]="contactForm.name" name="name" required>
             </div>
             <div class="form-group">
               <label>Email</label>
-              <input type="email" class="form-control" placeholder="Your Email">
+              <input type="email" class="form-control" placeholder="Your Email" [(ngModel)]="contactForm.email" name="email" required>
             </div>
             <div class="form-group">
               <label>Message</label>
-              <textarea class="form-control" rows="5" placeholder="Your Message"></textarea>
+              <textarea class="form-control" rows="5" placeholder="Your Message" [(ngModel)]="contactForm.message" name="message" required></textarea>
             </div>
-            <button type="submit" class="custom-button2">Send Message</button>
+            <button type="submit" class="custom-button2" [disabled]="isSubmitting">
+              {{ isSubmitting ? 'Sending...' : 'Send Message' }}
+            </button>
           </form>
         </div>
       </div>

@@ -12,13 +12,14 @@
               <!-- Registration form content stays the same -->
               <div class="form-row">
                 <div class="form-group half-width">
-                  <label>Full Name</label>
-                  <input type="text" class="my-form-control" [(ngModel)]="fullName" [ngModelOptions]="{standalone: true}" placeholder="Enter Your Full Name" required>
-                  <div *ngIf="validationErrors.fullName" class="error-message">{{ validationErrors.fullName }}</div>
+                  <label>First Name</label>
+                  <input type="text" class="my-form-control" [(ngModel)]="firstName" [ngModelOptions]="{standalone: true}" placeholder="Enter Your First Name" required>
+                  <div *ngIf="validationErrors.firstName" class="error-message">{{ validationErrors.firstName }}</div>
                 </div>
                 <div class="form-group half-width">
-                  <label>Phone Number</label>
-                  <input type="tel" class="my-form-control" [(ngModel)]="phone" [ngModelOptions]="{standalone: true}" placeholder="Enter Your Phone Number">
+                  <label>Last Name</label>
+                  <input type="text" class="my-form-control" [(ngModel)]="lastName" [ngModelOptions]="{standalone: true}" placeholder="Enter Your Last Name" required>
+                  <div *ngIf="validationErrors.lastName" class="error-message">{{ validationErrors.lastName }}</div>
                 </div>
               </div>
               <div class="form-group full-width">
@@ -28,14 +29,13 @@
               </div>
               <div class="form-row">
                 <div class="form-group half-width">
+                  <label>Phone Number</label>
+                  <input type="tel" class="my-form-control" [(ngModel)]="phone" [ngModelOptions]="{standalone: true}" placeholder="Enter Your Phone Number">
+                </div>
+                <div class="form-group half-width">
                   <label>Password</label>
                   <input [type]="showPassword ? 'text' : 'password'" class="my-form-control" [(ngModel)]="password" [ngModelOptions]="{standalone: true}" placeholder="Enter Your Password" required>
                   <div *ngIf="validationErrors.password" class="error-message">{{ validationErrors.password }}</div>
-                </div>
-                <div class="form-group half-width">
-                  <label>Confirm Password</label>
-                  <input [type]="showPassword ? 'text' : 'password'" class="my-form-control" [(ngModel)]="confirmPassword" [ngModelOptions]="{standalone: true}" placeholder="Enter Your Confirm Password" required>
-                  <div *ngIf="validationErrors.confirmPassword" class="error-message">{{ validationErrors.confirmPassword }}</div>
                 </div>
               </div>
               <div class="custom-control custom-checkbox">
@@ -94,123 +94,6 @@
               </div>
             </div>
             
-            <!-- Verification Mode: Direct OTP Entry -->
-            <div *ngIf="verificationMode && !showOtpVerification">
-              <p>Enter your details to verify your account:</p>
-              <div class="form-group">
-                <label>Email or Phone Number</label>
-                <input type="text" class="my-form-control" [(ngModel)]="identifier" placeholder="Enter your email or phone number">
-              </div>
-              <div class="form-group">
-                <label>Verification Method</label>
-                <select class="my-form-control" [(ngModel)]="selectedVerificationMethod">
-                  <option value="email">Email</option>
-                  <option value="phone">Phone</option>
-                </select>
-              </div>
-              <div class="form-group">
-                <label>Verification Code</label>
-                <input type="text" class="my-form-control" 
-                       [value]="selectedVerificationMethod === 'email' ? emailOtp : phoneOtp"
-                       (input)="updateOtpCode($event)"
-                       placeholder="Enter 6-digit code" maxlength="6">
-              </div>
-              
-              <!-- Error Message Display -->
-              <div *ngIf="errorMessage" class="alert alert-danger" style="margin-bottom: 15px; padding: 10px; background-color: #f8d7da; border: 1px solid #f5c6cb; border-radius: 4px; color: #721c24;">
-                {{ errorMessage }}
-              </div>
-              
-              <div class="button-wrapper">
-                <button type="button" class="custom-button2" (click)="verifyAccountByIdentifier()" [disabled]="isVerifying">
-                  <span *ngIf="isVerifying">Verifying...</span>
-                  <span *ngIf="!isVerifying">Verify Account</span>
-                </button>
-                <p class="or-signup">
-                  Don't have an account? <a href="#" (click)="switchToRegularSignup()">Sign up here</a>
-                </p>
-              </div>
-            </div>
-            
-            <!-- OTP Verification Form -->
-            <div *ngIf="showOtpVerification && !allVerified">
-              <h3>Verify Your Account</h3>
-              <p>Choose a verification method:</p>
-              
-              <!-- Verification Method Tabs -->
-              <div class="verification-tabs" style="display: flex; gap: 10px; margin-bottom: 20px;">
-                <button 
-                  *ngIf="requiresEmailVerification" 
-                  type="button" 
-                  class="custom-button2" 
-                  [style.opacity]="selectedVerificationMethod === 'email' ? '1' : '0.6'"
-                  (click)="selectedVerificationMethod = 'email'"
-                  style="flex: 1;">
-                  {{ emailVerified ? '✓ Email Verified' : 'Verify Email' }}
-                </button>
-                <button 
-                  *ngIf="requiresPhoneVerification" 
-                  type="button" 
-                  class="custom-button2" 
-                  [style.opacity]="selectedVerificationMethod === 'phone' ? '1' : '0.6'"
-                  (click)="selectedVerificationMethod = 'phone'"
-                  style="flex: 1;">
-                  {{ phoneVerified ? '✓ Phone Verified' : 'Verify Phone' }}
-                </button>
-              </div>
-              
-              <!-- Email Verification -->
-              <div *ngIf="selectedVerificationMethod === 'email' && requiresEmailVerification && !emailVerified">
-                <!-- Error Message Display -->
-                <div *ngIf="errorMessage" class="alert alert-danger" style="margin-bottom: 15px; padding: 10px; background-color: #f8d7da; border: 1px solid #f5c6cb; border-radius: 4px; color: #721c24;">
-                  {{ errorMessage }}
-                </div>
-                
-                <div class="form-group">
-                  <label>Email OTP</label>
-                  <input type="text" class="my-form-control" [(ngModel)]="emailOtp" placeholder="Enter 6-digit code" maxlength="6">
-                </div>
-                <div style="display: flex; gap: 10px;">
-                  <button type="button" class="custom-button2" (click)="verifyOtp('email')" [disabled]="isVerifying" style="flex: 1;">
-                    <span *ngIf="isVerifying">Verifying...</span>
-                    <span *ngIf="!isVerifying">Verify</span>
-                  </button>
-                  <button type="button" class="btn btn-sm btn-outline-secondary" (click)="resendOtp('email')">Resend</button>
-                </div>
-              </div>
-              
-              <!-- Phone Verification -->
-              <div *ngIf="selectedVerificationMethod === 'phone' && requiresPhoneVerification && !phoneVerified">
-                <!-- Error Message Display -->
-                <div *ngIf="errorMessage" class="alert alert-danger" style="margin-bottom: 15px; padding: 10px; background-color: #f8d7da; border: 1px solid #f5c6cb; border-radius: 4px; color: #721c24;">
-                  {{ errorMessage }}
-                </div>
-                
-                <div class="form-group">
-                  <label>Phone OTP</label>
-                  <input type="text" class="my-form-control" [(ngModel)]="phoneOtp" placeholder="Enter 6-digit code" maxlength="6">
-                </div>
-                <div style="display: flex; gap: 10px;">
-                  <button type="button" class="custom-button2" (click)="verifyOtp('phone')" [disabled]="isVerifying" style="flex: 1;">
-                    <span *ngIf="isVerifying">Verifying...</span>
-                    <span *ngIf="!isVerifying">Verify</span>
-                  </button>
-                  <button type="button" class="btn btn-sm btn-outline-secondary" (click)="resendOtp('phone')">Resend</button>
-                </div>
-              </div>
-              
-              <p class="text-success" style="margin-top: 15px;" *ngIf="emailVerified || phoneVerified">
-                {{ emailVerified && phoneVerified ? '✓ Both verified!' : emailVerified ? '✓ Email verified' : '✓ Phone verified' }}
-              </p>
-            </div>
-            
-            <!-- All Verified -->
-            <div *ngIf="allVerified">
-              <h3>Account Verified!</h3>
-              <p class="text-success">Your account has been verified successfully. You can now login.</p>
-              <button type="button" class="custom-button2" (click)="switchToLogin()">Go to Login</button>
-            </div>
-            
 
           </div>
         </div>
@@ -218,3 +101,5 @@
     </div>
   </div>
 </div>
+
+

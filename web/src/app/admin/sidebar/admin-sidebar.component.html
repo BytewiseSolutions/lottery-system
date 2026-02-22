@@ -67,6 +67,22 @@
           </div>
         </a>
       </li>
+      <li>
+        <a (click)="onSectionClick('logs')" [class.active]="activeSection === 'logs'">
+          <div class="nav-item-content">
+            <i class="fas fa-history"></i>
+            <span>Activity Logs</span>
+          </div>
+        </a>
+      </li>
+      <li>
+        <a (click)="onSectionClick('contact-messages')" [class.active]="activeSection === 'contact-messages'">
+          <div class="nav-item-content">
+            <i class="fas fa-envelope"></i>
+            <span>Contact Messages</span>
+          </div>
+        </a>
+      </li>
     </ul>
   </nav>
 

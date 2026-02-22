@@ -98,6 +98,14 @@ export class AdminComponent implements OnInit, OnDestroy {
   usersTotalPages = 1;
   usersSearchQuery = '';
   entries: any[] = [];
+  filteredEntries: any[] = [];
+  paginatedEntries: any[] = [];
+  entriesCurrentPage = 1;
+  entriesTotalPages = 1;
+  contactMessages: any[] = [];
+  paginatedContactMessages: any[] = [];
+  contactMessagesCurrentPage = 1;
+  contactMessagesTotalPages = 1;
   winners: any[] = [];
   filteredWinners: any[] = [];
   notificationRecipient = 'all_users';
@@ -327,6 +335,9 @@ export class AdminComponent implements OnInit, OnDestroy {
       case 'notifications':
         this.loadNotifications();
         break;
+      case 'contact-messages':
+        this.loadContactMessages();
+        break;
     }
   }
 
@@ -342,6 +353,7 @@ export class AdminComponent implements OnInit, OnDestroy {
       'payments': 'Payments',
       'notifications': 'Notifications',
       'logs': 'Activity Logs',
+      'contact-messages': 'Contact Messages',
       'settings': 'Settings'
     };
     return titles[this.activeSection] || 'Dashboard';
@@ -1174,12 +1186,29 @@ export class AdminComponent implements OnInit, OnDestroy {
       .subscribe({
         next: (entries) => {
           this.entries = entries;
+          this.filteredEntries = entries;
+          this.updateEntriesPagination();
         },
         error: (error) => {
           console.error('Error loading entries:', error);
           this.entries = [];
+          this.filteredEntries = [];
         }
       });
+  }
+
+  updateEntriesPagination() {
+    const startIndex = (this.entriesCurrentPage - 1) * this.itemsPerPage;
+    const endIndex = startIndex + this.itemsPerPage;
+    this.paginatedEntries = this.filteredEntries.slice(startIndex, endIndex);
+    this.entriesTotalPages = Math.ceil(this.filteredEntries.length / this.itemsPerPage);
+  }
+
+  onEntriesPageChange(page: number) {
+    if (page >= 1 && page <= this.entriesTotalPages) {
+      this.entriesCurrentPage = page;
+      this.updateEntriesPagination();
+    }
   }
 
   loadWinners() {
@@ -1219,13 +1248,10 @@ export class AdminComponent implements OnInit, OnDestroy {
   viewEntry(entry: any) {
     this.uploadSuccessData = {
       lottery: entry.lottery,
-      drawDate: entry.draw_date,
-      jackpot: 'N/A',
+      drawDate: entry.created_at,
       winningNumbers: this.parseNumbers(entry.numbers),
       bonusNumbers: this.parseNumbers(entry.bonus_numbers),
-      status: 'Entry',
-      message: `Entry Details - ${entry.user_name || 'User ' + entry.user_id}`,
-      isError: false
+      status: `Entry by ${entry.user_name || 'User ' + entry.user_id}`
     };
     this.showSuccessModal = true;
   }
@@ -1320,5 +1346,49 @@ export class AdminComponent implements OnInit, OnDestroy {
   cancelAddUser() {
     this.showAddUserModal = false;
     this.newUserData = { full_name: '', email: '', phone: '', password: '' };
+  }
+
+  loadContactMessages() {
+    this.lotteryService.getContactMessages()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (messages) => {
+          this.contactMessages = messages;
+          this.updateContactMessagesPagination();
+        },
+        error: (error) => {
+          console.error('Error loading contact messages:', error);
+          this.contactMessages = [];
+        }
+      });
+  }
+
+  updateContactMessagesPagination() {
+    const startIndex = (this.contactMessagesCurrentPage - 1) * this.itemsPerPage;
+    const endIndex = startIndex + this.itemsPerPage;
+    this.paginatedContactMessages = this.contactMessages.slice(startIndex, endIndex);
+    this.contactMessagesTotalPages = Math.ceil(this.contactMessages.length / this.itemsPerPage);
+  }
+
+  onContactMessagesPageChange(page: number) {
+    if (page >= 1 && page <= this.contactMessagesTotalPages) {
+      this.contactMessagesCurrentPage = page;
+      this.updateContactMessagesPagination();
+    }
+  }
+
+  deleteContactMessage(id: number) {
+    if (confirm('Are you sure you want to delete this message?')) {
+      this.lotteryService.deleteContactMessage(id)
+        .pipe(takeUntil(this.destroy$))
+        .subscribe({
+          next: () => {
+            this.loadContactMessages();
+          },
+          error: (error) => {
+            console.error('Error deleting message:', error);
+          }
+        });
+    }
   }
 }

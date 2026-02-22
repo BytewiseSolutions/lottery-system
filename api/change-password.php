@@ -23,6 +23,20 @@ try {
     $stmt = $db->prepare("UPDATE user SET password = ? WHERE id = ?");
     $stmt->execute([$newHash, $user['id']]);
     
+    // Log password change
+    try {
+        $logQuery = "INSERT INTO activity_log (user_id, action, details, ip_address) VALUES (?, ?, ?, ?)";
+        $logStmt = $db->prepare($logQuery);
+        $logStmt->execute([
+            $user['id'],
+            'password_change',
+            "User changed their password",
+            $_SERVER['REMOTE_ADDR'] ?? null
+        ]);
+    } catch(Exception $e) {
+        error_log("Activity log error: " . $e->getMessage());
+    }
+    
     echo json_encode(['success' => true]);
 } catch(Exception $e) {
     http_response_code(500);

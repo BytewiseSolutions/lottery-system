@@ -59,7 +59,9 @@ export class ToastComponent implements OnInit, OnDestroy {
 
   ngOnInit() {
     this.subscription = this.toastService.toast$.subscribe(toast => {
+      console.log('Toast component received:', toast);
       this.toasts.push(toast);
+      console.log('Current toasts:', this.toasts);
       setTimeout(() => {
         this.removeToast(toast);
       }, toast.duration || 6000);

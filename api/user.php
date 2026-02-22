@@ -41,11 +41,9 @@ try {
             $total = $stmt->fetch(PDO::FETCH_ASSOC)['total'];
             
             // Get users
-            $sql = "SELECT id, full_name, email, phone, email_verified, phone_verified, 
+            $sql = "SELECT id, full_name, email, phone, 
                            is_active, created_at FROM user " . $searchCondition . 
-                   " ORDER BY created_at DESC LIMIT ? OFFSET ?";
-            $params[] = (int)$limit;
-            $params[] = (int)$offset;
+                   " ORDER BY created_at DESC LIMIT {$limit} OFFSET {$offset}";
             
             $stmt = $db->prepare($sql);
             $stmt->execute($params);
@@ -83,14 +81,13 @@ try {
             // Hash password
             $hashedPassword = password_hash($input['password'], PASSWORD_DEFAULT);
             
-            $stmt = $db->prepare("INSERT INTO user (full_name, email, phone, password_hash, is_active, email_verified) VALUES (?, ?, ?, ?, ?, ?)");
+            $stmt = $db->prepare("INSERT INTO user (full_name, email, phone, password_hash, is_active) VALUES (?, ?, ?, ?, ?)");
             $stmt->execute([
                 $input['full_name'],
                 $input['email'],
                 $input['phone'] ?? null,
                 $hashedPassword,
-                $input['is_active'] ?? true,
-                false
+                $input['is_active'] ?? true
             ]);
             
             echo json_encode(['success' => true, 'id' => $db->lastInsertId()]);

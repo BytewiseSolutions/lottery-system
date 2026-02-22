@@ -1,6 +1,15 @@
 <?php
 require_once 'config/cors.php';
 require_once 'config/database.php';
+require_once 'config/jwt.php';
+
+$user = JWT::authenticate();
+
+if (!isset($user['role']) || $user['role'] !== 'admin') {
+    http_response_code(403);
+    echo json_encode(['error' => 'Admin access required']);
+    exit;
+}
 
 $database = new Database();
 $db = $database->getConnection();
@@ -32,6 +41,20 @@ try {
     $success = $stmt->execute([$input['id']]);
     
     if ($success) {
+        // Log result deletion
+        try {
+            $logQuery = "INSERT INTO activity_log (user_id, action, details, ip_address) VALUES (?, ?, ?, ?)";
+            $logStmt = $db->prepare($logQuery);
+            $logStmt->execute([
+                $user['id'],
+                'delete_result',
+                "Admin deleted result ID: {$input['id']}",
+                $_SERVER['REMOTE_ADDR'] ?? null
+            ]);
+        } catch(Exception $e) {
+            error_log("Activity log error: " . $e->getMessage());
+        }
+        
         echo json_encode(['success' => true, 'message' => 'Result deleted successfully']);
     } else {
         http_response_code(500);

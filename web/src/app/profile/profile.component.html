@@ -1,0 +1,78 @@
+<app-layout>
+  <section class="profile-section" style="padding: 60px 0; min-height: 70vh;">
+    <div class="container">
+      <h2 class="section-title" style="text-align: center; margin-bottom: 40px;">My Profile</h2>
+      
+      <div class="row">
+        <div class="col-lg-12">
+          <div class="profile-card" style="background: white; padding: 30px; border-radius: 10px; box-shadow: 0 4px 8px rgba(0,0,0,0.1);">
+            
+            <!-- Account Statistics -->
+            <div class="stats-section" style="margin-bottom: 30px;">
+              <h4 style="margin-bottom: 20px;">Account Statistics</h4>
+              <div class="row">
+                <div class="col-md-4">
+                  <div class="stat-box" style="text-align: center; padding: 20px; background: linear-gradient(90deg, rgb(108, 0, 146) 0%, rgb(175, 0, 255) 100%); color: white; border-radius: 8px; min-height: 120px; display: flex; flex-direction: column; justify-content: center;">
+                    <h3>{{ stats.totalEntries }}</h3>
+                    <p>Total Entries</p>
+                  </div>
+                </div>
+                <div class="col-md-4">
+                  <div class="stat-box" style="text-align: center; padding: 20px; background: linear-gradient(90deg, rgb(108, 0, 146) 0%, rgb(175, 0, 255) 100%); color: white; border-radius: 8px; min-height: 120px; display: flex; flex-direction: column; justify-content: center;">
+                    <h3>${{ stats.totalWinnings }}</h3>
+                    <p>Total Winnings</p>
+                  </div>
+                </div>
+                <div class="col-md-4">
+                  <div class="stat-box" style="text-align: center; padding: 20px; background: linear-gradient(90deg, rgb(108, 0, 146) 0%, rgb(175, 0, 255) 100%); color: white; border-radius: 8px; min-height: 120px; display: flex; flex-direction: column; justify-content: center;">
+                    <h3 style="font-size: 1.5rem;">{{ stats.memberSince }}</h3>
+                    <p>Member Since</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Personal Information -->
+            <div class="info-section">
+              <h4 style="margin-bottom: 20px;">Personal Information</h4>
+              <form (ngSubmit)="updateProfile()">
+                <div class="row">
+                  <div class="col-md-6">
+                    <div class="form-group" style="margin-bottom: 20px;">
+                      <label>First Name</label>
+                      <input type="text" class="form-control" [(ngModel)]="profile.firstName" name="firstName" [disabled]="!isEditing" style="width: 100%; display: block;">
+                    </div>
+                  </div>
+                  <div class="col-md-6">
+                    <div class="form-group" style="margin-bottom: 20px;">
+                      <label>Last Name</label>
+                      <input type="text" class="form-control" [(ngModel)]="profile.lastName" name="lastName" [disabled]="!isEditing" style="width: 100%; display: block;">
+                    </div>
+                  </div>
+                </div>
+                <div class="form-group" style="margin-bottom: 20px;">
+                  <label>Email</label>
+                  <input type="email" class="form-control" [(ngModel)]="profile.email" name="email" [disabled]="!isEditing" style="width: 100%; display: block;">
+                </div>
+                <div class="form-group" style="margin-bottom: 20px;">
+                  <label>Phone Number</label>
+                  <input type="tel" class="form-control" [(ngModel)]="profile.phone" name="phone" [disabled]="!isEditing" style="width: 100%; display: block;">
+                </div>
+                
+                <div class="button-group" style="margin-top: 30px;">
+                  <button type="button" *ngIf="!isEditing" class="custom-button2" (click)="toggleEdit()">Edit Profile</button>
+                  <button type="submit" *ngIf="isEditing" class="custom-button2" [disabled]="isSaving">
+                    {{ isSaving ? 'Saving...' : 'Save Changes' }}
+                  </button>
+                  <button type="button" *ngIf="isEditing" class="custom-button1" (click)="cancelEdit()" style="margin-left: 10px;">Cancel</button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+</app-layout>
+
+

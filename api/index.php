@@ -89,6 +89,30 @@ switch ($path) {
     case 'api/get-draw-info':
         require 'get-draw-info.php';
         break;
+    case 'api/user-stats':
+        require 'user-stats.php';
+        break;
+    case 'api/update-profile':
+        require 'update-profile.php';
+        break;
+    case 'api/delete-account':
+        require 'delete-account.php';
+        break;
+    case 'api/change-password':
+        require 'change-password.php';
+        break;
+    case 'api/notification-preferences':
+        require 'notification-preferences.php';
+        break;
+    case 'api/activity-logs':
+        require 'activity-logs.php';
+        break;
+    case 'api/contact':
+        require 'contact.php';
+        break;
+    case 'api/contact-messages':
+        require 'contact-messages.php';
+        break;
     default:
         http_response_code(404);
         echo json_encode(['error' => 'Endpoint not found']);

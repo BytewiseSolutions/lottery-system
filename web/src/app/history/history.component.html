@@ -23,7 +23,7 @@
         </div>
 
         <div *ngIf="isLoggedIn && groupedEntries.length > 0" class="history-entries">
-          <div *ngFor="let group of groupedEntries" class="date-group">
+          <div *ngFor="let group of paginatedEntries" class="date-group">
             <div class="date-header">
               <h4>{{formatDate(group.date)}}</h4>
             </div>
@@ -99,6 +99,18 @@
               </div>
             </div>
           </div>
+          
+          <div class="pagination" *ngIf="totalPages > 1">
+            <button class="page-btn" (click)="goToPage(currentPage - 1)" [disabled]="currentPage === 1">
+              <i class="fas fa-chevron-left"></i>
+            </button>
+            <span class="page-info">
+              Page {{ currentPage }} of {{ totalPages }}
+            </span>
+            <button class="page-btn" (click)="goToPage(currentPage + 1)" [disabled]="currentPage === totalPages">
+              <i class="fas fa-chevron-right"></i>
+            </button>
+          </div>
         </div>
       </div>
       
@@ -171,7 +183,7 @@
 }
 
 .number {
-  background: #007bff;
+  background: linear-gradient(135deg, rgb(108, 0, 146), rgb(175, 0, 255));
   color: white;
   padding: 5px 10px;
   border-radius: 4px;
@@ -181,12 +193,15 @@
   position: relative;
 }
 
-.number.matched {
-  background: #28a745;
-}
-
-.number.unmatched {
-  background: #dc3545;
+.bonus-number {
+  background: linear-gradient(135deg, rgb(255, 165, 0), rgb(255, 140, 0));
+  color: white;
+  padding: 5px 10px;
+  border-radius: 4px;
+  font-weight: 600;
+  min-width: 30px;
+  text-align: center;
+  position: relative;
 }
 
 .number i, .bonus-number i {
@@ -194,7 +209,6 @@
   top: -5px;
   right: -5px;
   background: white;
-  color: #28a745;
   border-radius: 50%;
   width: 16px;
   height: 16px;
@@ -204,23 +218,12 @@
   justify-content: center;
 }
 
-.bonus-number {
-  background: #28a745;
-  color: white;
-  padding: 5px 10px;
-  border-radius: 4px;
-  font-weight: 600;
-  min-width: 30px;
-  text-align: center;
-  position: relative;
+.number i.fa-check, .bonus-number i.fa-check {
+  color: #28a745;
 }
 
-.bonus-number.matched {
-  background: #218838;
-}
-
-.bonus-number.unmatched {
-  background: #c82333;
+.number i.fa-times, .bonus-number i.fa-times {
+  color: #dc3545;
 }
 
 .entry-status {
@@ -329,5 +332,45 @@
   .quotes-sidebar {
     margin-top: 30px;
   }
+  
+  .pagination {
+    flex-wrap: wrap;
+    gap: 5px;
+  }
+}
+
+.pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 15px;
+  margin-top: 30px;
+}
+
+.page-btn {
+  background: #f8f9fa;
+  border: 1px solid #ddd;
+  color: #333;
+  padding: 8px 12px;
+  border-radius: 5px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: all 0.3s;
+}
+
+.page-btn:hover:not(:disabled) {
+  background: linear-gradient(135deg, rgb(108, 0, 146), rgb(175, 0, 255));
+  color: white;
+  border-color: rgb(108, 0, 146);
+}
+
+.page-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.page-info {
+  font-weight: 600;
+  color: #333;
 }
 </style>

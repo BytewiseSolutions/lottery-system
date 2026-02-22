@@ -14,6 +14,10 @@ import { environment } from '../../environments/environment';
 export class HomeComponent implements OnInit {
   draws: Draw[] = [];
   results: any[] = [];
+  paginatedDraws: Draw[] = [];
+  currentPage = 1;
+  itemsPerPage = 3;
+  totalPages = 0;
 
   constructor(private lotteryService: LotteryService, private cdr: ChangeDetectorRef) {}
 
@@ -31,7 +35,9 @@ export class HomeComponent implements OnInit {
   private loadData() {
     this.lotteryService.getDraws().subscribe({
       next: (draws) => {
-        this.draws = draws.slice(0, 3);
+        this.draws = draws;
+        this.totalPages = Math.ceil(this.draws.length / this.itemsPerPage);
+        this.updatePagination();
       },
       error: (error) => {
         console.error('Error loading draws:', error);
@@ -40,6 +46,19 @@ export class HomeComponent implements OnInit {
     });
     
     this.loadResults();
+  }
+
+  updatePagination() {
+    const startIndex = (this.currentPage - 1) * this.itemsPerPage;
+    const endIndex = startIndex + this.itemsPerPage;
+    this.paginatedDraws = this.draws.slice(startIndex, endIndex);
+  }
+
+  goToPage(page: number) {
+    if (page >= 1 && page <= this.totalPages) {
+      this.currentPage = page;
+      this.updatePagination();
+    }
   }
 
   private async loadResults() {

@@ -37,9 +37,13 @@ export class HistoryComponent implements OnInit {
   historyEntries: HistoryEntry[] = [];
   filteredEntries: HistoryEntry[] = [];
   groupedEntries: GroupedEntry[] = [];
+  paginatedEntries: GroupedEntry[] = [];
   selectedDate = '';
   currentQuote = "A ticket today could change your tomorrow.";
   results: any[] = [];
+  currentPage = 1;
+  itemsPerPage = 5;
+  totalPages = 0;
 
   ngOnInit() {
     this.isLoggedIn = !!localStorage.getItem('token');
@@ -157,6 +161,22 @@ export class HistoryComponent implements OnInit {
         hasMoreEntries: grouped[date].length > 1,
         showAllEntries: false
       }));
+    
+    this.totalPages = Math.ceil(this.groupedEntries.length / this.itemsPerPage);
+    this.updatePagination();
+  }
+
+  updatePagination() {
+    const startIndex = (this.currentPage - 1) * this.itemsPerPage;
+    const endIndex = startIndex + this.itemsPerPage;
+    this.paginatedEntries = this.groupedEntries.slice(startIndex, endIndex);
+  }
+
+  goToPage(page: number) {
+    if (page >= 1 && page <= this.totalPages) {
+      this.currentPage = page;
+      this.updatePagination();
+    }
   }
 
   filterByDate() {

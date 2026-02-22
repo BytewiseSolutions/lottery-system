@@ -12,8 +12,15 @@
                 <a href="#" class="custom-button1" (click)="openRegisterModal()">Sign Up</a>
                 <a href="#" class="custom-button2" (click)="openLoginModal()">Login</a>
               </div>
-              <div class="log-reg-area" *ngIf="isLoggedIn">
-                <a href="#" class="custom-button2" (click)="logout()">Logout</a>
+              <div class="log-reg-area" *ngIf="isLoggedIn" style="position: relative;">
+                <div class="user-dropdown">
+                  <span class="user-name">{{ currentUser?.fullName || 'User' }}</span>
+                  <div class="dropdown-menu">
+                    <a routerLink="/profile">Profile</a>
+                    <a routerLink="/settings">Settings</a>
+                    <a href="#" (click)="logout()">Logout</a>
+                  </div>
+                </div>
               </div>
               <div class="cart-area">
                 <div class="amount">
