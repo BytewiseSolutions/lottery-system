@@ -8,8 +8,7 @@ import { environment } from '../../environments/environment';
 @Component({
   selector: 'app-profile',
   imports: [CommonModule, FormsModule, LayoutComponent],
-  templateUrl: './profile.component.html',
-  styleUrl: './profile.component.css'
+  templateUrl: './profile.component.html'
 })
 export class ProfileComponent implements OnInit {
   profile = {
