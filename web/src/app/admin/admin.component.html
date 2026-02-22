@@ -645,9 +645,9 @@
                     </tr>
                   </thead>
                   <tbody>
-                    @for (entry of entries; track entry.id; let i = $index) {
+                    @for (entry of paginatedEntries; track entry.id; let i = $index) {
                       <tr>
-                        <td data-label="#">{{ i + 1 }}</td>
+                        <td data-label="#">{{ (entriesCurrentPage - 1) * itemsPerPage + i + 1 }}</td>
                         <td data-label="User">{{ entry.user_name || 'User ' + entry.user_id }}</td>
                         <td data-label="Lottery">{{ entry.lottery }}</td>
                         <td data-label="Date" class="hide-on-desktop">{{ entry.created_at | date:'dd/MM/yy, HH:mm' }}</td>
@@ -675,6 +675,30 @@
                   </tbody>
                 </table>
               </div>
+              @if (filteredEntries.length > 0) {
+                <div class="table-footer">
+                  <div class="table-info">
+                    Showing {{ paginatedEntries.length }} of {{ filteredEntries.length }} entries
+                  </div>
+                  <div class="pagination">
+                    <button 
+                      class="btn-icon" 
+                      (click)="onEntriesPageChange(entriesCurrentPage - 1)"
+                      [disabled]="entriesCurrentPage === 1">
+                      <i class="fas fa-chevron-left"></i>
+                    </button>
+                    <span class="page-info">
+                      Page {{ entriesCurrentPage }} of {{ entriesTotalPages }}
+                    </span>
+                    <button 
+                      class="btn-icon" 
+                      (click)="onEntriesPageChange(entriesCurrentPage + 1)"
+                      [disabled]="entriesCurrentPage === entriesTotalPages">
+                      <i class="fas fa-chevron-right"></i>
+                    </button>
+                  </div>
+                </div>
+              }
             </div>
           </section>
         }
@@ -721,6 +745,75 @@
                   </tbody>
                 </table>
               </div>
+            </div>
+          </section>
+        }
+
+        <!-- Contact Messages Section -->
+        @if (activeSection === 'contact-messages') {
+          <section class="contact-messages-section">
+            <div class="card">
+              <div class="card-header">
+                <h3><i class="fas fa-envelope"></i> Contact Messages</h3>
+              </div>
+              <div class="table-responsive">
+                <table class="data-table">
+                  <thead>
+                    <tr>
+                      <th>#</th>
+                      <th>Name</th>
+                      <th>Email</th>
+                      <th>Message</th>
+                      <th>Date</th>
+                      <th>Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    @for (message of paginatedContactMessages; track message.id; let i = $index) {
+                      <tr>
+                        <td data-label="#">{{ (contactMessagesCurrentPage - 1) * itemsPerPage + i + 1 }}</td>
+                        <td data-label="Name">{{ message.name }}</td>
+                        <td data-label="Email">{{ message.email }}</td>
+                        <td data-label="Message">
+                          <div style="max-width: 400px; white-space: normal; word-wrap: break-word;">
+                            {{ message.message }}
+                          </div>
+                        </td>
+                        <td data-label="Date">{{ message.created_at | date:'short' }}</td>
+                        <td data-label="Actions">
+                          <button class="btn-icon danger" title="Delete" (click)="deleteContactMessage(message.id)">
+                            <i class="fas fa-trash"></i>
+                          </button>
+                        </td>
+                      </tr>
+                    }
+                  </tbody>
+                </table>
+              </div>
+              @if (contactMessages.length > 0) {
+                <div class="table-footer">
+                  <div class="table-info">
+                    Showing {{ paginatedContactMessages.length }} of {{ contactMessages.length }} messages
+                  </div>
+                  <div class="pagination">
+                    <button 
+                      class="btn-icon" 
+                      (click)="onContactMessagesPageChange(contactMessagesCurrentPage - 1)"
+                      [disabled]="contactMessagesCurrentPage === 1">
+                      <i class="fas fa-chevron-left"></i>
+                    </button>
+                    <span class="page-info">
+                      Page {{ contactMessagesCurrentPage }} of {{ contactMessagesTotalPages }}
+                    </span>
+                    <button 
+                      class="btn-icon" 
+                      (click)="onContactMessagesPageChange(contactMessagesCurrentPage + 1)"
+                      [disabled]="contactMessagesCurrentPage === contactMessagesTotalPages">
+                      <i class="fas fa-chevron-right"></i>
+                    </button>
+                  </div>
+                </div>
+              }
             </div>
           </section>
         }

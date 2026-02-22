@@ -81,6 +81,20 @@ try {
     
     $entryId = $db->lastInsertId();
     
+    // Log entry submission
+    try {
+        $logQuery = "INSERT INTO activity_log (user_id, action, details, ip_address) VALUES (?, ?, ?, ?)";
+        $logStmt = $db->prepare($logQuery);
+        $logStmt->execute([
+            $user['id'],
+            'submit_entry',
+            "Submitted entry for {$lotteryName} on {$data->drawDate}",
+            $_SERVER['REMOTE_ADDR'] ?? null
+        ]);
+    } catch(Exception $e) {
+        error_log("Activity log error: " . $e->getMessage());
+    }
+    
     error_log("Entry created: lottery=$lotteryName, date=$data->drawDate");
     
     $updateJackpot = "UPDATE upcoming_draw SET jackpot = jackpot + 0.01 

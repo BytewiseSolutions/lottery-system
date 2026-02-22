@@ -2,28 +2,15 @@
 require_once 'config/cors.php';
 require_once 'config/database.php';
 require_once 'config/jwt.php';
-require_once 'config/otp.php';
-// require_once 'config/ratelimit.php'; // Disabled for performance
 
 $database = new Database();
 $db = $database->getConnection();
-$otpHandler = new OTP($db);
-
-// Rate limiting - disabled for performance
-// $rateLimit = new RateLimit($db);
-// $rateLimit->checkLimit($_SERVER['REMOTE_ADDR'], 'register', 5, 3600);
 
 $data = json_decode(file_get_contents("php://input"));
 
-if (!$data->fullName || (!$data->email && !$data->phone) || !$data->password || !$data->confirmPassword) {
+if (!$data->fullName || (!$data->email && !$data->phone) || !$data->password) {
     http_response_code(400);
-    echo json_encode(['error' => 'Please fill in all required fields: Full name, email or phone, and password']);
-    exit;
-}
-
-if ($data->password !== $data->confirmPassword) {
-    http_response_code(400);
-    echo json_encode(['error' => 'Passwords do not match']);
+    echo json_encode(['error' => 'Please fill in all required fields: Full name, email OR phone, and password']);
     exit;
 }
 
@@ -33,7 +20,6 @@ if (strlen($data->password) < 6) {
     exit;
 }
 
-// Validate email format
 if ($data->email && !filter_var($data->email, FILTER_VALIDATE_EMAIL)) {
     http_response_code(400);
     echo json_encode(['error' => 'Invalid email format']);
@@ -41,7 +27,6 @@ if ($data->email && !filter_var($data->email, FILTER_VALIDATE_EMAIL)) {
 }
 
 try {
-    // Check if user exists
     $checkQuery = "SELECT id FROM user WHERE email = ? OR phone = ?";
     $stmt = $db->prepare($checkQuery);
     $stmt->execute([$data->email ?? '', $data->phone ?? '']);
@@ -52,9 +37,8 @@ try {
         exit;
     }
     
-    // Create user
     $hashedPassword = password_hash($data->password, PASSWORD_DEFAULT);
-    $query = "INSERT INTO user (full_name, email, phone, password) VALUES (?, ?, ?, ?)";
+    $query = "INSERT INTO user (full_name, email, phone, password, is_active) VALUES (?, ?, ?, ?, 1)";
     $stmt = $db->prepare($query);
     $stmt->execute([
         $data->fullName,
@@ -65,47 +49,46 @@ try {
     
     $userId = $db->lastInsertId();
     
-    // Send OTP verifications asynchronously for better performance
-    $otpSent = [];
+    $userQuery = "SELECT id, full_name, email, phone, role FROM user WHERE id = ?";
+    $userStmt = $db->prepare($userQuery);
+    $userStmt->execute([$userId]);
+    $user = $userStmt->fetch(PDO::FETCH_ASSOC);
     
-    // Respond to client immediately before sending OTPs
-    $response = [
-        'success' => true,
-        'message' => 'Account created successfully! Verification codes are being sent.',
-        'userId' => $userId,
-        'requiresVerification' => []
+    $payload = [
+        'user_id' => $user['id'],
+        'email' => $user['email'],
+        'phone' => $user['phone'],
+        'role' => $user['role'] ?? 'user',
+        'exp' => time() + (24 * 60 * 60)
     ];
+    $token = JWT::encode($payload);
     
-    if ($data->email) {
-        $response['requiresVerification'][] = 'email';
-        $otpSent[] = 'email';
+    // Log registration
+    try {
+        $logQuery = "INSERT INTO activity_log (user_id, action, details, ip_address) VALUES (?, ?, ?, ?)";
+        $logStmt = $db->prepare($logQuery);
+        $logStmt->execute([
+            $userId,
+            'register',
+            "New user registered: {$data->fullName}",
+            $_SERVER['REMOTE_ADDR'] ?? null
+        ]);
+    } catch(Exception $e) {
+        error_log("Activity log error: " . $e->getMessage());
     }
     
-    if ($data->phone) {
-        $response['requiresVerification'][] = 'phone';
-        $otpSent[] = 'phone';
-    }
-    
-    // Send response immediately
-    echo json_encode($response);
-    
-    // Finish the request to client
-    if (function_exists('fastcgi_finish_request')) {
-        fastcgi_finish_request();
-    }
-    
-    // Now send OTPs in background
-    if ($data->email) {
-        $emailOTP = $otpHandler->generateOTP();
-        $otpHandler->saveOTP($userId, $emailOTP, 'email');
-        $otpHandler->sendEmailOTP($data->email, $emailOTP);
-    }
-    
-    if ($data->phone) {
-        $phoneOTP = $otpHandler->generateOTP();
-        $otpHandler->saveOTP($userId, $phoneOTP, 'phone');
-        $otpHandler->sendSMSOTP($data->phone, $phoneOTP);
-    }
+    echo json_encode([
+        'success' => true,
+        'message' => 'Account created successfully!',
+        'token' => $token,
+        'user' => [
+            'id' => $user['id'],
+            'full_name' => $user['full_name'],
+            'email' => $user['email'],
+            'phone' => $user['phone'],
+            'role' => $user['role'] ?? 'user'
+        ]
+    ]);
     
 } catch(PDOException $exception) {
     error_log("Registration error: " . $exception->getMessage());

@@ -47,9 +47,8 @@ try {
     $stmt = $db->prepare("UPDATE winner SET status = 'paid', paid_at = NOW() WHERE id = ?");
     $stmt->execute([$data['winner_id']]);
     
-    // Create payment record
     $stmt = $db->prepare("
-        INSERT INTO payments (winner_id, user_id, amount, status, approved_by, approved_at) 
+        INSERT INTO payment (winner_id, user_id, amount, status, approved_by, approved_at) 
         VALUES (?, ?, ?, 'completed', ?, NOW())
     ");
     $stmt->execute([

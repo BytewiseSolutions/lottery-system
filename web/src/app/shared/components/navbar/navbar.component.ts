@@ -17,6 +17,7 @@ export class NavbarComponent implements OnInit {
   totalPoolMoney = 0;
   isLoggedIn = false;
   userEmail = '';
+  currentUser: any = null;
   showLoginModal = false;
   showSignupModal = false;
   verificationMode = false;
@@ -71,10 +72,12 @@ export class NavbarComponent implements OnInit {
   private checkAuthStatus() {
     const token = localStorage.getItem('token');
     const user = localStorage.getItem('user');
+    console.log('Auth check - token:', token, 'user:', user);
     if (token && user) {
       this.isLoggedIn = true;
-      const userData = JSON.parse(user);
-      this.userEmail = userData.email || userData.phone || 'User';
+      this.currentUser = JSON.parse(user);
+      console.log('Current user:', this.currentUser);
+      this.userEmail = this.currentUser.email || this.currentUser.phone || 'User';
     }
   }
 
@@ -92,12 +95,14 @@ export class NavbarComponent implements OnInit {
 
   onLoginSuccess(user: any) {
     this.isLoggedIn = true;
+    this.currentUser = user;
     this.userEmail = user.email;
     this.showLoginModal = false;
   }
 
   onSignupSuccess(user: any) {
     this.isLoggedIn = true;
+    this.currentUser = user;
     this.userEmail = user.email || user.phone || 'User';
     this.showSignupModal = false;
   }
@@ -143,6 +148,7 @@ export class NavbarComponent implements OnInit {
     localStorage.removeItem('token');
     localStorage.removeItem('user');
     this.isLoggedIn = false;
+    this.currentUser = null;
     this.userEmail = '';
   }
 

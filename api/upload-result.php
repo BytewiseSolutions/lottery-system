@@ -104,6 +104,20 @@ try {
     $updateQuery = "UPDATE result SET winners = ? WHERE id = ?";
     $db->prepare($updateQuery)->execute([$winners, $resultId]);
     
+    // Log result upload
+    try {
+        $logQuery = "INSERT INTO activity_log (user_id, action, details, ip_address) VALUES (?, ?, ?, ?)";
+        $logStmt = $db->prepare($logQuery);
+        $logStmt->execute([
+            $user['id'],
+            'upload_result',
+            "Admin uploaded results for {$data->lottery} on {$data->drawDate} - {$winners} winner(s)",
+            $_SERVER['REMOTE_ADDR'] ?? null
+        ]);
+    } catch(Exception $e) {
+        error_log("Activity log error: " . $e->getMessage());
+    }
+    
     // Notify all participants about results being published
     if ($status === 'published' && count($entries) > 0) {
         try {

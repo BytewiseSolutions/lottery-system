@@ -34,7 +34,7 @@ try {
     
     if ($stmt->rowCount() === 0) {
         http_response_code(400);
-        echo json_encode(['error' => 'Invalid credentials or account not verified']);
+        echo json_encode(['error' => 'Invalid credentials']);
         exit;
     }
     
@@ -42,6 +42,20 @@ try {
     
     // Verify password first (same for all users)
     if (!password_verify($data->password, $user['password'])) {
+        // Log failed login attempt
+        try {
+            $logQuery = "INSERT INTO activity_log (user_id, action, details, ip_address) VALUES (?, ?, ?, ?)";
+            $logStmt = $db->prepare($logQuery);
+            $logStmt->execute([
+                $user['id'],
+                'login_failed',
+                "Failed login attempt - Invalid password",
+                $_SERVER['REMOTE_ADDR'] ?? null
+            ]);
+        } catch(Exception $e) {
+            error_log("Activity log error: " . $e->getMessage());
+        }
+        
         http_response_code(400);
         echo json_encode(['error' => 'Invalid credentials']);
         exit;
@@ -78,6 +92,21 @@ try {
     }
     
     $token = JWT::encode($payload);
+    
+    // Log successful login
+    try {
+        $role = isset($user['role']) && $user['role'] === 'admin' ? 'Admin' : 'User';
+        $logQuery = "INSERT INTO activity_log (user_id, action, details, ip_address) VALUES (?, ?, ?, ?)";
+        $logStmt = $db->prepare($logQuery);
+        $logStmt->execute([
+            $user['id'],
+            'login',
+            "$role logged in successfully",
+            $_SERVER['REMOTE_ADDR'] ?? null
+        ]);
+    } catch(Exception $e) {
+        error_log("Activity log error: " . $e->getMessage());
+    }
     
     echo json_encode([
         'success' => true,

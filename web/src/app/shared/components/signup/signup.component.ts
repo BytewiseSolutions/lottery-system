@@ -2,7 +2,7 @@ import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
-import { ToastService } from '../../../services/toast.service';
+import { SuccessPopupService } from '../../../services/success-popup.service';
 import { environment } from '../../../../environments/environment';
 
 @Component({
@@ -22,13 +22,14 @@ export class SignupComponent {
   // Validation errors
   validationErrors: any = {};
 
-  constructor(private toastService: ToastService, private router: Router) {}
+  constructor(private successPopupService: SuccessPopupService, private router: Router) {}
 
   fullName = '';
+  firstName = '';
+  lastName = '';
   email = '';
   phone = '';
   password = '';
-  confirmPassword = '';
   agreeTerms = false;
   isLoading = false;
   
@@ -64,10 +65,11 @@ export class SignupComponent {
 
   clearForm() {
     this.fullName = '';
+    this.firstName = '';
+    this.lastName = '';
     this.email = '';
     this.phone = '';
     this.password = '';
-    this.confirmPassword = '';
     this.agreeTerms = false;
     this.showPassword = false;
     this.showConfirmPassword = false;
@@ -90,35 +92,7 @@ export class SignupComponent {
     this.errorMessage = '';
   }
 
-  updateOtpCode(event: any) {
-    const value = event.target.value;
-    if (this.selectedVerificationMethod === 'email') {
-      this.emailOtp = value;
-    } else {
-      this.phoneOtp = value;
-    }
-  }
 
-  async verifyAccountByIdentifier() {
-    if (!this.identifier) {
-      this.errorMessage = 'Please enter your email or phone number';
-      return;
-    }
-    
-    const otpCode = this.selectedVerificationMethod === 'email' ? this.emailOtp : this.phoneOtp;
-    if (!otpCode || otpCode.length !== 6) {
-      this.errorMessage = 'Please enter a valid 6-digit OTP';
-      return;
-    }
-
-    // First, find the user ID by email/phone
-    // For now, we'll use a placeholder - this would need an API endpoint to find user by identifier
-    // You can use the existing OTP codes with known user IDs for testing
-    this.userId = 1; // Temporary - should be fetched from API
-    
-    // Then verify the OTP
-    await this.verifyOtp(this.selectedVerificationMethod);
-  }
 
   async sendPasswordReset() {
     if (!this.identifier) {
@@ -152,9 +126,19 @@ export class SignupComponent {
   async onSignup() {
     this.validationErrors = {};
     
+    // Validate terms agreement first
+    if (!this.agreeTerms) {
+      this.validationErrors.terms = 'You must agree to the terms and conditions';
+      return;
+    }
+    
     // Validate fields
-    if (!this.fullName) {
-      this.validationErrors.fullName = 'Full name is required';
+    if (!this.firstName) {
+      this.validationErrors.firstName = 'First name is required';
+    }
+    
+    if (!this.lastName) {
+      this.validationErrors.lastName = 'Last name is required';
     }
     
     if (!this.email && !this.phone) {
@@ -165,12 +149,6 @@ export class SignupComponent {
       this.validationErrors.password = 'Password is required';
     } else if (this.password.length < 6) {
       this.validationErrors.password = 'Password must be at least 6 characters';
-    }
-    
-    if (!this.confirmPassword) {
-      this.validationErrors.confirmPassword = 'Please confirm your password';
-    } else if (this.password !== this.confirmPassword) {
-      this.validationErrors.confirmPassword = 'Passwords do not match';
     }
     
     if (!this.agreeTerms) {
@@ -189,43 +167,29 @@ export class SignupComponent {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          fullName: this.fullName,
+          fullName: `${this.firstName} ${this.lastName}`.trim(),
           email: this.email || null,
           phone: this.phone || null,
-          password: this.password,
-          confirmPassword: this.confirmPassword
+          password: this.password
         })
       });
 
       const result = await response.json();
 
       if (result.success) {
-        this.userId = result.userId;
+        this.successPopupService.show("Your account has been created. You can now login with your credentials.", "Account Created Successfully!");
         
-        // Only require verification for one method - prioritize email if both are provided
-        if (this.email) {
-          this.requiresEmailVerification = true;
-          this.requiresPhoneVerification = false;
-          this.selectedVerificationMethod = 'email';
-        } else if (this.phone) {
-          this.requiresEmailVerification = false;
-          this.requiresPhoneVerification = true;
-          this.selectedVerificationMethod = 'phone';
-        }
-        
-        this.showOtpVerification = true;
-        
-        // Clear sensitive data
-        this.password = '';
-        this.confirmPassword = '';
-        
-        this.toastService.showSuccess(result.message);
+        setTimeout(() => {
+          this.clearForm();
+          this.close();
+          this.switchToLogin();
+        }, 3000);
       } else {
-        this.toastService.showError(result.error);
+        alert(result.error);
       }
     } catch (error) {
       console.error('Registration error:', error);
-      this.toastService.showError('Network error. Please check your connection.');
+      alert('Network error. Please check your connection.');
     } finally {
       this.isLoading = false;
     }
@@ -239,87 +203,12 @@ export class SignupComponent {
     this.showConfirmPassword = !this.showConfirmPassword;
   }
   
-  async verifyOtp(type: 'email' | 'phone') {
-    const otpCode = type === 'email' ? this.emailOtp : this.phoneOtp;
-    
-    if (!otpCode || otpCode.length !== 6) {
-      this.errorMessage = 'Please enter a valid 6-digit OTP';
-      return;
-    }
-
-    this.isVerifying = true;
-    this.errorMessage = '';
-    
-    try {
-      const response = await fetch(`${environment.apiUrl}/verify-otp`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          userId: this.userId,
-          otpCode: otpCode,
-          otpType: type
-        })
-      });
-
-      const result = await response.json();
-
-      if (response.ok && result.success) {
-        if (type === 'email') {
-          this.emailVerified = true;
-          this.requiresEmailVerification = false;
-          this.emailOtp = '';
-        } else {
-          this.phoneVerified = true;
-          this.requiresPhoneVerification = false;
-          this.phoneOtp = '';
-        }
-        
-        this.toastService.showSuccess(result.message);
-        
-        // If token and user data are returned, auto-login the user
-        if (result.token && result.user) {
-          localStorage.setItem('token', result.token);
-          localStorage.setItem('user', JSON.stringify(result.user));
-          
-          // Emit login success to update navbar
-          this.signupSuccess.emit(result.user);
-        }
-        
-        this.clearForm();
-        setTimeout(() => {
-          this.close();
-          // Redirect to lotteries page using Angular router
-          this.router.navigate(['/lotteries']);
-        }, 1000); // Show success message briefly then redirect
-      } else {
-        this.errorMessage = result.error || 'Invalid or expired OTP. Please try again.';
-      }
-    } catch (error) {
-      this.errorMessage = 'Network error. Please try again.';
-    } finally {
-      this.isVerifying = false;
-    }
-  }
   
-  async resendOtp(type: 'email' | 'phone') {
-    try {
-      const response = await fetch(`${environment.apiUrl}/resend-otp`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          userId: this.userId,
-          otpType: type
-        })
-      });
 
-      const result = await response.json();
-      if (result.success) {
-        this.toastService.showSuccess(result.message);
-      } else {
-        this.toastService.showError(result.error);
-      }
-    } catch (error) {
-      this.toastService.showError('Network error. Please try again.');
-    }
+  dismissSuccessPopup() {
+    
+    this.clearForm();
+    this.close();
+    this.switchToLogin();
   }
 }

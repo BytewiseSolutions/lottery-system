@@ -171,4 +171,25 @@ export class LotteryService {
   getDrawInfo(lottery: string): Observable<any> {
     return this.http.get<any>(`${this.apiUrl}/get-draw-info?lottery=${encodeURIComponent(lottery)}`);
   }
+
+  getActivityLogs(): Observable<any> {
+    const token = localStorage.getItem('token');
+    return this.http.get<any>(`${this.apiUrl}/activity-logs`, {
+      headers: { 'Authorization': `Bearer ${token}` }
+    });
+  }
+
+  getContactMessages(): Observable<any> {
+    const token = localStorage.getItem('token');
+    return this.http.get<any>(`${this.apiUrl}/contact-messages`, {
+      headers: { 'Authorization': `Bearer ${token}` }
+    });
+  }
+
+  deleteContactMessage(id: number): Observable<any> {
+    const token = localStorage.getItem('token');
+    return this.http.delete<any>(`${this.apiUrl}/contact-messages?id=${id}`, {
+      headers: { 'Authorization': `Bearer ${token}` }
+    });
+  }
 }
