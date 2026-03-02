@@ -113,6 +113,18 @@ switch ($path) {
     case 'api/contact-messages':
         require 'contact-messages.php';
         break;
+    case 'api/vote':
+        require 'vote.php';
+        break;
+    case 'api/leading-numbers':
+        require 'leading-numbers.php';
+        break;
+    case 'api/voting-history':
+        require 'voting-history.php';
+        break;
+    case 'api/admin-vote':
+        require 'admin-vote.php';
+        break;
     default:
         http_response_code(404);
         echo json_encode(['error' => 'Endpoint not found']);

@@ -83,6 +83,14 @@
           </div>
         </a>
       </li>
+      <li>
+        <a (click)="onSectionClick('voting')" [class.active]="activeSection === 'voting'">
+          <div class="nav-item-content">
+            <i class="fas fa-vote-yea"></i>
+            <span>Voting Management</span>
+          </div>
+        </a>
+      </li>
     </ul>
   </nav>
 
