@@ -1,0 +1,98 @@
+<ion-header>
+  <ion-toolbar color="primary">
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/home"></ion-back-button>
+    </ion-buttons>
+    <ion-title>Voting</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <div class="voting-container">
+    <div class="tab-navigation">
+      <button [class.active]="selectedTab === 'voting'" (click)="onTabChange('voting')">Voting Space</button>
+      <button [class.active]="selectedTab === 'leading'" (click)="onTabChange('leading')">Leading Numbers Now</button>
+      <button [class.active]="selectedTab === 'history'" (click)="onTabChange('history')">My Voting History</button>
+    </div>
+
+    <div *ngIf="selectedTab === 'voting'" class="tab-content">
+      <div class="lottery-info" *ngIf="selectedDraw">
+        <h2>{{ selectedDraw.name }}</h2>
+        <p>For {{ selectedDraw.draw_date | date:'EEEE, MMMM d, y' }}</p>
+      </div>
+
+      <div *ngIf="!isVotingTime" class="voting-closed">
+        <ion-icon name="time-outline"></ion-icon>
+        <h3>Voting is currently closed</h3>
+        <p>Voting opens at 19:00 and closes at 19:59</p>
+        <div class="countdown-timer">{{ countdown }}</div>
+      </div>
+
+      <div *ngIf="isVotingTime" class="voting-active">
+        <ion-button expand="block" color="primary" (click)="currentStep = 1; resetVoting()">Vote Now</ion-button>
+        <p class="voting-closes">Voting Closes: {{ countdown }}</p>
+
+        <div *ngIf="currentStep === 1" class="voting-step">
+          <h3>Section 1 - Pick 5 Numbers</h3>
+          <div class="number-grid">
+            <button *ngFor="let num of numbers" [class.selected]="isSelected(num)" (click)="selectNumber(num)" class="number-button">{{ num }}</button>
+          </div>
+          <ion-button expand="block" [disabled]="selectedNumbers.length !== 5" (click)="nextStep()">Next</ion-button>
+        </div>
+
+        <div *ngIf="currentStep === 2" class="voting-step">
+          <h3>Confirm 5 Numbers</h3>
+          <div class="selected-numbers">
+            <span *ngFor="let num of selectedNumbers" class="selected-number">{{ num }}</span>
+          </div>
+          <ion-button expand="block" (click)="nextStep()">Next</ion-button>
+          <ion-button expand="block" fill="outline" (click)="currentStep = 1">Edit</ion-button>
+        </div>
+
+        <div *ngIf="currentStep === 3" class="voting-step">
+          <h3>Section 2 - Pick 2 Bonus Numbers</h3>
+          <div class="number-grid">
+            <button *ngFor="let num of numbers" [class.selected]="isSelected(num)" (click)="selectNumber(num)" class="number-button">{{ num }}</button>
+          </div>
+          <ion-button expand="block" [disabled]="selectedBonusNumbers.length !== 2" (click)="nextStep()">Next</ion-button>
+        </div>
+
+        <div *ngIf="currentStep === 4" class="voting-step">
+          <h3>Confirm 2 Bonus Numbers</h3>
+          <div class="selected-numbers">
+            <span *ngFor="let num of selectedBonusNumbers" class="selected-number">{{ num }}</span>
+          </div>
+          <ion-button expand="block" (click)="nextStep()">Next</ion-button>
+          <ion-button expand="block" fill="outline" (click)="currentStep = 3">Edit</ion-button>
+        </div>
+
+        <div *ngIf="currentStep === 5" class="voting-step">
+          <h3>Final Confirmation</h3>
+          <div class="final-selection">
+            <div><strong>Section 1:</strong> <span *ngFor="let num of selectedNumbers">{{ num }} </span></div>
+            <div><strong>Section 2:</strong> <span *ngFor="let num of selectedBonusNumbers">{{ num }} </span></div>
+          </div>
+          <ion-button expand="block" color="success" (click)="submitVote()">Submit Vote</ion-button>
+          <ion-button expand="block" fill="outline" (click)="resetVoting()">Cancel</ion-button>
+        </div>
+      </div>
+    </div>
+
+    <div *ngIf="selectedTab === 'leading'" class="tab-content">
+      <h2>Leading Numbers Now</h2>
+      <div *ngFor="let item of leadingNumbers.section1?.slice(0, 10)" class="number-item">
+        <span>{{ item.number }}</span> - <span>{{ item.votes }} votes</span>
+      </div>
+    </div>
+
+    <div *ngIf="selectedTab === 'history'" class="tab-content">
+      <h2>My Voting History</h2>
+      <div *ngFor="let vote of votingHistory" class="history-item">
+        <h3>{{ vote.lottery }}</h3>
+        <p>{{ vote.voteDate | date:'short' }}</p>
+        <div>Numbers: <span *ngFor="let num of vote.numbers">{{ num }} </span></div>
+        <div>Bonus: <span *ngFor="let num of vote.bonusNumbers">{{ num }} </span></div>
+      </div>
+    </div>
+  </div>
+</ion-content>

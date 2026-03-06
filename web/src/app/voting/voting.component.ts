@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { LayoutComponent } from '../layout/layout.component';
 import { LotteryService } from '../services/lottery.service';
+import { ToastService } from '../services/toast.service';
 
 @Component({
   selector: 'app-voting',
@@ -11,8 +12,8 @@ import { LotteryService } from '../services/lottery.service';
 })
 export class VotingComponent implements OnInit {
   activeTab: 'voting' | 'leading' | 'history' = 'voting';
-  currentStep: 'select' | 'numbers' | 'bonus' | 'confirm' = 'select';
-  selectedLottery = 'Monday Lotto';
+  currentStep: 1 | 2 | 3 | 4 | 5 = 1;
+  upcomingDraw: any = null;
   selectedNumbers: number[] = [];
   selectedBonus: number[] = [];
   numbers = Array.from({length: 75}, (_, i) => i + 1);
@@ -20,64 +21,61 @@ export class VotingComponent implements OnInit {
   leadingNumbers: any = null;
   countdown = '';
   isVotingTime = false;
-  currentDate = '';
+  votingStarted = false;
+  showSuccessPopup = false;
+  showFullList = false;
   
-  constructor(private lotteryService: LotteryService) {
-    this.updateDrawDate();
-  }
+  constructor(private lotteryService: LotteryService, private toastService: ToastService) {}
   
   ngOnInit() {
+    this.loadUpcomingDraw();
     this.checkVotingTime();
     setInterval(() => this.checkVotingTime(), 1000);
-    if (this.activeTab === 'leading') {
-      this.loadLeadingNumbers();
-      setInterval(() => this.loadLeadingNumbers(), 5000);
-    }
   }
   
-  updateDrawDate() {
-    const now = new Date();
-    const dayOfWeek = now.getDay();
-    const daysUntilMonday = dayOfWeek === 0 ? 1 : dayOfWeek === 1 ? 0 : (8 - dayOfWeek) % 7;
-    const nextMonday = new Date(now);
-    nextMonday.setDate(now.getDate() + daysUntilMonday);
-    this.currentDate = nextMonday.toLocaleDateString('en-US', { day: 'numeric', month: 'long', year: 'numeric' });
+  loadUpcomingDraw() {
+    this.lotteryService.getUpcomingDraws().subscribe({
+      next: (draws: any) => {
+        const drawsArray = Array.isArray(draws) ? draws : draws.draws || [];
+        if (drawsArray.length > 0) {
+          this.upcomingDraw = drawsArray[0];
+        }
+      },
+      error: (err) => console.error('Error loading draws:', err)
+    });
   }
   
   checkVotingTime() {
     const now = new Date();
-    const dayOfWeek = now.getDay();
     const hours = now.getHours();
     const minutes = now.getMinutes();
-    const currentTime = hours * 60 + minutes;
-    const votingStart = 20 * 60;
-    const votingEnd = 20 * 60;
+    const seconds = now.getSeconds();
     
-    // Voting is open from Sunday 20:00 to Monday 19:59 for Monday Lotto
-    const isSunday = dayOfWeek === 0;
-    const isMonday = dayOfWeek === 1;
-    this.isVotingTime = (isSunday && currentTime >= votingStart) || (isMonday && currentTime < votingEnd);
+    // Voting is always open except we need to show countdown
+    this.isVotingTime = true;
     
-    // Calculate next Monday draw time
-    const daysUntilMonday = dayOfWeek === 0 ? 1 : dayOfWeek === 1 ? 0 : (8 - dayOfWeek) % 7;
-    const nextMonday = new Date(now);
-    nextMonday.setDate(now.getDate() + daysUntilMonday);
-    nextMonday.setHours(20, 0, 0, 0);
+    if (!this.upcomingDraw) return;
     
-    const diff = nextMonday.getTime() - now.getTime();
+    // Calculate time until draw closes (draw_date at 19:59)
+    const drawDate = new Date(this.upcomingDraw.draw_date);
+    drawDate.setHours(19, 59, 59, 999);
+    
+    const diff = drawDate.getTime() - now.getTime();
+    
+    if (diff <= 0) {
+      this.countdown = '00:00:00';
+      return;
+    }
+    
     const days = Math.floor(diff / (1000 * 60 * 60 * 24));
     const h = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
     const m = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
     const s = Math.floor((diff % (1000 * 60)) / 1000);
     
-    if (this.isVotingTime) {
-      this.countdown = `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+    if (days > 0) {
+      this.countdown = `${days}d ${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
     } else {
-      if (days > 0) {
-        this.countdown = `${days}d ${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
-      } else {
-        this.countdown = `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
-      }
+      this.countdown = `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
     }
   }
   
@@ -88,14 +86,14 @@ export class VotingComponent implements OnInit {
   }
   
   selectNumber(num: number) {
-    if (this.currentStep === 'numbers') {
+    if (this.currentStep === 1 || this.currentStep === 2) {
       const idx = this.selectedNumbers.indexOf(num);
       if (idx > -1) {
         this.selectedNumbers.splice(idx, 1);
       } else if (this.selectedNumbers.length < 5) {
         this.selectedNumbers.push(num);
       }
-    } else if (this.currentStep === 'bonus') {
+    } else if (this.currentStep === 3 || this.currentStep === 4) {
       const idx = this.selectedBonus.indexOf(num);
       if (idx > -1) {
         this.selectedBonus.splice(idx, 1);
@@ -106,47 +104,109 @@ export class VotingComponent implements OnInit {
   }
   
   isSelected(num: number): boolean {
-    if (this.currentStep === 'numbers') return this.selectedNumbers.includes(num);
-    if (this.currentStep === 'bonus') return this.selectedBonus.includes(num);
+    if (this.currentStep === 1 || this.currentStep === 2) {
+      return this.selectedNumbers.includes(num);
+    }
+    if (this.currentStep === 3 || this.currentStep === 4) {
+      return this.selectedBonus.includes(num);
+    }
     return false;
   }
   
   startVoting() {
-    this.currentStep = 'numbers';
+    this.votingStarted = true;
+    this.currentStep = 1;
     this.selectedNumbers = [];
     this.selectedBonus = [];
   }
   
   nextStep() {
-    if (this.currentStep === 'numbers' && this.selectedNumbers.length === 5) {
-      this.currentStep = 'bonus';
-    } else if (this.currentStep === 'bonus' && this.selectedBonus.length === 2) {
-      this.currentStep = 'confirm';
+    if (this.currentStep === 1 && this.selectedNumbers.length === 5) {
+      this.currentStep = 2;
+    } else if (this.currentStep === 2) {
+      this.currentStep = 3;
+    } else if (this.currentStep === 3 && this.selectedBonus.length === 2) {
+      this.currentStep = 4;
+    } else if (this.currentStep === 4) {
+      this.currentStep = 5;
     }
   }
   
-  editNumbers() {
-    this.currentStep = 'numbers';
+  editSection1() {
+    this.currentStep = 2;
+  }
+  
+  editSection2() {
+    this.currentStep = 4;
   }
   
   submitVote() {
     const token = localStorage.getItem('token');
-    if (!token) {
-      this.currentStep = 'select';
+    if (!token || !this.upcomingDraw) {
+      this.toastService.showError('Please login to vote');
+      this.votingStarted = false;
+      this.currentStep = 1;
       return;
     }
     
-    this.lotteryService.submitVote({
-      lottery: this.selectedLottery,
+    const voteData = {
+      lottery: this.upcomingDraw.lottery_type,
       numbers: this.selectedNumbers,
       bonusNumbers: this.selectedBonus,
-      voteDate: new Date().toISOString().split('T')[0]
-    }).subscribe({
+      voteDate: this.upcomingDraw.draw_date.split(' ')[0]
+    };
+    
+    this.lotteryService.submitVote(voteData).subscribe({
       next: () => {
-        this.currentStep = 'select';
+        this.showSuccessPopup = true;
+        
+        setTimeout(() => {
+          const popup = document.querySelector('.success-popup');
+          if (popup) {
+            popup.classList.add('show');
+          }
+        }, 50);
+        
+        setTimeout(() => {
+          if (this.showSuccessPopup) {
+            this.dismissSuccessPopup();
+          }
+        }, 15000);
       },
-      error: (err) => console.error(err)
+      error: (err) => {
+        this.toastService.showError(err.error?.error || 'Failed to submit vote');
+      }
     });
+  }
+  
+  dismissSuccessPopup() {
+    this.showSuccessPopup = false;
+    this.votingStarted = false;
+    this.currentStep = 1;
+    this.selectedNumbers = [];
+    this.selectedBonus = [];
+  }
+  
+  quickPick() {
+    this.selectedNumbers = [];
+    const available = [...this.numbers];
+    for (let i = 0; i < 5; i++) {
+      const randomIndex = Math.floor(Math.random() * available.length);
+      this.selectedNumbers.push(available[randomIndex]);
+      available.splice(randomIndex, 1);
+    }
+    this.selectedNumbers.sort((a, b) => a - b);
+  }
+  
+  quickPickBonus() {
+    this.selectedBonus = [];
+    const available = [...this.numbers];
+    for (let i = 0; i < 2; i++) {
+      const randomIndex = Math.floor(Math.random() * available.length);
+      this.selectedBonus.push(available[randomIndex]);
+      available.splice(randomIndex, 1);
+    }
+    this.selectedBonus.sort((a, b) => a - b);
   }
   
   loadHistory() {
@@ -154,13 +214,18 @@ export class VotingComponent implements OnInit {
     if (!token) return;
     
     this.lotteryService.getVotingHistory().subscribe({
-      next: (data) => this.votingHistory = data.votes,
+      next: (data) => this.votingHistory = data.votes || [],
       error: (err) => console.error(err)
     });
   }
   
   loadLeadingNumbers() {
-    this.lotteryService.getLeadingNumbers(this.selectedLottery, new Date().toISOString().split('T')[0]).subscribe({
+    if (!this.upcomingDraw) return;
+    
+    this.lotteryService.getLeadingNumbers(
+      this.upcomingDraw.lottery_type, 
+      this.upcomingDraw.draw_date.split(' ')[0]
+    ).subscribe({
       next: (data) => this.leadingNumbers = data,
       error: (err) => console.error(err)
     });

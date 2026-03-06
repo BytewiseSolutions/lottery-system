@@ -1,8 +1,13 @@
-<div class="voting-management">
-  <h2>Voting Management - Allocate Votes</h2>
-  <p class="warning">⚠️ Use this feature to allocate votes to specific combinations to ensure house wins</p>
+<section class="voting-management-section">
+  <div class="voting-management">
+    <div class="card">
+      <div class="card-header">
+        <h3><i class="fas fa-vote-yea"></i> Voting Management - Allocate Votes</h3>
+      </div>
+      <div class="card-body">
+        <p class="warning">⚠️ Use this feature to allocate votes to specific combinations to ensure house wins</p>
 
-  <div class="form-section">
+        <div class="form-section">
     <div class="form-group">
       <label>Lottery</label>
       <select [(ngModel)]="lottery" class="form-control">
@@ -15,6 +20,9 @@
     @if (currentStep === 'numbers') {
       <div>
         <h3>Select 5 Numbers ({{ selectedNumbers.length }}/5)</h3>
+        <button type="button" class="btn-secondary" (click)="quickPick()" style="margin-bottom: 15px;">
+          <i class="fas fa-random"></i> Quick Pick
+        </button>
         <div class="number-grid">
           @for (num of numbers; track num) {
             <button [class.selected]="isSelected(num)" (click)="selectNumber(num)">{{ num }}</button>
@@ -27,6 +35,9 @@
     @if (currentStep === 'bonus') {
       <div>
         <h3>Select 2 Bonus Numbers ({{ selectedBonus.length }}/2)</h3>
+        <button type="button" class="btn-secondary" (click)="quickPickBonus()" style="margin-bottom: 15px;">
+          <i class="fas fa-random"></i> Quick Pick
+        </button>
         <div class="number-grid">
           @for (num of numbers; track num) {
             <button [class.selected]="isSelected(num)" (click)="selectNumber(num)">{{ num }}</button>
@@ -67,17 +78,23 @@
         <button class="btn-secondary" (click)="resetForm()">Cancel</button>
       </div>
     }
-  </div>
-
-  <div class="allocated-votes-section">
-    <h3>Allocated Votes History</h3>
-    @if (adminVotes.length === 0) {
-      <div class="no-data">
-        <p>No votes allocated yet</p>
+        </div>
       </div>
-    }
-    @if (adminVotes.length > 0) {
-      <table class="votes-table">
+    </div>
+
+    <div class="card" style="margin-top: 2rem;">
+      <div class="card-header">
+        <h3>Allocated Votes History</h3>
+      </div>
+      <div class="card-body">
+        @if (adminVotes.length === 0) {
+          <div class="no-data">
+            <p>No votes allocated yet</p>
+          </div>
+        }
+        @if (adminVotes.length > 0) {
+          <div class="table-responsive">
+            <table class="votes-table data-table">
         <thead>
           <tr>
             <th>Lottery</th>
@@ -98,7 +115,20 @@
             </tr>
           }
         </tbody>
-      </table>
-    }
+            </table>
+          </div>
+        }
+      </div>
+    </div>
   </div>
-</div>
+</section>
+
+@if (showSuccessPopup) {
+  <div class="success-popup-overlay">
+    <div class="success-popup">
+      <div class="success-icon">✓</div>
+      <h2>Votes Allocated Successfully!</h2>
+      <p>{{ allocatedVotes }} votes have been allocated to the selected combination</p>
+    </div>
+  </div>
+}

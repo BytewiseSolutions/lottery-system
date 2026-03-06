@@ -1,4 +1,4 @@
-import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef, NgZone } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { LotteryService, Draw } from '../services/lottery.service';
@@ -19,17 +19,17 @@ export class HomeComponent implements OnInit {
   itemsPerPage = 3;
   totalPages = 0;
 
-  constructor(private lotteryService: LotteryService, private cdr: ChangeDetectorRef) {}
+  constructor(private lotteryService: LotteryService, private cdr: ChangeDetectorRef, private ngZone: NgZone) {}
 
   ngOnInit() {
     this.loadData();
-    // Use setTimeout to avoid change detection issues
-    setTimeout(() => {
+    this.ngZone.runOutsideAngular(() => {
       setInterval(() => {
-        this.loadData();
-        this.cdr.detectChanges();
-      }, 30000);
-    }, 0);
+        this.ngZone.run(() => {
+          this.cdr.detectChanges();
+        });
+      }, 1000);
+    });
   }
 
   private loadData() {

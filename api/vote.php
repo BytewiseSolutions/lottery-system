@@ -28,13 +28,6 @@ if ($method === 'POST') {
         exit;
     }
     
-    $currentTime = date('H:i');
-    if ($currentTime < '19:00' || $currentTime >= '20:00') {
-        http_response_code(400);
-        echo json_encode(['error' => 'Voting is only allowed between 19:00 and 19:59']);
-        exit;
-    }
-    
     $database = new Database();
     $db = $database->getConnection();
     

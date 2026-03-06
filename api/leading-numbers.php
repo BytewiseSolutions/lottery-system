@@ -64,10 +64,10 @@ $topBonus = array_slice($bonusCounts, 0, 2, true);
 $response = [
     'section1' => array_map(function($num, $count) {
         return ['number' => $num, 'votes' => $count];
-    }, array_keys($topNumbers), array_values($topNumbers)),
+    }, array_keys($numberCounts), array_values($numberCounts)),
     'section2' => array_map(function($num, $count) {
         return ['number' => $num, 'votes' => $count];
-    }, array_keys($topBonus), array_values($topBonus))
+    }, array_keys($bonusCounts), array_values($bonusCounts))
 ];
 
 echo json_encode($response);

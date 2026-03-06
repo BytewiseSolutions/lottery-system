@@ -18,6 +18,7 @@ export class VotingManagementComponent implements OnInit {
   numbers = Array.from({length: 75}, (_, i) => i + 1);
   adminVotes: any[] = [];
   currentStep: 'numbers' | 'bonus' | 'confirm' = 'numbers';
+  showSuccessPopup = false;
   
   constructor(private http: HttpClient) {}
   
@@ -75,9 +76,12 @@ export class VotingManagementComponent implements OnInit {
       headers: { 'Authorization': `Bearer ${token}` }
     }).subscribe({
       next: () => {
-        alert('Votes allocated successfully!');
-        this.resetForm();
-        this.loadAdminVotes();
+        this.showSuccessPopup = true;
+        setTimeout(() => {
+          this.showSuccessPopup = false;
+          this.resetForm();
+          this.loadAdminVotes();
+        }, 3000);
       },
       error: (err) => alert(err.error?.error || 'Failed to allocate votes')
     });
@@ -100,5 +104,27 @@ export class VotingManagementComponent implements OnInit {
       next: (data) => this.adminVotes = data.adminVotes,
       error: (err) => console.error(err)
     });
+  }
+  
+  quickPick() {
+    this.selectedNumbers = [];
+    const available = [...this.numbers];
+    for (let i = 0; i < 5; i++) {
+      const randomIndex = Math.floor(Math.random() * available.length);
+      this.selectedNumbers.push(available[randomIndex]);
+      available.splice(randomIndex, 1);
+    }
+    this.selectedNumbers.sort((a, b) => a - b);
+  }
+  
+  quickPickBonus() {
+    this.selectedBonus = [];
+    const available = [...this.numbers];
+    for (let i = 0; i < 2; i++) {
+      const randomIndex = Math.floor(Math.random() * available.length);
+      this.selectedBonus.push(available[randomIndex]);
+      available.splice(randomIndex, 1);
+    }
+    this.selectedBonus.sort((a, b) => a - b);
   }
 }

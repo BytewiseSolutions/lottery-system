@@ -1,5 +1,38 @@
+.voting-management-section {
+  padding: 0;
+}
+
 .voting-management {
-  padding: 20px;
+  padding: 0;
+}
+
+.card {
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  overflow: hidden;
+}
+
+.card-header {
+  padding: 20px 30px;
+  border-bottom: 1px solid #e5e7eb;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.card-header h3 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 600;
+  color: #1f2937;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.card-body {
+  padding: 30px;
 }
 
 .warning {
@@ -12,11 +45,11 @@
 }
 
 .form-section {
-  background: white;
-  padding: 30px;
-  border-radius: 8px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-  margin-bottom: 30px;
+  background: transparent;
+  padding: 0;
+  border-radius: 0;
+  box-shadow: none;
+  margin-bottom: 0;
 }
 
 .form-group {
@@ -137,11 +170,8 @@
   font-weight: bold;
 }
 
-.allocated-votes-section {
-  background: white;
-  padding: 30px;
-  border-radius: 8px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+.table-responsive {
+  overflow-x: auto;
 }
 
 .votes-table {
@@ -176,5 +206,99 @@
 @media (max-width: 768px) {
   .number-grid {
     grid-template-columns: repeat(5, 1fr);
+    gap: 5px;
+  }
+  
+  .number-grid button {
+    padding: 10px;
+    font-size: 14px;
+  }
+  
+  .selected-numbers {
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  
+  .selected-numbers span {
+    padding: 10px 15px;
+    font-size: 16px;
+  }
+  
+  .btn-primary, .btn-success, .btn-secondary {
+    padding: 10px 20px;
+    font-size: 14px;
+    width: 100%;
+    margin: 5px 0;
+  }
+  
+  .votes-table {
+    font-size: 14px;
+  }
+  
+  .votes-table th,
+  .votes-table td {
+    padding: 8px;
+  }
+}
+
+.success-popup-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10000;
+  animation: fadeIn 0.3s;
+}
+
+.success-popup {
+  background: white;
+  padding: 40px;
+  border-radius: 12px;
+  text-align: center;
+  max-width: 400px;
+  animation: slideUp 0.3s;
+}
+
+.success-icon {
+  width: 80px;
+  height: 80px;
+  background: #28a745;
+  color: white;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 48px;
+  margin: 0 auto 20px;
+}
+
+.success-popup h2 {
+  color: #333;
+  margin-bottom: 10px;
+}
+
+.success-popup p {
+  color: #666;
+  margin-bottom: 0;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(50px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
   }
 }

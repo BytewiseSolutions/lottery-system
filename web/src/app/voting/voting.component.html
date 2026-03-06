@@ -8,30 +8,23 @@
 
   @if (activeTab === 'voting') {
     <div class="voting-space">
-      @if (currentStep === 'select') {
-        <div>
-          <h2>{{ selectedLottery }}</h2>
-          <p>For {{ currentDate }}</p>
-          
-          @if (!isVotingTime) {
-            <div class="voting-closed">
-              <p>Voting is closed. Playing will resume at 20:00</p>
-              <p class="countdown">{{ countdown }}</p>
-            </div>
-          }
-          
-          @if (isVotingTime) {
-            <div>
-              <button class="vote-btn" (click)="startVoting()">Vote Now</button>
-              <p class="countdown">Voting Closes: {{ countdown }}</p>
-            </div>
-          }
+      @if (upcomingDraw) {
+        <div class="lottery-info">
+          <h2>{{ upcomingDraw.lottery_type }}</h2>
+          <p>For {{ upcomingDraw.draw_date | date:'EEEE, MMMM d, y' }}</p>
         </div>
       }
 
-      @if (currentStep === 'numbers') {
+      @if (currentStep === 1 && !votingStarted) {
         <div>
-          <h3>Vote by picking 5 Numbers ({{ selectedNumbers.length }}/5)</h3>
+          <button class="vote-btn" (click)="startVoting()">Vote Now</button>
+          <p class="countdown">Voting Closes: {{ countdown }}</p>
+        </div>
+      }
+      @else if (currentStep === 1) {
+        <div>
+          <h3>Vote by picking 5 Numbers on this section</h3>
+          <button class="quick-pick-btn" (click)="quickPick()">Quick Pick</button>
           <div class="number-grid">
             @for (num of numbers; track num) {
               <button [class.selected]="isSelected(num)" (click)="selectNumber(num)">{{ num }}</button>
@@ -41,20 +34,60 @@
         </div>
       }
 
-      @if (currentStep === 'bonus') {
+      @if (currentStep === 2) {
         <div>
-          <h3>Pick 2 Bonus Numbers ({{ selectedBonus.length }}/2)</h3>
+          <h3>5 Numbers you are about to pick from Section 1</h3>
+          <div class="selected-numbers">
+            @for (num of selectedNumbers; track num) {
+              <span>{{ num }}</span>
+            }
+          </div>
+          <div class="number-grid">
+            @for (num of numbers; track num) {
+              <button [class.selected]="isSelected(num)" (click)="selectNumber(num)">{{ num }}</button>
+            }
+          </div>
+          <div class="button-group">
+            <button class="next-btn" (click)="nextStep()">Next</button>
+            <button class="edit-btn" (click)="currentStep = 1">Edit</button>
+          </div>
+        </div>
+      }
+
+      @if (currentStep === 3) {
+        <div>
+          <h3>Section 2 - Pick 2 Bonus Numbers</h3>
+          <button class="quick-pick-btn" (click)="quickPickBonus()">Quick Pick</button>
           <div class="number-grid">
             @for (num of numbers; track num) {
               <button [class.selected]="isSelected(num)" (click)="selectNumber(num)">{{ num }}</button>
             }
           </div>
           <button class="next-btn" [disabled]="selectedBonus.length !== 2" (click)="nextStep()">Next</button>
-          <button class="edit-btn" (click)="editNumbers()">Edit</button>
         </div>
       }
 
-      @if (currentStep === 'confirm') {
+      @if (currentStep === 4) {
+        <div>
+          <h3>2 Bonus numbers you are about to pick</h3>
+          <div class="selected-numbers">
+            @for (num of selectedBonus; track num) {
+              <span>{{ num }}</span>
+            }
+          </div>
+          <div class="number-grid">
+            @for (num of numbers; track num) {
+              <button [class.selected]="isSelected(num)" (click)="selectNumber(num)">{{ num }}</button>
+            }
+          </div>
+          <div class="button-group">
+            <button class="next-btn" (click)="nextStep()">Next</button>
+            <button class="edit-btn" (click)="currentStep = 3">Edit</button>
+          </div>
+        </div>
+      }
+
+      @if (currentStep === 5) {
         <div>
           <h3>How you are about to vote</h3>
           <div class="confirmation">
@@ -75,8 +108,11 @@
               </div>
             </div>
           </div>
-          <button class="submit-btn" (click)="submitVote()">Submit</button>
-          <button class="edit-btn" (click)="editNumbers()">Edit</button>
+          <div class="button-group">
+            <button class="submit-btn" (click)="submitVote()">Submit</button>
+            <button class="edit-btn" (click)="editSection1()">Edit Section 1</button>
+            <button class="edit-btn" (click)="editSection2()">Edit Section 2</button>
+          </div>
         </div>
       }
     </div>
@@ -86,11 +122,30 @@
     <div class="leading-numbers">
       <h2>Leading Numbers Now</h2>
       @if (leadingNumbers) {
+        <div class="top-combination">
+          <div class="top-section">
+            <span class="section-label">Section 1 (Top 5)</span>
+            <div class="top-numbers">
+              @for (item of leadingNumbers.section1?.slice(0, 5); track item.number) {
+                <span class="top-number">{{ item.number }}</span>
+              }
+            </div>
+          </div>
+          <div class="top-section">
+            <span class="section-label">Section 2 (Top 2)</span>
+            <div class="top-numbers">
+              @for (item of leadingNumbers.section2?.slice(0, 2); track item.number) {
+                <span class="top-number">{{ item.number }}</span>
+              }
+            </div>
+          </div>
+        </div>
+
         <div class="leading-display">
           <div class="section">
             <h3>Section 1</h3>
             <div class="number-votes">
-              @for (item of leadingNumbers.section1; track item.number) {
+              @for (item of leadingNumbers.section1?.slice(0, showFullList ? leadingNumbers.section1.length : 8); track item.number) {
                 <div class="vote-item">
                   <span class="number">{{ item.number }}</span>
                   <span class="votes">{{ item.votes }} votes</span>
@@ -101,7 +156,7 @@
           <div class="section">
             <h3>Section 2</h3>
             <div class="number-votes">
-              @for (item of leadingNumbers.section2; track item.number) {
+              @for (item of leadingNumbers.section2?.slice(0, showFullList ? leadingNumbers.section2.length : 8); track item.number) {
                 <div class="vote-item">
                   <span class="number">{{ item.number }}</span>
                   <span class="votes">{{ item.votes }} votes</span>
@@ -110,6 +165,9 @@
             </div>
           </div>
         </div>
+        <button class="full-list-btn" (click)="showFullList = !showFullList">
+          {{ showFullList ? 'Show Less' : 'Full List' }}
+        </button>
       }
     </div>
   }
@@ -125,16 +183,33 @@
       @for (vote of votingHistory; track vote.id) {
         <div class="history-item">
           <div class="history-header">
-            <span class="lottery">{{ vote.lottery }}</span>
-            <span class="date">{{ vote.voteDate }}</span>
+            <strong>{{ vote.lottery }} for {{ vote.voteDate | date:'EEEE, MMMM d, y' }}</strong>
+            <span class="entry-time">Voted at: {{ vote.createdAt | date:'short' }}</span>
           </div>
           <div class="history-numbers">
-            <div>Numbers: {{ vote.numbers.join(', ') }}</div>
-            <div>Bonus: {{ vote.bonusNumbers.join(', ') }}</div>
+            <div class="numbers">
+              @for (num of vote.numbers; track num) {
+                <span class="number">{{ num }}</span>
+              }
+              @for (bonus of vote.bonusNumbers; track bonus) {
+                <span class="bonus-number">{{ bonus }}</span>
+              }
+            </div>
           </div>
         </div>
       }
     </div>
   }
 </div>
+
+@if (showSuccessPopup) {
+  <div class="success-popup-overlay" (click)="dismissSuccessPopup()">
+    <div class="success-popup" (click)="$event.stopPropagation()">
+      <div class="success-icon">✓</div>
+      <h2>Vote Submitted Successfully!</h2>
+      <p>Your vote has been recorded for {{ upcomingDraw?.lottery_type }}</p>
+      <button class="close-btn" (click)="dismissSuccessPopup()">Close</button>
+    </div>
+  </div>
+}
 </app-layout>
