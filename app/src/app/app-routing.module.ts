@@ -58,6 +58,14 @@ const routes: Routes = [
   {
     path: 'change-password',
     loadChildren: () => import('./change-password/change-password.module').then( m => m.ChangePasswordPageModule)
+  },
+  {
+    path: 'voting',
+    loadChildren: () => import('./voting/voting.module').then( m => m.VotingPageModule)
+  },
+  {
+    path: 'voting',
+    loadChildren: () => import('./voting/voting.module').then( m => m.VotingPageModule)
   }
 ];
 

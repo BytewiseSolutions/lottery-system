@@ -10,6 +10,7 @@ import { ManageResultsComponent } from './components/manage-results/manage-resul
 import { UserManagementComponent } from './components/user-management/user-management.component';
 import { ActivityLogsComponent } from './components/activity-logs/activity-logs.component';
 import { SettingsComponent } from './components/settings/settings.component';
+import { VotingManagementComponent } from './components/voting-management/voting-management.component';
 import { LotteryService } from '../services/lottery.service';
 import { environment } from '../../environments/environment';
 
@@ -26,6 +27,7 @@ import { environment } from '../../environments/environment';
     UserManagementComponent,
     ActivityLogsComponent,
     SettingsComponent,
+    VotingManagementComponent,
     HttpClientModule
   ],
   templateUrl: './admin.component.html',
@@ -354,6 +356,7 @@ export class AdminComponent implements OnInit, OnDestroy {
       'notifications': 'Notifications',
       'logs': 'Activity Logs',
       'contact-messages': 'Contact Messages',
+      'voting': 'Voting Management',
       'settings': 'Settings'
     };
     return titles[this.activeSection] || 'Dashboard';

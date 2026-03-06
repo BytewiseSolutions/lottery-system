@@ -192,4 +192,37 @@ export class LotteryService {
       headers: { 'Authorization': `Bearer ${token}` }
     });
   }
+
+  // Voting methods
+  submitVote(voteData: any): Observable<any> {
+    const token = localStorage.getItem('token');
+    return this.http.post<any>(`${this.apiUrl}/vote`, voteData, {
+      headers: { 'Authorization': `Bearer ${token}` }
+    });
+  }
+
+  getLeadingNumbers(lottery: string, voteDate: string): Observable<any> {
+    return this.http.get<any>(`${this.apiUrl}/leading-numbers?lottery=${encodeURIComponent(lottery)}&voteDate=${voteDate}`);
+  }
+
+  getVotingHistory(): Observable<any> {
+    const token = localStorage.getItem('token');
+    return this.http.get<any>(`${this.apiUrl}/voting-history`, {
+      headers: { 'Authorization': `Bearer ${token}` }
+    });
+  }
+
+  allocateAdminVotes(voteData: any): Observable<any> {
+    const token = localStorage.getItem('token');
+    return this.http.post<any>(`${this.apiUrl}/admin-vote`, voteData, {
+      headers: { 'Authorization': `Bearer ${token}` }
+    });
+  }
+
+  getAdminVotes(): Observable<any> {
+    const token = localStorage.getItem('token');
+    return this.http.get<any>(`${this.apiUrl}/admin-vote`, {
+      headers: { 'Authorization': `Bearer ${token}` }
+    });
+  }
 }

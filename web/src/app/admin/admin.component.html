@@ -838,6 +838,11 @@
           </app-settings>
         }
 
+        <!-- Voting Management Section -->
+        @if (activeSection === 'voting') {
+          <app-voting-management></app-voting-management>
+        }
+
         <!-- Edit Result Modal -->
         @if (editingResult) {
           <div class="modal-overlay" (click)="cancelEditResult()">

@@ -1,0 +1,134 @@
+<section class="voting-management-section">
+  <div class="voting-management">
+    <div class="card">
+      <div class="card-header">
+        <h3><i class="fas fa-vote-yea"></i> Voting Management - Allocate Votes</h3>
+      </div>
+      <div class="card-body">
+        <p class="warning">⚠️ Use this feature to allocate votes to specific combinations to ensure house wins</p>
+
+        <div class="form-section">
+    <div class="form-group">
+      <label>Lottery</label>
+      <select [(ngModel)]="lottery" class="form-control">
+        <option>Monday Lotto</option>
+        <option>Wednesday Lotto</option>
+        <option>Friday Lotto</option>
+      </select>
+    </div>
+
+    @if (currentStep === 'numbers') {
+      <div>
+        <h3>Select 5 Numbers ({{ selectedNumbers.length }}/5)</h3>
+        <button type="button" class="btn-secondary" (click)="quickPick()" style="margin-bottom: 15px;">
+          <i class="fas fa-random"></i> Quick Pick
+        </button>
+        <div class="number-grid">
+          @for (num of numbers; track num) {
+            <button [class.selected]="isSelected(num)" (click)="selectNumber(num)">{{ num }}</button>
+          }
+        </div>
+        <button class="btn-primary" [disabled]="selectedNumbers.length !== 5" (click)="nextStep()">Next</button>
+      </div>
+    }
+
+    @if (currentStep === 'bonus') {
+      <div>
+        <h3>Select 2 Bonus Numbers ({{ selectedBonus.length }}/2)</h3>
+        <button type="button" class="btn-secondary" (click)="quickPickBonus()" style="margin-bottom: 15px;">
+          <i class="fas fa-random"></i> Quick Pick
+        </button>
+        <div class="number-grid">
+          @for (num of numbers; track num) {
+            <button [class.selected]="isSelected(num)" (click)="selectNumber(num)">{{ num }}</button>
+          }
+        </div>
+        <button class="btn-primary" [disabled]="selectedBonus.length !== 2" (click)="nextStep()">Next</button>
+        <button class="btn-secondary" (click)="editNumbers()">Edit Numbers</button>
+      </div>
+    }
+
+    @if (currentStep === 'confirm') {
+      <div>
+        <h3>Confirm Vote Allocation</h3>
+        <div class="confirmation">
+          <div class="section">
+            <h4>Section 1 (Main Numbers)</h4>
+            <div class="selected-numbers">
+              @for (num of selectedNumbers; track num) {
+                <span>{{ num }}</span>
+              }
+            </div>
+          </div>
+          <div class="section">
+            <h4>Section 2 (Bonus Numbers)</h4>
+            <div class="selected-numbers">
+              @for (num of selectedBonus; track num) {
+                <span>{{ num }}</span>
+              }
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Number of Votes to Allocate</label>
+            <input type="number" [(ngModel)]="allocatedVotes" class="form-control" min="1">
+          </div>
+        </div>
+        <button class="btn-success" (click)="allocateVotes()">Allocate Votes</button>
+        <button class="btn-secondary" (click)="editNumbers()">Edit</button>
+        <button class="btn-secondary" (click)="resetForm()">Cancel</button>
+      </div>
+    }
+        </div>
+      </div>
+    </div>
+
+    <div class="card" style="margin-top: 2rem;">
+      <div class="card-header">
+        <h3>Allocated Votes History</h3>
+      </div>
+      <div class="card-body">
+        @if (adminVotes.length === 0) {
+          <div class="no-data">
+            <p>No votes allocated yet</p>
+          </div>
+        }
+        @if (adminVotes.length > 0) {
+          <div class="table-responsive">
+            <table class="votes-table data-table">
+        <thead>
+          <tr>
+            <th>Lottery</th>
+            <th>Numbers</th>
+            <th>Bonus</th>
+            <th>Allocated Votes</th>
+            <th>Date</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (vote of adminVotes; track vote.id) {
+            <tr>
+              <td>{{ vote.lottery }}</td>
+              <td>{{ vote.numbers.join(', ') }}</td>
+              <td>{{ vote.bonusNumbers.join(', ') }}</td>
+              <td><strong>{{ vote.allocatedVotes }}</strong></td>
+              <td>{{ vote.voteDate }}</td>
+            </tr>
+          }
+        </tbody>
+            </table>
+          </div>
+        }
+      </div>
+    </div>
+  </div>
+</section>
+
+@if (showSuccessPopup) {
+  <div class="success-popup-overlay">
+    <div class="success-popup">
+      <div class="success-icon">✓</div>
+      <h2>Votes Allocated Successfully!</h2>
+      <p>{{ allocatedVotes }} votes have been allocated to the selected combination</p>
+    </div>
+  </div>
+}
