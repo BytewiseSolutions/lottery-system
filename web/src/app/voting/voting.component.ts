@@ -31,6 +31,8 @@ export class VotingComponent implements OnInit {
     this.loadUpcomingDraw();
     this.checkVotingTime();
     setInterval(() => this.checkVotingTime(), 1000);
+    this.activeTab = 'voting';
+    setTimeout(() => window.scrollTo({ top: 0, behavior: 'smooth' }), 100);
   }
   
   loadUpcomingDraw() {
@@ -83,6 +85,7 @@ export class VotingComponent implements OnInit {
     this.activeTab = tab;
     if (tab === 'history') this.loadHistory();
     if (tab === 'leading') this.loadLeadingNumbers();
+    setTimeout(() => window.scrollTo({ top: 0, behavior: 'smooth' }), 100);
   }
   
   selectNumber(num: number) {
@@ -118,6 +121,14 @@ export class VotingComponent implements OnInit {
     this.currentStep = 1;
     this.selectedNumbers = [];
     this.selectedBonus = [];
+    setTimeout(() => {
+      const element = document.querySelector('.lottery-info');
+      if (element) {
+        const yOffset = -150;
+        const y = element.getBoundingClientRect().top + window.pageYOffset + yOffset;
+        window.scrollTo({ top: y, behavior: 'smooth' });
+      }
+    }, 100);
   }
   
   nextStep() {
@@ -130,14 +141,38 @@ export class VotingComponent implements OnInit {
     } else if (this.currentStep === 4) {
       this.currentStep = 5;
     }
+    setTimeout(() => {
+      const element = document.querySelector('.lottery-info');
+      if (element) {
+        const yOffset = -150;
+        const y = element.getBoundingClientRect().top + window.pageYOffset + yOffset;
+        window.scrollTo({ top: y, behavior: 'smooth' });
+      }
+    }, 100);
   }
   
   editSection1() {
     this.currentStep = 2;
+    setTimeout(() => {
+      const element = document.querySelector('.lottery-info');
+      if (element) {
+        const yOffset = -150;
+        const y = element.getBoundingClientRect().top + window.pageYOffset + yOffset;
+        window.scrollTo({ top: y, behavior: 'smooth' });
+      }
+    }, 100);
   }
   
   editSection2() {
     this.currentStep = 4;
+    setTimeout(() => {
+      const element = document.querySelector('.lottery-info');
+      if (element) {
+        const yOffset = -150;
+        const y = element.getBoundingClientRect().top + window.pageYOffset + yOffset;
+        window.scrollTo({ top: y, behavior: 'smooth' });
+      }
+    }, 100);
   }
   
   submitVote() {

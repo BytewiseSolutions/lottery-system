@@ -43,8 +43,49 @@
   margin-left: 10px;
 }
 
-/* Mobile menu styles from original LotteryApp */
 @media (max-width: 991px) {
+  .header-section {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.2);
+    background-color: rgb(108, 0, 146);
+    border: none;
+    padding: 10px 0px;
+  }
+  
+  .header-wrapper {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  
+  .mobile-logo {
+    display: block;
+    order: 1;
+  }
+  
+  .mobile-brand {
+    display: none;
+    order: 1;
+    color: white;
+    font-size: 14px;
+    font-weight: 600;
+  }
+  
+  .header-section.scrolled .mobile-brand {
+    display: flex;
+  }
+  
+  .mobile-brand .brand-text {
+    font-size: 16px;
+    font-weight: bold;
+  }
+  
+  .header-bar {
+    order: 2;
+  }
+  
   .menu {
     display: none;
     position: fixed;
@@ -88,13 +129,6 @@
   .menu li a:hover,
   .menu li a.active {
     color: #27ff5a;
-  }
-  
-  .header-section {
-    box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.2);
-    background-color: rgb(108, 0, 146);
-    border: none;
-    padding: 10px 0px;
   }
 }
 

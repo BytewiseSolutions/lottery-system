@@ -8,21 +8,26 @@
 
   @if (activeTab === 'voting') {
     <div class="voting-space">
-      @if (upcomingDraw) {
-        <div class="lottery-info">
-          <h2>{{ upcomingDraw.lottery_type }}</h2>
-          <p>For {{ upcomingDraw.draw_date | date:'EEEE, MMMM d, y' }}</p>
-        </div>
-      }
-
       @if (currentStep === 1 && !votingStarted) {
         <div>
+          @if (upcomingDraw) {
+            <div class="lottery-info">
+              <h2>{{ upcomingDraw.lottery_type }}</h2>
+              <p>For {{ upcomingDraw.draw_date | date:'EEEE, MMMM d, y' }}</p>
+            </div>
+          }
           <button class="vote-btn" (click)="startVoting()">Vote Now</button>
           <p class="countdown">Voting Closes: {{ countdown }}</p>
         </div>
       }
       @else if (currentStep === 1) {
         <div>
+          @if (upcomingDraw) {
+            <div class="lottery-info">
+              <h2>{{ upcomingDraw.lottery_type }}</h2>
+              <p>For {{ upcomingDraw.draw_date | date:'EEEE, MMMM d, y' }}</p>
+            </div>
+          }
           <h3>Vote by picking 5 Numbers on this section</h3>
           <button class="quick-pick-btn" (click)="quickPick()">Quick Pick</button>
           <div class="number-grid">
@@ -36,6 +41,12 @@
 
       @if (currentStep === 2) {
         <div>
+          @if (upcomingDraw) {
+            <div class="lottery-info">
+              <h2>{{ upcomingDraw.lottery_type }}</h2>
+              <p>For {{ upcomingDraw.draw_date | date:'EEEE, MMMM d, y' }}</p>
+            </div>
+          }
           <h3>5 Numbers you are about to pick from Section 1</h3>
           <div class="selected-numbers">
             @for (num of selectedNumbers; track num) {
@@ -56,6 +67,12 @@
 
       @if (currentStep === 3) {
         <div>
+          @if (upcomingDraw) {
+            <div class="lottery-info">
+              <h2>{{ upcomingDraw.lottery_type }}</h2>
+              <p>For {{ upcomingDraw.draw_date | date:'EEEE, MMMM d, y' }}</p>
+            </div>
+          }
           <h3>Section 2 - Pick 2 Bonus Numbers</h3>
           <button class="quick-pick-btn" (click)="quickPickBonus()">Quick Pick</button>
           <div class="number-grid">
@@ -69,6 +86,12 @@
 
       @if (currentStep === 4) {
         <div>
+          @if (upcomingDraw) {
+            <div class="lottery-info">
+              <h2>{{ upcomingDraw.lottery_type }}</h2>
+              <p>For {{ upcomingDraw.draw_date | date:'EEEE, MMMM d, y' }}</p>
+            </div>
+          }
           <h3>2 Bonus numbers you are about to pick</h3>
           <div class="selected-numbers">
             @for (num of selectedBonus; track num) {
@@ -89,6 +112,12 @@
 
       @if (currentStep === 5) {
         <div>
+          @if (upcomingDraw) {
+            <div class="lottery-info">
+              <h2>{{ upcomingDraw.lottery_type }}</h2>
+              <p>For {{ upcomingDraw.draw_date | date:'EEEE, MMMM d, y' }}</p>
+            </div>
+          }
           <h3>How you are about to vote</h3>
           <div class="confirmation">
             <div class="section">
