@@ -34,9 +34,12 @@
       </div>
     </div>
   </div>
-  <div class="header-section">
+  <div class="header-section" [class.scrolled]="isScrolled">
     <div class="container">
       <div class="header-wrapper">
+        <div class="mobile-brand d-lg-none">
+          <span class="brand-text">Total Free Lotto</span>
+        </div>
         <ul class="menu" [class.mobile-open]="mobileMenuOpen">
           <li><a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}" (click)="mobileMenuOpen = false">Home</a></li>
           <li><a routerLink="/lotteries" routerLinkActive="active" (click)="mobileMenuOpen = false">Lotteries</a></li>

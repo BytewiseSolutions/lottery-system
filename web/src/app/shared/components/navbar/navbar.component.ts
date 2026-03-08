@@ -24,6 +24,7 @@ export class NavbarComponent implements OnInit {
   passwordRecoveryMode = false;
   mobileMenuOpen = false;
   isLoading = true;
+  isScrolled = false;
 
   isPlayLotteryPage = false;
 
@@ -61,6 +62,7 @@ export class NavbarComponent implements OnInit {
   private initStickyHeader() {
     window.addEventListener('scroll', () => {
       const header = document.querySelector('.header-section');
+      this.isScrolled = window.scrollY > 50;
       if (window.scrollY > 100) {
         header?.classList.add('header-active');
       } else {
