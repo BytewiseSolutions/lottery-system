@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { LayoutComponent } from '../layout/layout.component';
 import { SuccessPopupService } from '../services/success-popup.service';
 import { environment } from '../../environments/environment';
+import { COUNTRIES } from '../shared/data/countries';
 
 @Component({
   selector: 'app-profile',
@@ -15,7 +16,8 @@ export class ProfileComponent implements OnInit {
     firstName: '',
     lastName: '',
     email: '',
-    phone: ''
+    phone: '',
+    country: ''
   };
 
   originalProfile = { ...this.profile };
@@ -28,6 +30,9 @@ export class ProfileComponent implements OnInit {
 
   isEditing = false;
   isSaving = false;
+  countries = COUNTRIES;
+  filteredCountries = COUNTRIES.slice(0, 5);
+  showCountryDropdown = false;
 
   constructor(private successPopupService: SuccessPopupService) {}
 
@@ -45,7 +50,8 @@ export class ProfileComponent implements OnInit {
         firstName: names[0] || '',
         lastName: names.slice(1).join(' ') || '',
         email: userData.email || '',
-        phone: userData.phone || ''
+        phone: userData.phone || '',
+        country: userData.country || ''
       };
       this.originalProfile = { ...this.profile };
     }
@@ -93,6 +99,24 @@ export class ProfileComponent implements OnInit {
   cancelEdit() {
     this.profile = { ...this.originalProfile };
     this.isEditing = false;
+    this.showCountryDropdown = false;
+  }
+
+  filterCountries(event: any) {
+    const searchTerm = event.target.value.toLowerCase();
+    if (!searchTerm) {
+      this.filteredCountries = COUNTRIES.slice(0, 5);
+    } else {
+      this.filteredCountries = COUNTRIES.filter(c => 
+        c.toLowerCase().startsWith(searchTerm)
+      );
+    }
+    this.showCountryDropdown = true;
+  }
+
+  selectCountry(country: string) {
+    this.profile.country = country;
+    this.showCountryDropdown = false;
   }
 
   async updateProfile() {
@@ -111,7 +135,8 @@ export class ProfileComponent implements OnInit {
           userId: user.id,
           fullName: `${this.profile.firstName} ${this.profile.lastName}`.trim(),
           email: this.profile.email,
-          phone: this.profile.phone
+          phone: this.profile.phone,
+          country: this.profile.country
         })
       });
 
@@ -126,6 +151,7 @@ export class ProfileComponent implements OnInit {
         user.fullName = `${this.profile.firstName} ${this.profile.lastName}`.trim();
         user.email = this.profile.email;
         user.phone = this.profile.phone;
+        user.country = this.profile.country;
         localStorage.setItem('user', JSON.stringify(user));
       } else {
         alert(result.error || 'Failed to update profile');

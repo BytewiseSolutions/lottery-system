@@ -1,134 +1,637 @@
-<section class="voting-management-section">
-  <div class="voting-management">
-    <div class="card">
-      <div class="card-header">
-        <h3><i class="fas fa-vote-yea"></i> Voting Management - Allocate Votes</h3>
-      </div>
-      <div class="card-body">
-        <p class="warning">⚠️ Use this feature to allocate votes to specific combinations to ensure house wins</p>
-
-        <div class="form-section">
-    <div class="form-group">
-      <label>Lottery</label>
-      <select [(ngModel)]="lottery" class="form-control">
-        <option>Monday Lotto</option>
-        <option>Wednesday Lotto</option>
-        <option>Friday Lotto</option>
-      </select>
-    </div>
-
-    @if (currentStep === 'numbers') {
-      <div>
-        <h3>Select 5 Numbers ({{ selectedNumbers.length }}/5)</h3>
-        <button type="button" class="btn-secondary" (click)="quickPick()" style="margin-bottom: 15px;">
-          <i class="fas fa-random"></i> Quick Pick
-        </button>
-        <div class="number-grid">
-          @for (num of numbers; track num) {
-            <button [class.selected]="isSelected(num)" (click)="selectNumber(num)">{{ num }}</button>
-          }
+<!-- Main Voting Management View -->
+<div *ngIf="currentView === 'management'">
+  <section class="voting-management-section">
+    <div class="voting-management">
+      <div class="card">
+        <div class="card-header">
+          <h3><i class="fas fa-vote-yea"></i> Voting Management - Allocate Votes</h3>
         </div>
-        <button class="btn-primary" [disabled]="selectedNumbers.length !== 5" (click)="nextStep()">Next</button>
-      </div>
-    }
+        <div class="card-body">
+          <p class="warning">⚠️ Click on numbers to allocate votes individually</p>
 
-    @if (currentStep === 'bonus') {
-      <div>
-        <h3>Select 2 Bonus Numbers ({{ selectedBonus.length }}/2)</h3>
-        <button type="button" class="btn-secondary" (click)="quickPickBonus()" style="margin-bottom: 15px;">
-          <i class="fas fa-random"></i> Quick Pick
-        </button>
-        <div class="number-grid">
-          @for (num of numbers; track num) {
-            <button [class.selected]="isSelected(num)" (click)="selectNumber(num)">{{ num }}</button>
-          }
+          <div class="form-section">
+            <div class="form-group">
+              <label>Lottery</label>
+              <select [(ngModel)]="lottery" class="form-control">
+                <option>Monday Lotto</option>
+                <option>Wednesday Lotto</option>
+                <option>Friday Lotto</option>
+              </select>
+            </div>
+            
+            <div class="form-group">
+              <label>Draw Date</label>
+              <input 
+                type="date" 
+                [(ngModel)]="drawDate" 
+                class="form-control" 
+                required>
+              <p class="info">Select any date for this lottery draw (past, present, or future)</p>
+              <div class="warning" *ngIf="drawDate && drawDate < getTodayDate()">
+                ⚠️ You are allocating votes for a past date ({{ drawDate }}). This is typically used for historical data entry or corrections.
+              </div>
+            </div>
+
+            @if (currentStep === 'section1') {
+              <div>
+                <h3>Section 1: Allocate Votes for Main Numbers ({{ Object.keys(mainNumberVotes).length }}/5)</h3>
+                <p class="info">Click on numbers to allocate votes. You need to allocate votes to exactly 5 numbers.</p>
+                <div class="vote-summary">
+                  <p><strong>Total Allocated:</strong> {{ getTotalMainVotes() }} votes</p>
+                  <p><strong>Numbers with votes:</strong> {{ Object.keys(mainNumberVotes).length }}</p>
+                </div>
+                <div class="number-grid">
+                  @for (num of numbers; track num) {
+                    <button 
+                      [class.selected]="mainNumberVotes[num] > 0" 
+                      (click)="selectMainNumber(num)"
+                      class="number-btn">
+                      {{ num }}
+                      @if (mainNumberVotes[num] > 0) {
+                        <span class="vote-count">{{ mainNumberVotes[num] }}</span>
+                      }
+                    </button>
+                  }
+                </div>
+                
+                @if (Object.keys(mainNumberVotes).length > 0) {
+                  <div class="allocated-summary">
+                    <h4>Section 1 Allocations:</h4>
+                    <div class="allocation-list">
+                      @for (entry of Object.entries(mainNumberVotes); track entry[0]) {
+                        <div class="allocation-item">
+                          <span class="number main-number">{{ entry[0] }}</span>
+                          <span class="votes">{{ entry[1] }} votes</span>
+                          <button class="remove-btn" (click)="removeMainVotes(+(entry[0]))">×</button>
+                        </div>
+                      }
+                    </div>
+                  </div>
+                }
+                
+                <button 
+                  class="btn-primary" 
+                  [disabled]="Object.keys(mainNumberVotes).length !== 5" 
+                  (click)="nextToSection2()"
+                  style="margin-top: 20px;">
+                  Next: Section 2 (Bonus Numbers)
+                </button>
+              </div>
+            }
+
+            @if (currentStep === 'section2') {
+              <div>
+                <h3>Section 2: Allocate Votes for Bonus Numbers ({{ Object.keys(bonusNumberVotes).length }}/2)</h3>
+                <p class="info">Click on numbers to allocate votes. You need to allocate votes to exactly 2 numbers.</p>
+                <p class="warning">Note: You cannot select numbers already used in Section 1</p>
+                <div class="vote-summary">
+                  <p><strong>Total Allocated:</strong> {{ getTotalBonusVotes() }} votes</p>
+                  <p><strong>Numbers with votes:</strong> {{ Object.keys(bonusNumberVotes).length }}</p>
+                </div>
+                <div class="number-grid">
+                  @for (num of numbers; track num) {
+                    <button 
+                      [class.selected]="bonusNumberVotes[num] > 0" 
+                      [class.disabled]="mainNumberVotes[num] > 0"
+                      (click)="selectBonusNumber(num)"
+                      class="number-btn">
+                      {{ num }}
+                      @if (bonusNumberVotes[num] > 0) {
+                        <span class="vote-count bonus-vote">{{ bonusNumberVotes[num] }}</span>
+                      }
+                    </button>
+                  }
+                </div>
+                
+                @if (Object.keys(bonusNumberVotes).length > 0) {
+                  <div class="allocated-summary">
+                    <h4>Section 2 Allocations:</h4>
+                    <div class="allocation-list">
+                      @for (entry of Object.entries(bonusNumberVotes); track entry[0]) {
+                        <div class="allocation-item">
+                          <span class="number bonus-number">{{ entry[0] }}</span>
+                          <span class="votes">{{ entry[1] }} votes</span>
+                          <button class="remove-btn" (click)="removeBonusVotes(+(entry[0]))">×</button>
+                        </div>
+                      }
+                    </div>
+                  </div>
+                }
+                
+                <button 
+                  class="btn-success" 
+                  [disabled]="Object.keys(bonusNumberVotes).length !== 2 || isSaving" 
+                  (click)="allocateAllVotes()"
+                  style="margin-top: 20px;">
+                  <i class="fas fa-spinner fa-spin" *ngIf="isSaving"></i>
+                  <i class="fas fa-save" *ngIf="!isSaving"></i>
+                  {{ isSaving ? 'Allocating...' : 'Allocate All Votes' }}
+                </button>
+                <button class="btn-secondary" (click)="backToSection1()" style="margin-left: 10px;">Back to Section 1</button>
+              </div>
+            }
+          </div>
         </div>
-        <button class="btn-primary" [disabled]="selectedBonus.length !== 2" (click)="nextStep()">Next</button>
-        <button class="btn-secondary" (click)="editNumbers()">Edit Numbers</button>
       </div>
-    }
 
-    @if (currentStep === 'confirm') {
-      <div>
-        <h3>Confirm Vote Allocation</h3>
-        <div class="confirmation">
-          <div class="section">
-            <h4>Section 1 (Main Numbers)</h4>
-            <div class="selected-numbers">
-              @for (num of selectedNumbers; track num) {
-                <span>{{ num }}</span>
-              }
+      <div class="card" style="margin-top: 2rem;">
+        <div class="card-header">
+          <h3><i class="fas fa-history"></i> Allocated Votes History</h3>
+          <div class="header-actions">
+            <span class="total-count">{{ filteredAdminVotes.length }} of {{ adminVotes.length }} allocations</span>
+          </div>
+        </div>
+        <div class="card-body">
+          <!-- Search and Filter Section -->
+          <div class="filters-section" *ngIf="adminVotes.length > 0">
+            <div class="filter-row">
+              <div class="filter-group">
+                <label>Lottery Type:</label>
+                <select [(ngModel)]="selectedLotteryFilter" (change)="onFilterChange()" class="form-control">
+                  <option value="">All Lotteries</option>
+                  <option value="Monday Lotto">Monday Lotto</option>
+                  <option value="Wednesday Lotto">Wednesday Lotto</option>
+                  <option value="Friday Lotto">Friday Lotto</option>
+                </select>
+              </div>
+              
+              <div class="filter-group">
+                <label>Date From: (dd/mm/yyyy)</label>
+                <input 
+                  type="date" 
+                  [(ngModel)]="dateFromFilter" 
+                  (change)="onFilterChange()"
+                  class="form-control">
+              </div>
+              
+              <div class="filter-group">
+                <label>Date To: (dd/mm/yyyy)</label>
+                <input 
+                  type="date" 
+                  [(ngModel)]="dateToFilter" 
+                  (change)="onFilterChange()"
+                  class="form-control">
+              </div>
+              
+              <div class="filter-group">
+                <label>Min Votes:</label>
+                <input 
+                  type="number" 
+                  [(ngModel)]="minVotesFilter" 
+                  (input)="onFilterChange()"
+                  placeholder="0"
+                  class="form-control">
+              </div>
+              
+              <div class="filter-group">
+                <label>Max Votes:</label>
+                <input 
+                  type="number" 
+                  [(ngModel)]="maxVotesFilter" 
+                  (input)="onFilterChange()"
+                  placeholder="∞"
+                  class="form-control">
+              </div>
+            </div>
+            
+            <div class="sort-row">
+              <div class="sort-group">
+                <label>Sort by:</label>
+                <select [(ngModel)]="sortBy" (change)="onFilterChange()" class="form-control">
+                  <option value="date">Date</option>
+                  <option value="lottery">Lottery</option>
+                  <option value="votes">Vote Count</option>
+                </select>
+              </div>
+              
+              <div class="sort-group">
+                <label>Order:</label>
+                <select [(ngModel)]="sortOrder" (change)="onFilterChange()" class="form-control">
+                  <option value="desc">Newest First</option>
+                  <option value="asc">Oldest First</option>
+                </select>
+              </div>
+              
+              <div class="filter-actions">
+                <button class="btn-clear" (click)="clearFilters()">
+                  <i class="fas fa-times"></i> Clear Filters
+                </button>
+              </div>
             </div>
           </div>
-          <div class="section">
-            <h4>Section 2 (Bonus Numbers)</h4>
-            <div class="selected-numbers">
-              @for (num of selectedBonus; track num) {
-                <span>{{ num }}</span>
+          @if (isLoading) {
+            <div class="loading-state">
+              <i class="fas fa-spinner fa-spin"></i>
+              <span>{{ loadingMessage }}</span>
+            </div>
+          }
+          @if (filteredAdminVotes.length === 0 && !isLoading && adminVotes.length > 0) {
+            <div class="no-results">
+              <div class="no-results-icon">
+                <i class="fas fa-search"></i>
+              </div>
+              <h4>No Results Found</h4>
+              <p>Try adjusting your search or filter criteria</p>
+              <button class="btn-secondary" (click)="clearFilters()">
+                <i class="fas fa-times"></i> Clear Filters
+              </button>
+            </div>
+          }
+          @if (filteredAdminVotes.length === 0 && !isLoading && adminVotes.length === 0) {
+            <div class="no-data">
+              <div class="no-data-icon">
+                <i class="fas fa-inbox"></i>
+              </div>
+              <h4>No Vote Allocations Yet</h4>
+              <p>Start by allocating votes to numbers above</p>
+            </div>
+          }
+          @if (filteredAdminVotes.length > 0 && !isLoading) {
+            <div class="history-grid">
+              @for (vote of filteredAdminVotes; track vote.id) {
+                <div class="history-card">
+                  <div class="card-header-mini">
+                    <div class="lottery-badge">{{ vote.lottery }}</div>
+                    <div class="card-actions">
+                      <button 
+                        class="btn-icon btn-info" 
+                        (click)="viewVoteDetails(vote)"
+                        title="View details">
+                        <i class="fas fa-eye"></i>
+                      </button>
+                      <button 
+                        class="btn-icon btn-warning" 
+                        (click)="editVoteAllocation(vote)"
+                        title="Edit allocation">
+                        <i class="fas fa-edit"></i>
+                      </button>
+                      <button 
+                        class="btn-icon btn-danger" 
+                        (click)="deleteVoteAllocation(vote)"
+                        title="Delete allocation">
+                        <i class="fas fa-trash"></i>
+                      </button>
+                    </div>
+                  </div>
+                  <div class="card-content">
+                    <div class="numbers-section">
+                      <div class="number-group" *ngIf="vote.numbers && vote.numbers.length > 0">
+                        <label>Main Numbers:</label>
+                        <div class="number-chips">
+                          @for (num of vote.numbers; track num) {
+                            <span class="number-chip main">{{ num }}</span>
+                          }
+                        </div>
+                      </div>
+                      <div class="number-group" *ngIf="vote.bonusNumbers && vote.bonusNumbers.length > 0">
+                        <label>Bonus Numbers:</label>
+                        <div class="number-chips">
+                          @for (num of vote.bonusNumbers; track num) {
+                            <span class="number-chip bonus">{{ num }}</span>
+                          }
+                        </div>
+                      </div>
+                      <div class="number-group" *ngIf="!vote.numbers || vote.numbers.length === 0">
+                        <label>Individual Allocations</label>
+                        <div class="individual-note">
+                          <i class="fas fa-info-circle"></i>
+                          <span>Custom vote distribution</span>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="vote-info">
+                      <div class="vote-amount">
+                        <i class="fas fa-vote-yea"></i>
+                        <span class="amount">{{ vote.allocatedVotes || vote.totalVotes }}</span>
+                        <span class="label">votes</span>
+                      </div>
+                      <div class="date-info">
+                        <div class="date-item">
+                          <i class="fas fa-calendar-alt"></i>
+                          <span class="date-label">Draw:</span>
+                          <span class="date-value">{{ vote.drawDate || vote.voteDate }}</span>
+                        </div>
+                        <div class="date-item" *ngIf="vote.drawDate && vote.voteDate !== vote.drawDate">
+                          <i class="fas fa-clock"></i>
+                          <span class="date-label">Created:</span>
+                          <span class="date-value">{{ vote.voteDate }}</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
               }
             </div>
-          </div>
-          <div class="form-group">
-            <label>Number of Votes to Allocate</label>
-            <input type="number" [(ngModel)]="allocatedVotes" class="form-control" min="1">
-          </div>
-        </div>
-        <button class="btn-success" (click)="allocateVotes()">Allocate Votes</button>
-        <button class="btn-secondary" (click)="editNumbers()">Edit</button>
-        <button class="btn-secondary" (click)="resetForm()">Cancel</button>
-      </div>
-    }
+          }
         </div>
       </div>
     </div>
+  </section>
+</div>
 
-    <div class="card" style="margin-top: 2rem;">
-      <div class="card-header">
-        <h3>Allocated Votes History</h3>
+<!-- Vote Allocation Details View -->
+<div *ngIf="currentView === 'details'">
+  <app-vote-allocation-details 
+    [voteDetails]="selectedVoteDetails" 
+    (close)="closeVoteDetails()">
+  </app-vote-allocation-details>
+</div>
+
+<!-- Edit Vote Allocation View -->
+<div *ngIf="currentView === 'edit'">
+  <section class="voting-management-section">
+    <div class="voting-management">
+      <div class="card">
+        <div class="card-header">
+          <h3><i class="fas fa-edit"></i> Edit Vote Allocation - {{ editingVote?.lottery }}</h3>
+          <button class="close-btn" (click)="cancelEditVote()">&times;</button>
+        </div>
+        <div class="card-body">
+          <div class="edit-info">
+            <p><strong>Draw Date:</strong> {{ editingVote?.drawDate || editingVote?.voteDate }}</p>
+            <p><strong>Original Total:</strong> {{ editingVote?.allocatedVotes || editingVote?.totalVotes }} votes</p>
+            <p><strong>Current Total:</strong> {{ getEditedMainTotal() + getEditedBonusTotal() }} votes</p>
+          </div>
+
+          <div class="form-section">
+            <div>
+              <h3>Section 1: Main Numbers ({{ Object.keys(editedMainVotes).length }}/5)</h3>
+              <p class="info">Click on vote amounts to edit them. You need exactly 5 numbers with votes.</p>
+              <div class="vote-summary">
+                <p><strong>Total Allocated:</strong> {{ getEditedMainTotal() }} votes</p>
+                <p><strong>Numbers with votes:</strong> {{ Object.keys(editedMainVotes).length }}</p>
+              </div>
+              
+              @if (Object.keys(editedMainVotes).length > 0) {
+                <div class="allocated-summary">
+                  <h4>Section 1 Allocations:</h4>
+                  <div class="allocation-list">
+                    @for (entry of Object.entries(editedMainVotes); track entry[0]) {
+                      <div class="allocation-item">
+                        <span class="number main-number">{{ entry[0] }}</span>
+                        <span class="votes editable" (click)="openEditVotePopup(+(entry[0]), 'main')">
+                          {{ entry[1] }} votes
+                          <i class="fas fa-edit"></i>
+                        </span>
+                        <button class="remove-btn" (click)="removeEditMainVotes(+(entry[0]))">&times;</button>
+                      </div>
+                    }
+                  </div>
+                </div>
+              }
+            </div>
+
+            <div style="margin-top: 2rem;">
+              <h3>Section 2: Bonus Numbers ({{ Object.keys(editedBonusVotes).length }}/2)</h3>
+              <p class="info">Click on vote amounts to edit them. You need exactly 2 numbers with votes.</p>
+              <div class="vote-summary">
+                <p><strong>Total Allocated:</strong> {{ getEditedBonusTotal() }} votes</p>
+                <p><strong>Numbers with votes:</strong> {{ Object.keys(editedBonusVotes).length }}</p>
+              </div>
+              
+              @if (Object.keys(editedBonusVotes).length > 0) {
+                <div class="allocated-summary">
+                  <h4>Section 2 Allocations:</h4>
+                  <div class="allocation-list">
+                    @for (entry of Object.entries(editedBonusVotes); track entry[0]) {
+                      <div class="allocation-item">
+                        <span class="number bonus-number">{{ entry[0] }}</span>
+                        <span class="votes editable" (click)="openEditVotePopup(+(entry[0]), 'bonus')">
+                          {{ entry[1] }} votes
+                          <i class="fas fa-edit"></i>
+                        </span>
+                        <button class="remove-btn" (click)="removeEditBonusVotes(+(entry[0]))">&times;</button>
+                      </div>
+                    }
+                  </div>
+                </div>
+              }
+            </div>
+
+            <div class="edit-actions" style="margin-top: 2rem;">
+              <button 
+                class="btn-success" 
+                [disabled]="Object.keys(editedMainVotes).length !== 5 || Object.keys(editedBonusVotes).length !== 2 || isSaving" 
+                (click)="saveEditedVotes()">
+                <i class="fas fa-spinner fa-spin" *ngIf="isSaving"></i>
+                <i class="fas fa-save" *ngIf="!isSaving"></i>
+                {{ isSaving ? 'Saving...' : 'Save Changes' }}
+              </button>
+              <button class="btn-secondary" (click)="cancelEditVote()" style="margin-left: 10px;">
+                <i class="fas fa-times"></i> Cancel
+              </button>
+            </div>
+          </div>
+        </div>
       </div>
-      <div class="card-body">
-        @if (adminVotes.length === 0) {
-          <div class="no-data">
-            <p>No votes allocated yet</p>
-          </div>
-        }
-        @if (adminVotes.length > 0) {
-          <div class="table-responsive">
-            <table class="votes-table data-table">
-        <thead>
-          <tr>
-            <th>Lottery</th>
-            <th>Numbers</th>
-            <th>Bonus</th>
-            <th>Allocated Votes</th>
-            <th>Date</th>
-          </tr>
-        </thead>
-        <tbody>
-          @for (vote of adminVotes; track vote.id) {
-            <tr>
-              <td>{{ vote.lottery }}</td>
-              <td>{{ vote.numbers.join(', ') }}</td>
-              <td>{{ vote.bonusNumbers.join(', ') }}</td>
-              <td><strong>{{ vote.allocatedVotes }}</strong></td>
-              <td>{{ vote.voteDate }}</td>
-            </tr>
-          }
-        </tbody>
-            </table>
-          </div>
-        }
+    </div>
+  </section>
+</div>
+
+<!-- Popups and Dialogs (shown on both views) -->
+@if (showSuccessPopup) {
+  <div class="success-popup-overlay enhanced">
+    <div class="success-popup enhanced">
+      <div class="success-animation">
+        <div class="success-icon enhanced">
+          <i class="fas fa-check"></i>
+        </div>
+        <div class="success-ripple"></div>
+      </div>
+      <div class="success-content">
+        <h2>Success!</h2>
+        <p>{{ deleteSuccessMessage || (allocatedVotes + ' votes have been allocated') }}</p>
+        <div class="success-details" *ngIf="deleteSuccessMessage && deleteSuccessMessage.includes('updated')">
+          <i class="fas fa-edit"></i>
+          <span>Changes saved successfully</span>
+        </div>
+        <div class="success-details" *ngIf="deleteSuccessMessage && deleteSuccessMessage.includes('deleted')">
+          <i class="fas fa-trash"></i>
+          <span>Allocation removed</span>
+        </div>
+        <div class="success-details" *ngIf="deleteSuccessMessage && deleteSuccessMessage.includes('allocated')">
+          <i class="fas fa-vote-yea"></i>
+          <span>New allocation created</span>
+        </div>
+      </div>
+      <div class="auto-close-indicator">
+        <div class="progress-bar"></div>
       </div>
     </div>
   </div>
-</section>
+}
 
-@if (showSuccessPopup) {
-  <div class="success-popup-overlay">
-    <div class="success-popup">
-      <div class="success-icon">✓</div>
-      <h2>Votes Allocated Successfully!</h2>
-      <p>{{ allocatedVotes }} votes have been allocated to the selected combination</p>
+@if (showDeleteDialog) {
+  <div class="popup-overlay" (click)="cancelDelete()">
+    <div class="delete-dialog enhanced" (click)="$event.stopPropagation()">
+      <div class="dialog-header">
+        <div class="header-icon">
+          <i class="fas fa-exclamation-triangle"></i>
+        </div>
+        <h3>Confirm Deletion</h3>
+        <button class="close-btn" (click)="cancelDelete()">&times;</button>
+      </div>
+      <div class="dialog-body">
+        <div class="confirmation-content">
+          <p class="main-message">Are you sure you want to delete this vote allocation?</p>
+          @if (voteToDelete) {
+            <div class="allocation-preview">
+              <div class="preview-header">
+                <div class="lottery-badge large">{{ voteToDelete.lottery }}</div>
+                <div class="vote-total">
+                  <span class="amount">{{ voteToDelete.allocatedVotes || voteToDelete.totalVotes }}</span>
+                  <span class="label">votes</span>
+                </div>
+              </div>
+              
+              <div class="preview-details">
+                <div class="detail-row">
+                  <i class="fas fa-calendar-alt"></i>
+                  <span class="label">Draw Date:</span>
+                  <span class="value">{{ voteToDelete.drawDate || voteToDelete.voteDate }}</span>
+                </div>
+                <div class="detail-row" *ngIf="voteToDelete.voteDate !== voteToDelete.drawDate">
+                  <i class="fas fa-clock"></i>
+                  <span class="label">Created:</span>
+                  <span class="value">{{ voteToDelete.voteDate }}</span>
+                </div>
+                <div class="detail-row" *ngIf="voteToDelete.numbers && voteToDelete.numbers.length > 0">
+                  <i class="fas fa-list-ol"></i>
+                  <span class="label">Main Numbers:</span>
+                  <div class="number-list">
+                    <span class="mini-chip main" *ngFor="let num of voteToDelete.numbers">{{ num }}</span>
+                  </div>
+                </div>
+                <div class="detail-row" *ngIf="voteToDelete.bonusNumbers && voteToDelete.bonusNumbers.length > 0">
+                  <i class="fas fa-star"></i>
+                  <span class="label">Bonus Numbers:</span>
+                  <div class="number-list">
+                    <span class="mini-chip bonus" *ngFor="let num of voteToDelete.bonusNumbers">{{ num }}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          }
+          <div class="warning-message">
+            <i class="fas fa-info-circle"></i>
+            <span>This action cannot be undone. The vote allocation will be permanently removed.</span>
+          </div>
+        </div>
+      </div>
+      <div class="dialog-footer enhanced">
+        <button class="btn-danger enhanced" (click)="confirmDelete()" [disabled]="isDeleting">
+          <i class="fas fa-spinner fa-spin" *ngIf="isDeleting"></i>
+          <i class="fas fa-trash" *ngIf="!isDeleting"></i>
+          <span>{{ isDeleting ? 'Deleting...' : 'Yes, Delete' }}</span>
+        </button>
+        <button class="btn-secondary enhanced" (click)="cancelDelete()" [disabled]="isDeleting">
+          <i class="fas fa-times"></i>
+          <span>Cancel</span>
+        </button>
+      </div>
+    </div>
+  </div>
+}
+
+@if (showVotePopup) {
+  <div class="popup-overlay" (click)="closeVotePopup()">
+    <div class="vote-popup" (click)="$event.stopPropagation()">
+      <div class="popup-header">
+        <h3>Allocate Votes to Number {{ selectedNumberForVoting }} ({{ currentSection === 'main' ? 'Section 1' : 'Section 2' }})</h3>
+        <button class="close-btn" (click)="closeVotePopup()">&times;</button>
+      </div>
+      <div class="popup-body">
+        <div class="form-group">
+          <label>Number of Votes:</label>
+          <input 
+            type="number" 
+            [(ngModel)]="voteAmount" 
+            class="form-control" 
+            min="0" 
+            placeholder="Enter vote amount">
+        </div>
+        <p class="info">Enter any amount - no limits!</p>
+        <p class="info">Current allocation: {{ currentSection === 'main' ? (mainNumberVotes[selectedNumberForVoting!] || 0) : (bonusNumberVotes[selectedNumberForVoting!] || 0) }}</p>
+      </div>
+      <div class="popup-footer">
+        <button class="btn-primary" (click)="allocateVotesToNumber()">Allocate</button>
+        <button class="btn-secondary" (click)="closeVotePopup()">Cancel</button>
+      </div>
+    </div>
+  </div>
+}
+
+@if (showEditVotePopup) {
+  <div class="popup-overlay" (click)="closeEditVotePopup()">
+    <div class="vote-popup" (click)="$event.stopPropagation()">
+      <div class="popup-header">
+        <h3>Edit Votes for Number {{ selectedEditNumber }} ({{ selectedEditType === 'main' ? 'Main' : 'Bonus' }})</h3>
+        <button class="close-btn" (click)="closeEditVotePopup()">&times;</button>
+      </div>
+      <div class="popup-body">
+        <div class="form-group">
+          <label>Number of Votes:</label>
+          <input 
+            type="number" 
+            [(ngModel)]="editVoteAmount" 
+            class="form-control" 
+            min="0" 
+            placeholder="Enter vote amount">
+        </div>
+        <p class="info">Enter 0 to remove votes from this number</p>
+        <p class="info">Current allocation: {{ selectedEditType === 'main' ? (editedMainVotes[selectedEditNumber!] || 0) : (editedBonusVotes[selectedEditNumber!] || 0) }}</p>
+      </div>
+      <div class="popup-footer">
+        <button class="btn-primary" (click)="updateEditVoteAmount()">
+          <i class="fas fa-check"></i> Update
+        </button>
+        <button class="btn-secondary" (click)="closeEditVotePopup()">Cancel</button>
+      </div>
+    </div>
+  </div>
+}
+
+@if (showInfoDialog) {
+  <div class="popup-overlay" (click)="closeInfoDialog()">
+    <div class="info-dialog enhanced" (click)="$event.stopPropagation()">
+      <div class="dialog-header info">
+        <div class="header-icon info">
+          <i class="fas fa-info-circle"></i>
+        </div>
+        <h3>Information</h3>
+        <button class="close-btn" (click)="closeInfoDialog()">&times;</button>
+      </div>
+      <div class="dialog-body">
+        <div class="info-content">
+          <p class="info-message">{{ infoMessage }}</p>
+          <div class="info-tips" *ngIf="infoMessage.includes('5 main numbers')">
+            <div class="tip-item">
+              <i class="fas fa-lightbulb"></i>
+              <span>Click on numbers to allocate votes individually</span>
+            </div>
+            <div class="tip-item">
+              <i class="fas fa-calculator"></i>
+              <span>You can allocate any amount of votes to each number</span>
+            </div>
+          </div>
+          <div class="info-tips" *ngIf="infoMessage.includes('already exists')">
+            <div class="tip-item">
+              <i class="fas fa-calendar-alt"></i>
+              <span>Try selecting a different date</span>
+            </div>
+            <div class="tip-item">
+              <i class="fas fa-edit"></i>
+              <span>Or edit the existing allocation</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="dialog-footer enhanced">
+        <button class="btn-primary enhanced" (click)="closeInfoDialog()">
+          <i class="fas fa-check"></i>
+          <span>Got it</span>
+        </button>
+      </div>
     </div>
   </div>
 }

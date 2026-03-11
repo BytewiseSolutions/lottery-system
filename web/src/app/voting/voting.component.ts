@@ -66,6 +66,8 @@ export class VotingComponent implements OnInit {
     
     if (diff <= 0) {
       this.countdown = '00:00:00';
+      // Voting has closed, reload upcoming draws to get next lottery
+      this.loadUpcomingDraw();
       return;
     }
     
@@ -261,7 +263,22 @@ export class VotingComponent implements OnInit {
       this.upcomingDraw.lottery_type, 
       this.upcomingDraw.draw_date.split(' ')[0]
     ).subscribe({
-      next: (data) => this.leadingNumbers = data,
+      next: (data) => {
+        this.leadingNumbers = data;
+        // Sort the top numbers numerically for display
+        if (this.leadingNumbers.section1) {
+          this.leadingNumbers.topSection1 = this.leadingNumbers.section1
+            .slice(0, 5)
+            .map((item: any) => item.number)
+            .sort((a: number, b: number) => a - b);
+        }
+        if (this.leadingNumbers.section2) {
+          this.leadingNumbers.topSection2 = this.leadingNumbers.section2
+            .slice(0, 2)
+            .map((item: any) => item.number)
+            .sort((a: number, b: number) => a - b);
+        }
+      },
       error: (err) => console.error(err)
     });
   }

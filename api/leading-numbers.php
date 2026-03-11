@@ -37,21 +37,37 @@ foreach ($entries as $entry) {
 }
 
 // Get admin allocated votes
-$stmt = $db->prepare("SELECT numbers, bonus_numbers, allocated_votes FROM admin_vote WHERE lottery = ? AND vote_date = ?");
+$stmt = $db->prepare("SELECT numbers, bonus_numbers, allocated_votes, voting_data FROM admin_vote WHERE lottery = ? AND draw_date = ?");
 $stmt->execute([$lottery, $voteDate]);
 $adminEntries = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
 foreach ($adminEntries as $entry) {
     $numbers = json_decode($entry['numbers'], true);
     $bonusNumbers = json_decode($entry['bonus_numbers'], true);
-    $allocatedVotes = $entry['allocated_votes'];
+    $votingData = $entry['voting_data'] ? json_decode($entry['voting_data'], true) : null;
     
-    foreach ($numbers as $num) {
-        $numberCounts[$num] = ($numberCounts[$num] ?? 0) + $allocatedVotes;
-    }
-    
-    foreach ($bonusNumbers as $num) {
-        $bonusCounts[$num] = ($bonusCounts[$num] ?? 0) + $allocatedVotes;
+    if ($votingData && isset($votingData['mainNumberVotes']) && isset($votingData['bonusNumberVotes'])) {
+        // New format: use individual vote amounts from voting_data
+        foreach ($votingData['mainNumberVotes'] as $number => $votes) {
+            $numberCounts[$number] = ($numberCounts[$number] ?? 0) + $votes;
+        }
+        
+        foreach ($votingData['bonusNumberVotes'] as $number => $votes) {
+            $bonusCounts[$number] = ($bonusCounts[$number] ?? 0) + $votes;
+        }
+    } else {
+        // Legacy format: distribute allocated_votes evenly among numbers
+        $allocatedVotes = $entry['allocated_votes'];
+        $totalNumbers = count($numbers) + count($bonusNumbers);
+        $votesPerNumber = $totalNumbers > 0 ? floor($allocatedVotes / $totalNumbers) : 0;
+        
+        foreach ($numbers as $num) {
+            $numberCounts[$num] = ($numberCounts[$num] ?? 0) + $votesPerNumber;
+        }
+        
+        foreach ($bonusNumbers as $num) {
+            $bonusCounts[$num] = ($bonusCounts[$num] ?? 0) + $votesPerNumber;
+        }
     }
 }
 

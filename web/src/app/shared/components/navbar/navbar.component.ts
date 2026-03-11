@@ -25,6 +25,9 @@ export class NavbarComponent implements OnInit {
   mobileMenuOpen = false;
   isLoading = true;
   isScrolled = false;
+  notificationCount = 0;
+  showNotifications = false;
+  notifications: any[] = [];
 
   isPlayLotteryPage = false;
 
@@ -57,6 +60,13 @@ export class NavbarComponent implements OnInit {
     
     // Check initial route
     this.isPlayLotteryPage = this.router.url.includes('/play-lottery');
+    
+    // Load notifications if logged in
+    if (this.isLoggedIn) {
+      this.loadNotifications();
+      // Check for new notifications every 30 seconds
+      setInterval(() => this.loadNotifications(), 30000);
+    }
   }
 
   private initStickyHeader() {
@@ -100,6 +110,7 @@ export class NavbarComponent implements OnInit {
     this.currentUser = user;
     this.userEmail = user.email;
     this.showLoginModal = false;
+    this.loadNotifications();
   }
 
   onSignupSuccess(user: any) {
@@ -107,6 +118,7 @@ export class NavbarComponent implements OnInit {
     this.currentUser = user;
     this.userEmail = user.email || user.phone || 'User';
     this.showSignupModal = false;
+    this.loadNotifications();
   }
 
   onCloseLogin() {
@@ -152,6 +164,54 @@ export class NavbarComponent implements OnInit {
     this.isLoggedIn = false;
     this.currentUser = null;
     this.userEmail = '';
+    this.notificationCount = 0;
+    this.showNotifications = false;
+  }
+
+  toggleNotifications() {
+    this.showNotifications = !this.showNotifications;
+    if (this.showNotifications) {
+      // Mark notifications as read when opened
+      this.markNotificationsAsRead();
+    }
+  }
+
+  private loadNotifications() {
+    if (!this.isLoggedIn) return;
+    
+    const token = localStorage.getItem('token');
+    if (!token) return;
+    
+    this.checkUserCountry();
+  }
+
+  private checkUserCountry() {
+    const user = this.currentUser;
+    if (!user) return;
+    
+    // Check if user has country field
+    if (!user.country || user.country === '' || user.country === null) {
+      this.notifications = [{
+        type: 'profile_incomplete',
+        message: 'Please update your profile to include your country information.',
+        action: 'Update Profile',
+        read: false
+      }];
+      this.notificationCount = 1;
+    } else {
+      this.notifications = [];
+      this.notificationCount = 0;
+    }
+  }
+
+  private markNotificationsAsRead() {
+    // Don't reset count for profile incomplete notification
+    // User must complete profile to dismiss it
+  }
+
+  navigateToProfile() {
+    this.showNotifications = false;
+    this.router.navigate(['/profile']);
   }
 
   private updatePoolMoney() {

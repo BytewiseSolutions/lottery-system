@@ -1,6 +1,9 @@
 # API Directory Configuration
 RewriteEngine On
 
+# Handle admin-vote requests (GET, POST, DELETE)
+RewriteRule ^admin-vote/?$ admin-vote.php [L,QSA]
+
 # Allow direct access to PHP files
 RewriteCond %{REQUEST_FILENAME} -f
 RewriteRule \.php$ - [L]

@@ -24,12 +24,13 @@ if (!$data->userId || !$data->fullName) {
 }
 
 try {
-    $query = "UPDATE user SET full_name = ?, email = ?, phone = ? WHERE id = ?";
+    $query = "UPDATE user SET full_name = ?, email = ?, phone = ?, country = ? WHERE id = ?";
     $stmt = $db->prepare($query);
     $stmt->execute([
         $data->fullName,
         $data->email ?? null,
         $data->phone ?? null,
+        $data->country ?? null,
         $data->userId
     ]);
     

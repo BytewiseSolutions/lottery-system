@@ -28,7 +28,7 @@ if (!isset($data->identifier) || !isset($data->password) ||
 
 try {
     // Check if identifier is email or phone - only select needed fields
-    $query = "SELECT id, full_name, email, phone, password, role FROM user WHERE (email = ? OR phone = ?) AND is_active = TRUE LIMIT 1";
+    $query = "SELECT id, full_name, email, phone, country, password, role FROM user WHERE (email = ? OR phone = ?) AND is_active = TRUE LIMIT 1";
     $stmt = $db->prepare($query);
     $stmt->execute([$data->identifier, $data->identifier]);
     
@@ -67,6 +67,7 @@ try {
         'fullName' => $user['full_name'],
         'email' => $user['email'],
         'phone' => $user['phone'] ?? '',
+        'country' => $user['country'] ?? null,
         'exp' => time() + (24 * 60 * 60)
     ];
     
@@ -79,6 +80,7 @@ try {
             'fullName' => $user['full_name'],
             'email' => $user['email'],
             'phone' => $user['phone'] ?? '',
+            'country' => $user['country'] ?? null,
             'role' => 'admin'
         ];
     } else {
@@ -87,7 +89,8 @@ try {
             'id' => $user['id'],
             'fullName' => $user['full_name'],
             'email' => $user['email'],
-            'phone' => $user['phone'] ?? ''
+            'phone' => $user['phone'] ?? '',
+            'country' => $user['country'] ?? null
         ];
     }
     

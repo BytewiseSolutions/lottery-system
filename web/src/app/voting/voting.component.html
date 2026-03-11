@@ -155,16 +155,16 @@
           <div class="top-section">
             <span class="section-label">Section 1 (Top 5)</span>
             <div class="top-numbers">
-              @for (item of leadingNumbers.section1?.slice(0, 5); track item.number) {
-                <span class="top-number">{{ item.number }}</span>
+              @for (number of leadingNumbers.topSection1; track number) {
+                <span class="top-number">{{ number }}</span>
               }
             </div>
           </div>
           <div class="top-section">
             <span class="section-label">Section 2 (Top 2)</span>
             <div class="top-numbers">
-              @for (item of leadingNumbers.section2?.slice(0, 2); track item.number) {
-                <span class="top-number">{{ item.number }}</span>
+              @for (number of leadingNumbers.topSection2; track number) {
+                <span class="top-number">{{ number }}</span>
               }
             </div>
           </div>

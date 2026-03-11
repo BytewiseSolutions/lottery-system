@@ -15,14 +15,14 @@ try {
     $archiveQuery = "INSERT INTO past_draw (lottery, draw_date, winning_numbers, bonus_numbers, jackpot, winners, status)
                      SELECT lottery, draw_date, '[]', '[]', jackpot, 0, 'completed'
                      FROM upcoming_draw 
-                     WHERE draw_date <= NOW()";
+                     WHERE DATE_ADD(draw_date, INTERVAL 59 MINUTE) <= NOW()";
     try {
         $db->prepare($archiveQuery)->execute();
     } catch(PDOException $e) {
 
     }
     
-    $deleteQuery = "DELETE FROM upcoming_draw WHERE draw_date <= NOW()";
+    $deleteQuery = "DELETE FROM upcoming_draw WHERE DATE_ADD(draw_date, INTERVAL 59 MINUTE) <= NOW()";
     $db->prepare($deleteQuery)->execute();
     
     // Check how many upcoming draws exist
@@ -52,18 +52,18 @@ try {
             // Calculate next draw date
             $currentDay = date('N');
             $currentTime = date('H:i:s');
-            $drawTime = '19:00:00';
+            $drawTime = '19:59:59'; // Voting closes at 19:59
             
             error_log("Current day: $currentDay, Current time: $currentTime, Target day: $dayOfWeek");
             
-            // If it's the same day but before draw time, use today
-            if ($currentDay == $dayOfWeek && $currentTime < $drawTime) {
+            // If it's the same day but before voting closes, use today
+            if ($currentDay == $dayOfWeek && $currentTime <= $drawTime) {
                 $nextDraw = date('Y-m-d 19:00:00');
             } else {
                 // Otherwise, get next occurrence of this day
                 $daysAhead = ($dayOfWeek - $currentDay + 7) % 7;
                 if ($daysAhead == 0) {
-                    $daysAhead = 7; // If same day but after draw time, go to next week
+                    $daysAhead = 7; // If same day but after voting closes, go to next week
                 }
                 $nextDraw = date('Y-m-d 19:00:00', strtotime("+$daysAhead days"));
             }

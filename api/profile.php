@@ -10,7 +10,7 @@ $method = $_SERVER['REQUEST_METHOD'];
 
 try {
     if ($method === 'GET') {
-        $stmt = $db->prepare("SELECT id, full_name, email, phone, email_verified, phone_verified, notification_enabled FROM user WHERE id = ?");
+        $stmt = $db->prepare("SELECT id, full_name, email, phone, country, email_verified, phone_verified, notification_enabled FROM user WHERE id = ?");
         $stmt->execute([$user['id']]);
         $profile = $stmt->fetch(PDO::FETCH_ASSOC);
         echo json_encode($profile);

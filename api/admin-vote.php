@@ -5,6 +5,9 @@ require_once 'config/database.php';
 require_once 'config/jwt.php';
 
 $method = $_SERVER['REQUEST_METHOD'];
+$requestUri = $_SERVER['REQUEST_URI'];
+$pathInfo = parse_url($requestUri, PHP_URL_PATH);
+$pathParts = explode('/', trim($pathInfo, '/'));
 
 if ($method === 'POST') {
     $user = JWT::authenticate();
@@ -18,22 +21,63 @@ if ($method === 'POST') {
     $data = json_decode(file_get_contents('php://input'), true);
     $adminId = $user['id'];
     $lottery = $data['lottery'] ?? '';
-    $numbers = $data['numbers'] ?? [];
-    $bonusNumbers = $data['bonusNumbers'] ?? [];
-    $allocatedVotes = $data['allocatedVotes'] ?? 0;
     $voteDate = $data['voteDate'] ?? date('Y-m-d');
-    
-    if (empty($lottery) || empty($numbers) || empty($bonusNumbers) || $allocatedVotes <= 0) {
-        http_response_code(400);
-        echo json_encode(['error' => 'Missing required fields']);
-        exit;
-    }
     
     $database = new Database();
     $db = $database->getConnection();
     
-    $stmt = $db->prepare("INSERT INTO admin_vote (admin_id, lottery, numbers, bonus_numbers, allocated_votes, vote_date) VALUES (?, ?, ?, ?, ?, ?)");
-    $stmt->execute([$adminId, $lottery, json_encode($numbers), json_encode($bonusNumbers), $allocatedVotes, $voteDate]);
+    if (isset($data['votingData'])) {
+        $votingData = $data['votingData'];
+        $totalVotes = $data['totalVotes'] ?? 0;
+        $mainNumbers = $data['mainNumbers'] ?? [];
+        $bonusNumbers = $data['bonusNumbers'] ?? [];
+        $numbers = $data['numbers'] ?? [];
+        $bonusNums = $data['bonusNumbers'] ?? [];
+        
+        if (empty($lottery) || empty($votingData) || $totalVotes <= 0) {
+            http_response_code(400);
+            echo json_encode(['error' => 'Missing required fields']);
+            exit;
+        }
+        
+        // Check for existing allocation for same lottery and draw date
+        $checkStmt = $db->prepare("SELECT id FROM admin_vote WHERE lottery = ? AND draw_date = ?");
+        $checkStmt->execute([$lottery, $voteDate]);
+        
+        if ($checkStmt->rowCount() > 0) {
+            http_response_code(400);
+            echo json_encode(['error' => "Vote allocation already exists for {$lottery} on {$voteDate}. Please choose a different date or delete the existing allocation."]);
+            exit;
+        }
+        
+        // Insert with both old and new format for compatibility
+        $stmt = $db->prepare("INSERT INTO admin_vote (admin_id, lottery, numbers, bonus_numbers, allocated_votes, voting_data, total_votes, vote_date, draw_date) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)");
+        $stmt->execute([
+            $adminId, 
+            $lottery, 
+            json_encode($numbers), 
+            json_encode($bonusNums), 
+            $totalVotes,
+            json_encode($votingData), 
+            $totalVotes, 
+            date('Y-m-d'),
+            $voteDate
+        ]);
+    } else {
+        // Handle legacy format
+        $numbers = $data['numbers'] ?? [];
+        $bonusNumbers = $data['bonusNumbers'] ?? [];
+        $allocatedVotes = $data['allocatedVotes'] ?? 0;
+        
+        if (empty($lottery) || empty($numbers) || empty($bonusNumbers) || $allocatedVotes <= 0) {
+            http_response_code(400);
+            echo json_encode(['error' => 'Missing required fields']);
+            exit;
+        }
+        
+        $stmt = $db->prepare("INSERT INTO admin_vote (admin_id, lottery, numbers, bonus_numbers, allocated_votes, vote_date, draw_date) VALUES (?, ?, ?, ?, ?, ?, ?)");
+        $stmt->execute([$adminId, $lottery, json_encode($numbers), json_encode($bonusNumbers), $allocatedVotes, date('Y-m-d'), $voteDate]);
+    }
     
     echo json_encode(['success' => true, 'message' => 'Votes allocated successfully']);
     
@@ -49,7 +93,7 @@ if ($method === 'POST') {
     $database = new Database();
     $db = $database->getConnection();
     
-    $stmt = $db->prepare("SELECT id, lottery, numbers, bonus_numbers, allocated_votes, vote_date, created_at FROM admin_vote ORDER BY created_at DESC");
+    $stmt = $db->prepare("SELECT id, lottery, numbers, bonus_numbers, allocated_votes, voting_data, total_votes, vote_date, draw_date, created_at FROM admin_vote ORDER BY created_at DESC");
     $stmt->execute();
     $adminVotes = $stmt->fetchAll(PDO::FETCH_ASSOC);
     
@@ -58,14 +102,192 @@ if ($method === 'POST') {
         $result[] = [
             'id' => $vote['id'],
             'lottery' => $vote['lottery'],
-            'numbers' => json_decode($vote['numbers']),
-            'bonusNumbers' => json_decode($vote['bonus_numbers']),
+            'numbers' => $vote['numbers'] ? json_decode($vote['numbers']) : null,
+            'bonusNumbers' => $vote['bonus_numbers'] ? json_decode($vote['bonus_numbers']) : null,
             'allocatedVotes' => $vote['allocated_votes'],
-            'voteDate' => $vote['vote_date'],
+            'votingData' => $vote['voting_data'] ? json_decode($vote['voting_data']) : null,
+            'totalVotes' => $vote['total_votes'],
+            'voteDate' => $vote['vote_date'], // Creation date
+            'drawDate' => $vote['draw_date'], // Actual lottery draw date
             'createdAt' => $vote['created_at']
         ];
     }
     
     echo json_encode(['adminVotes' => $result]);
+    
+} elseif ($method === 'PUT') {
+    $user = JWT::authenticate();
+    
+    if (!isset($user['role']) || $user['role'] !== 'admin') {
+        http_response_code(403);
+        echo json_encode(['error' => 'Admin access required']);
+        exit;
+    }
+    
+    $data = json_decode(file_get_contents('php://input'), true);
+    $voteId = $data['id'] ?? 0;
+    $lottery = $data['lottery'] ?? '';
+    $voteDate = $data['voteDate'] ?? '';
+    $numbers = $data['numbers'] ?? [];
+    $bonusNumbers = $data['bonusNumbers'] ?? [];
+    $allocatedVotes = $data['allocatedVotes'] ?? 0;
+    $votingData = $data['votingData'] ?? null;
+    $totalVotes = $data['totalVotes'] ?? $allocatedVotes;
+    
+    // Validation
+    if (!$voteId || empty($lottery) || empty($voteDate) || empty($numbers) || empty($bonusNumbers) || $allocatedVotes <= 0) {
+        http_response_code(400);
+        echo json_encode(['error' => 'Missing required fields']);
+        exit;
+    }
+    
+    // Validate numbers array lengths
+    if (count($numbers) !== 5) {
+        http_response_code(400);
+        echo json_encode(['error' => 'Must have exactly 5 main numbers']);
+        exit;
+    }
+    
+    if (count($bonusNumbers) !== 2) {
+        http_response_code(400);
+        echo json_encode(['error' => 'Must have exactly 2 bonus numbers']);
+        exit;
+    }
+    
+    // Validate number ranges (1-75)
+    $allNumbers = array_merge($numbers, $bonusNumbers);
+    foreach ($allNumbers as $num) {
+        if (!is_numeric($num) || $num < 1 || $num > 75) {
+            http_response_code(400);
+            echo json_encode(['error' => 'All numbers must be between 1 and 75']);
+            exit;
+        }
+    }
+    
+    // Check for duplicate numbers between main and bonus
+    $duplicates = array_intersect($numbers, $bonusNumbers);
+    if (!empty($duplicates)) {
+        http_response_code(400);
+        echo json_encode(['error' => 'Numbers cannot appear in both main and bonus sections']);
+        exit;
+    }
+    
+    // Check for duplicate numbers within each section
+    if (count($numbers) !== count(array_unique($numbers))) {
+        http_response_code(400);
+        echo json_encode(['error' => 'Duplicate numbers found in main numbers']);
+        exit;
+    }
+    
+    if (count($bonusNumbers) !== count(array_unique($bonusNumbers))) {
+        http_response_code(400);
+        echo json_encode(['error' => 'Duplicate numbers found in bonus numbers']);
+        exit;
+    }
+    
+    $database = new Database();
+    $db = $database->getConnection();
+    
+    // Check if vote allocation exists
+    $checkStmt = $db->prepare("SELECT id, lottery, draw_date FROM admin_vote WHERE id = ?");
+    $checkStmt->execute([$voteId]);
+    $existingVote = $checkStmt->fetch(PDO::FETCH_ASSOC);
+    
+    if (!$existingVote) {
+        http_response_code(404);
+        echo json_encode(['error' => 'Vote allocation not found']);
+        exit;
+    }
+    
+    // Check for duplicate lottery/date combination (excluding current record)
+    $duplicateStmt = $db->prepare("SELECT id FROM admin_vote WHERE lottery = ? AND draw_date = ? AND id != ?");
+    $duplicateStmt->execute([$lottery, $voteDate, $voteId]);
+    
+    if ($duplicateStmt->rowCount() > 0) {
+        http_response_code(400);
+        echo json_encode(['error' => "Another vote allocation already exists for {$lottery} on {$voteDate}. Please choose a different date."]);
+        exit;
+    }
+    
+    // Update the vote allocation
+    $updateStmt = $db->prepare("
+        UPDATE admin_vote 
+        SET lottery = ?, 
+            numbers = ?, 
+            bonus_numbers = ?, 
+            allocated_votes = ?, 
+            voting_data = ?, 
+            total_votes = ?, 
+            draw_date = ?,
+            updated_at = NOW()
+        WHERE id = ?
+    ");
+    
+    $success = $updateStmt->execute([
+        $lottery,
+        json_encode($numbers),
+        json_encode($bonusNumbers),
+        $allocatedVotes,
+        $votingData ? json_encode($votingData) : null,
+        $totalVotes,
+        $voteDate,
+        $voteId
+    ]);
+    
+    if ($success) {
+        echo json_encode([
+            'success' => true, 
+            'message' => 'Vote allocation updated successfully',
+            'data' => [
+                'id' => $voteId,
+                'lottery' => $lottery,
+                'numbers' => $numbers,
+                'bonusNumbers' => $bonusNumbers,
+                'allocatedVotes' => $allocatedVotes,
+                'totalVotes' => $totalVotes,
+                'drawDate' => $voteDate
+            ]
+        ]);
+    } else {
+        http_response_code(500);
+        echo json_encode(['error' => 'Failed to update vote allocation']);
+    }
+    
+} elseif ($method === 'DELETE') {
+    $user = JWT::authenticate();
+    
+    if (!isset($user['role']) || $user['role'] !== 'admin') {
+        http_response_code(403);
+        echo json_encode(['error' => 'Admin access required']);
+        exit;
+    }
+    
+    // Get vote ID from query parameter (set by .htaccess rewrite rule)
+    $voteId = isset($_GET['id']) ? intval($_GET['id']) : 0;
+    
+    if (!$voteId) {
+        http_response_code(400);
+        echo json_encode(['error' => 'Vote ID is required']);
+        exit;
+    }
+    
+    $database = new Database();
+    $db = $database->getConnection();
+    
+    // Check if vote exists
+    $checkStmt = $db->prepare("SELECT id FROM admin_vote WHERE id = ?");
+    $checkStmt->execute([$voteId]);
+    
+    if ($checkStmt->rowCount() === 0) {
+        http_response_code(404);
+        echo json_encode(['error' => 'Vote allocation not found']);
+        exit;
+    }
+    
+    // Delete the vote
+    $deleteStmt = $db->prepare("DELETE FROM admin_vote WHERE id = ?");
+    $deleteStmt->execute([$voteId]);
+    
+    echo json_encode(['success' => true, 'message' => 'Vote allocation deleted successfully']);
 }
 ?>

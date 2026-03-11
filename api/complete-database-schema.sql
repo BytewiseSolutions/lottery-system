@@ -1,17 +1,23 @@
--- Lottery System Database Schema
--- Corrected version with unused tables removed
+-- ============================================
+-- LOTTERY SYSTEM - COMPLETE DATABASE SCHEMA
+-- ============================================
+-- This file contains all tables and initial data needed for the lottery system
+-- Run this file on a fresh database to set up the complete system
 
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
 START TRANSACTION;
 SET time_zone = "+00:00";
 
--- Core Tables
+-- ============================================
+-- CORE USER & AUTHENTICATION TABLES
+-- ============================================
 
 CREATE TABLE `user` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `full_name` varchar(255) NOT NULL,
   `email` varchar(255) DEFAULT NULL,
   `phone` varchar(20) DEFAULT NULL,
+  `country` varchar(100) DEFAULT NULL,
   `password` varchar(255) NOT NULL,
   `role` varchar(20) DEFAULT 'user',
   `is_active` tinyint(1) DEFAULT 1,
@@ -21,7 +27,8 @@ CREATE TABLE `user` (
   UNIQUE KEY `phone` (`phone`),
   KEY `idx_email` (`email`),
   KEY `idx_phone` (`phone`),
-  KEY `idx_is_active` (`is_active`)
+  KEY `idx_is_active` (`is_active`),
+  KEY `idx_role` (`role`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE `activity_log` (
@@ -54,7 +61,9 @@ CREATE TABLE `notification` (
   CONSTRAINT `notification_ibfk_2` FOREIGN KEY (`sent_by`) REFERENCES `user` (`id`) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- Lottery Tables
+-- ============================================
+-- LOTTERY ENTRY & DRAW TABLES
+-- ============================================
 
 CREATE TABLE `entry` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
@@ -78,7 +87,9 @@ CREATE TABLE `upcoming_draw` (
   `status` varchar(20) DEFAULT 'scheduled',
   `created_at` timestamp NULL DEFAULT current_timestamp(),
   PRIMARY KEY (`id`),
-  UNIQUE KEY `unique_lottery_date` (`lottery`,`draw_date`)
+  UNIQUE KEY `unique_lottery_date` (`lottery`,`draw_date`),
+  KEY `idx_status` (`status`),
+  KEY `idx_draw_date` (`draw_date`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 CREATE TABLE `result` (
@@ -92,7 +103,10 @@ CREATE TABLE `result` (
   `status` varchar(20) DEFAULT 'published',
   `notes` text DEFAULT NULL,
   `created_at` timestamp NULL DEFAULT current_timestamp(),
-  PRIMARY KEY (`id`)
+  PRIMARY KEY (`id`),
+  KEY `idx_lottery` (`lottery`),
+  KEY `idx_draw_date` (`draw_date`),
+  KEY `idx_status` (`status`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 CREATE TABLE `past_draw` (
@@ -105,8 +119,47 @@ CREATE TABLE `past_draw` (
   `winners` int(11) DEFAULT 0,
   `status` varchar(20) DEFAULT 'completed',
   `created_at` timestamp NULL DEFAULT current_timestamp(),
-  PRIMARY KEY (`id`)
+  PRIMARY KEY (`id`),
+  KEY `idx_lottery` (`lottery`),
+  KEY `idx_draw_date` (`draw_date`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+-- ============================================
+-- VOTING FEATURE TABLES
+-- ============================================
+
+CREATE TABLE `vote` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `user_id` int(11) NOT NULL,
+  `lottery` varchar(50) NOT NULL,
+  `numbers` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL CHECK (json_valid(`numbers`)),
+  `bonus_numbers` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL CHECK (json_valid(`bonus_numbers`)),
+  `vote_date` date NOT NULL,
+  `created_at` timestamp NULL DEFAULT current_timestamp(),
+  PRIMARY KEY (`id`),
+  KEY `idx_lottery_date` (`lottery`,`vote_date`),
+  KEY `idx_user_date` (`user_id`,`vote_date`),
+  CONSTRAINT `vote_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `user` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+CREATE TABLE `admin_vote` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `admin_id` int(11) NOT NULL,
+  `lottery` varchar(50) NOT NULL,
+  `numbers` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL CHECK (json_valid(`numbers`)),
+  `bonus_numbers` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL CHECK (json_valid(`bonus_numbers`)),
+  `allocated_votes` int(11) DEFAULT 0,
+  `vote_date` date NOT NULL,
+  `created_at` timestamp NULL DEFAULT current_timestamp(),
+  PRIMARY KEY (`id`),
+  KEY `idx_lottery_date` (`lottery`,`vote_date`),
+  KEY `idx_admin` (`admin_id`),
+  CONSTRAINT `admin_vote_ibfk_1` FOREIGN KEY (`admin_id`) REFERENCES `user` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+-- ============================================
+-- WINNER & PAYMENT TABLES
+-- ============================================
 
 CREATE TABLE `winner` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
@@ -155,8 +208,22 @@ CREATE TABLE `payment` (
   CONSTRAINT `payment_ibfk_3` FOREIGN KEY (`approved_by`) REFERENCES `user` (`id`) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+-- ============================================
+-- INITIAL DATA - ADMIN USERS
+-- ============================================
+
 INSERT INTO `user` (`id`, `full_name`, `email`, `password`, `role`, `is_active`) VALUES
-(3, 'Free Lotto', 'lebomona78@gmail.com', '$2y$12$un0rlEjJVbeQyc2T8ob17uwPZAFy1IYTZ25t.XLIJ2p1Qb1p4KiF.', 'admin', 1),
-(1, 'Free Lotto1', 'totalfreelotto494@gmail.com', '$2y$12$ePPDySbeBsVlCI/GXavv8e/IMJzRxTQhUMJKys1bv0.LZDYWBT5xy', 'admin', 1);
+(1, 'Free Lotto1', 'totalfreelotto494@gmail.com', '$2y$12$ePPDySbeBsVlCI/GXavv8e/IMJzRxTQhUMJKys1bv0.LZDYWBT5xy', 'admin', 1),
+(3, 'Free Lotto', 'lebomona78@gmail.com', '$2y$12$un0rlEjJVbeQyc2T8ob17uwPZAFy1IYTZ25t.XLIJ2p1Qb1p4KiF.', 'admin', 1);
 
 COMMIT;
+
+-- ============================================
+-- NOTES
+-- ============================================
+-- 1. This schema includes the country field in the user table
+-- 2. All necessary indexes are created for optimal performance
+-- 3. Foreign key constraints ensure data integrity
+-- 4. Two admin accounts are pre-configured
+-- 5. The voting feature tables are included
+-- 6. All tables use utf8mb4 for full Unicode support

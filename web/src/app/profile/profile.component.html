@@ -58,6 +58,30 @@
                   <label>Phone Number</label>
                   <input type="tel" class="form-control" [(ngModel)]="profile.phone" name="phone" [disabled]="!isEditing" style="width: 100%; display: block;">
                 </div>
+                <div class="form-group" style="margin-bottom: 20px;">
+                  <label>Country</label>
+                  <div style="position: relative;">
+                    <input 
+                      type="text" 
+                      class="form-control" 
+                      [(ngModel)]="profile.country" 
+                      name="country" 
+                      [disabled]="!isEditing"
+                      (input)="filterCountries($event)"
+                      (focus)="showCountryDropdown = isEditing"
+                      placeholder="Type to search country"
+                      autocomplete="off"
+                      style="width: 100%; display: block;">
+                    <div *ngIf="showCountryDropdown && filteredCountries.length > 0" class="country-dropdown">
+                      <div 
+                        *ngFor="let c of filteredCountries.slice(0, 5)" 
+                        class="country-option" 
+                        (click)="selectCountry(c)">
+                        {{ c }}
+                      </div>
+                    </div>
+                  </div>
+                </div>
                 
                 <div class="button-group" style="margin-top: 30px;">
                   <button type="button" *ngIf="!isEditing" class="custom-button2" (click)="toggleEdit()">Edit Profile</button>
