@@ -57,6 +57,10 @@ export class SignupComponent {
   errorMessage = '';
   identifier = ''; // For verification mode
   showSuccessMessage = false;
+  showOtpInput = false;
+  resetOtp = '';
+  newPassword = '';
+  confirmNewPassword = '';
 
   close() {
     this.clearForm();
@@ -93,6 +97,13 @@ export class SignupComponent {
     this.allVerified = false;
     this.requiresEmailVerification = false;
     this.requiresPhoneVerification = false;
+    // Reset password recovery states
+    this.showOtpInput = false;
+    this.showSuccessMessage = false;
+    this.resetOtp = '';
+    this.newPassword = '';
+    this.confirmNewPassword = '';
+    this.identifier = '';
   }
 
   switchToRegularSignup() {
@@ -112,23 +123,80 @@ export class SignupComponent {
     this.errorMessage = '';
 
     try {
-      // This would call a password reset API endpoint
-      // For now, just show a success message
-      this.errorMessage = '';
-      
-      // Show success state instead of toast
-      this.showSuccessMessage = true;
-      
-      // Auto-redirect to login after 1 second
-      setTimeout(() => {
-        this.close();
-        this.switchToLogin();
-      }, 1000);
+      const response = await fetch(`${environment.apiUrl}/send-reset-code`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ identifier: this.identifier })
+      });
+
+      const result = await response.json();
+
+      if (result.success) {
+        this.showOtpInput = true;
+        this.errorMessage = '';
+      } else {
+        this.errorMessage = result.error || 'Failed to send reset code. Please try again.';
+      }
     } catch (error) {
-      this.errorMessage = 'Failed to send reset instructions. Please try again.';
+      this.errorMessage = 'Network error. Please try again.';
     } finally {
       this.isLoading = false;
     }
+  }
+
+  async resetPassword() {
+    if (!this.resetOtp || !this.newPassword || !this.confirmNewPassword) {
+      this.errorMessage = 'Please fill in all fields';
+      return;
+    }
+
+    if (this.newPassword !== this.confirmNewPassword) {
+      this.errorMessage = 'Passwords do not match';
+      return;
+    }
+
+    if (this.newPassword.length < 6) {
+      this.errorMessage = 'Password must be at least 6 characters';
+      return;
+    }
+
+    this.isLoading = true;
+    this.errorMessage = '';
+
+    try {
+      const response = await fetch(`${environment.apiUrl}/reset-password`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          identifier: this.identifier,
+          code: this.resetOtp,
+          newPassword: this.newPassword
+        })
+      });
+
+      const result = await response.json();
+
+      if (result.success) {
+        this.showSuccessMessage = true;
+        this.showOtpInput = false;
+        this.errorMessage = '';
+        
+        setTimeout(() => {
+          this.close();
+          this.switchToLogin();
+        }, 3000);
+      } else {
+        this.errorMessage = result.error || 'Failed to reset password. Please try again.';
+      }
+    } catch (error) {
+      this.errorMessage = 'Network error. Please try again.';
+    } finally {
+      this.isLoading = false;
+    }
+  }
+
+  async resendResetCode() {
+    await this.sendPasswordReset();
   }
 
   async onSignup() {

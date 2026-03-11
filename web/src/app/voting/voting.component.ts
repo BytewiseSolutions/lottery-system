@@ -186,12 +186,16 @@ export class VotingComponent implements OnInit {
       return;
     }
     
+    console.log('Upcoming draw object:', this.upcomingDraw);
+    
     const voteData = {
-      lottery: this.upcomingDraw.lottery_type,
+      lottery: this.upcomingDraw.lottery || this.upcomingDraw.name || this.upcomingDraw.lottery_type || 'Unknown Lottery',
       numbers: this.selectedNumbers,
       bonusNumbers: this.selectedBonus,
-      voteDate: this.upcomingDraw.draw_date.split(' ')[0]
+      drawDate: this.upcomingDraw.draw_date || this.upcomingDraw.drawDate
     };
+    
+    console.log('Vote data being sent:', voteData);
     
     this.lotteryService.submitVote(voteData).subscribe({
       next: () => {

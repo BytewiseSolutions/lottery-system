@@ -1,0 +1,97 @@
+<app-layout>
+  <section class="winnings-section" style="padding: 60px 0; min-height: 70vh;">
+    <div class="container">
+      <h2 class="section-title" style="text-align: center; margin-bottom: 40px;">My Winnings</h2>
+      
+      @if (isLoading) {
+        <div class="loading-container" style="text-align: center; padding: 60px 0;">
+          <div class="spinner"></div>
+          <p style="margin-top: 20px; color: #666;">Loading your winnings...</p>
+        </div>
+      }
+
+      @if (!isLoggedIn && !isLoading) {
+        <div class="login-prompt" style="text-align: center; padding: 60px 0; background: #f8f9fa; border-radius: 10px;">
+          <h3>Please Login</h3>
+          <p>You need to be logged in to view your winnings.</p>
+        </div>
+      }
+
+      @if (errorMessage && !isLoading) {
+        <div class="alert alert-danger" style="margin-bottom: 20px;">
+          {{ errorMessage }}
+        </div>
+      }
+
+      @if (isLoggedIn && !isLoading && !errorMessage) {
+        <div class="row" style="margin-bottom: 40px;">
+          <div class="col-md-4">
+            <div class="stat-card" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 30px; border-radius: 10px; text-align: center;">
+              <h3 style="margin: 0; font-size: 2rem;">${{ totalWinnings.toFixed(2) }}</h3>
+              <p style="margin: 10px 0 0 0;">Total Winnings</p>
+            </div>
+          </div>
+          <div class="col-md-4">
+            <div class="stat-card" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); color: white; padding: 30px; border-radius: 10px; text-align: center;">
+              <h3 style="margin: 0; font-size: 2rem;">${{ pendingWinnings.toFixed(2) }}</h3>
+              <p style="margin: 10px 0 0 0;">Pending Payment</p>
+            </div>
+          </div>
+          <div class="col-md-4">
+            <div class="stat-card" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); color: white; padding: 30px; border-radius: 10px; text-align: center;">
+              <h3 style="margin: 0; font-size: 2rem;">${{ paidWinnings.toFixed(2) }}</h3>
+              <p style="margin: 10px 0 0 0;">Paid Out</p>
+            </div>
+          </div>
+        </div>
+
+        @if (winnings.length === 0) {
+          <div class="no-winnings" style="text-align: center; padding: 60px 0; background: #f8f9fa; border-radius: 10px;">
+            <h3>No Winnings Yet</h3>
+            <p>Keep playing and you might be our next winner!</p>
+          </div>
+        }
+
+        @if (winnings.length > 0) {
+          <div class="winnings-list">
+            @for (winning of winnings; track winning.id) {
+              <div class="winning-card" style="background: white; padding: 25px; border-radius: 10px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); margin-bottom: 20px;">
+                <div class="row align-items-center">
+                  <div class="col-md-8">
+                    <div class="winning-info">
+                      <h4 style="margin: 0 0 10px 0; color: #333;">{{ winning.lottery }}</h4>
+                      <p style="margin: 0 0 10px 0; color: #666;">Won on {{ formatDate(winning.created_at) }}</p>
+                      <div class="numbers" style="display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 10px;">
+                        @for (num of winning.entry_numbers; track num) {
+                          <span class="number" style="background: linear-gradient(135deg, rgb(108, 0, 146), rgb(175, 0, 255)); color: white; padding: 5px 12px; border-radius: 5px; font-weight: 600;">
+                            {{ num }}
+                          </span>
+                        }
+                        @for (bonus of winning.entry_bonus; track bonus) {
+                          <span class="bonus-number" style="background: linear-gradient(135deg, rgb(255, 165, 0), rgb(255, 140, 0)); color: white; padding: 5px 12px; border-radius: 5px; font-weight: 600;">
+                            {{ bonus }}
+                          </span>
+                        }
+                      </div>
+                      @if (winning.paid_at) {
+                        <div style="color: #28a745; font-size: 14px;">
+                          <i class="fas fa-check-circle"></i> Paid on {{ formatDate(winning.paid_at) }}
+                        </div>
+                      }
+                    </div>
+                  </div>
+                  <div class="col-md-4" style="text-align: right;">
+                    <h3 style="margin: 0 0 10px 0; color: #28a745; font-size: 2rem;">${{ winning.prize_amount }}</h3>
+                    <span [class]="getStatusClass(winning.payment_status)" style="display: inline-block; padding: 8px 20px; border-radius: 20px; font-weight: 600; font-size: 14px;">
+                      {{ getStatusText(winning.payment_status) }}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            }
+          </div>
+        }
+      }
+    </div>
+  </section>
+</app-layout>

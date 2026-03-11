@@ -27,8 +27,7 @@ if (!isset($data->identifier) || !isset($data->password) ||
 }
 
 try {
-    // Check if identifier is email or phone - only select needed fields
-    $query = "SELECT id, full_name, email, phone, country, password, role FROM user WHERE (email = ? OR phone = ?) AND is_active = TRUE LIMIT 1";
+    $query = "SELECT id, full_name, email, phone, country, profile_picture, password, role FROM user WHERE (email = ? OR phone = ?) AND is_active = TRUE LIMIT 1";
     $stmt = $db->prepare($query);
     $stmt->execute([$data->identifier, $data->identifier]);
     
@@ -40,9 +39,16 @@ try {
     
     $user = $stmt->fetch(PDO::FETCH_ASSOC);
     
-    // Verify password first (same for all users)
+    // Build profile picture URL if exists
+    $profilePictureUrl = null;
+    if ($user['profile_picture']) {
+        $protocol = isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? 'https' : 'http';
+        $host = $_SERVER['HTTP_HOST'];
+        $baseUrl = $protocol . '://' . $host . dirname($_SERVER['PHP_SELF']);
+        $profilePictureUrl = $baseUrl . '/get-file.php?id=' . $user['profile_picture'];
+    }
+    
     if (!password_verify($data->password, $user['password'])) {
-        // Log failed login attempt
         try {
             $logQuery = "INSERT INTO activity_log (user_id, action, details, ip_address) VALUES (?, ?, ?, ?)";
             $logStmt = $db->prepare($logQuery);
@@ -61,17 +67,16 @@ try {
         exit;
     }
     
-    // Generate JWT payload
     $payload = [
         'id' => $user['id'],
         'fullName' => $user['full_name'],
         'email' => $user['email'],
         'phone' => $user['phone'] ?? '',
         'country' => $user['country'] ?? null,
+        'profilePicture' => $profilePictureUrl,
         'exp' => time() + (24 * 60 * 60)
     ];
     
-    // Add role if admin
     if (isset($user['role']) && $user['role'] === 'admin') {
         $payload['role'] = 'admin';
         $message = 'Admin login successful';
@@ -81,6 +86,7 @@ try {
             'email' => $user['email'],
             'phone' => $user['phone'] ?? '',
             'country' => $user['country'] ?? null,
+            'profilePicture' => $profilePictureUrl,
             'role' => 'admin'
         ];
     } else {
@@ -90,13 +96,13 @@ try {
             'fullName' => $user['full_name'],
             'email' => $user['email'],
             'phone' => $user['phone'] ?? '',
-            'country' => $user['country'] ?? null
+            'country' => $user['country'] ?? null,
+            'profilePicture' => $profilePictureUrl
         ];
     }
     
     $token = JWT::encode($payload);
     
-    // Log successful login
     try {
         $role = isset($user['role']) && $user['role'] === 'admin' ? 'Admin' : 'User';
         $logQuery = "INSERT INTO activity_log (user_id, action, details, ip_address) VALUES (?, ?, ?, ?)";

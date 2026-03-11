@@ -1,4 +1,4 @@
-import { Component, OnInit, ChangeDetectorRef, NgZone } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef, NgZone, OnDestroy, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { LotteryService, Draw } from '../services/lottery.service';
@@ -9,24 +9,36 @@ import { environment } from '../../environments/environment';
   selector: 'app-home',
   imports: [CommonModule, RouterLink, LayoutComponent],
   templateUrl: './home.component.html',
-  styleUrl: './home.component.css'
+  styleUrl: './home.component.css',
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class HomeComponent implements OnInit {
+export class HomeComponent implements OnInit, OnDestroy {
   draws: Draw[] = [];
   results: any[] = [];
   paginatedDraws: Draw[] = [];
   currentPage = 1;
   itemsPerPage = 3;
   totalPages = 0;
+  private countdownInterval: any;
 
   constructor(private lotteryService: LotteryService, private cdr: ChangeDetectorRef, private ngZone: NgZone) {}
 
   ngOnInit() {
     this.loadData();
+    this.startCountdownTimer();
+  }
+
+  ngOnDestroy() {
+    if (this.countdownInterval) {
+      clearInterval(this.countdownInterval);
+    }
+  }
+
+  private startCountdownTimer() {
     this.ngZone.runOutsideAngular(() => {
-      setInterval(() => {
+      this.countdownInterval = setInterval(() => {
         this.ngZone.run(() => {
-          this.cdr.detectChanges();
+          this.cdr.markForCheck();
         });
       }, 1000);
     });

@@ -13,6 +13,7 @@ import { AdminComponent } from './admin/admin.component';
 import { ProfileComponent } from './profile/profile.component';
 import { SettingsComponent } from './settings/settings.component';
 import { VotingComponent } from './voting/voting.component';
+import { WinningsComponent } from './winnings/winnings.component';
 import { adminGuard } from './guards/admin.guard';
 
 export const routes: Routes = [
@@ -30,6 +31,7 @@ export const routes: Routes = [
   { path: 'profile', component: ProfileComponent },
   { path: 'settings', component: SettingsComponent },
   { path: 'voting', component: VotingComponent },
+  { path: 'winnings', component: WinningsComponent },
   { path: 'admin', component: AdminComponent, canActivate: [adminGuard] },
   { path: 'dashboard', component: AdminComponent, canActivate: [adminGuard] },
   { path: '**', redirectTo: '' }

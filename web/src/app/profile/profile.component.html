@@ -35,6 +35,39 @@
             <!-- Personal Information -->
             <div class="info-section">
               <h4 style="margin-bottom: 20px;">Personal Information</h4>
+              
+              <!-- Profile Picture Section -->
+              <div class="profile-picture-section" style="margin-bottom: 30px; text-align: center;">
+                <div class="picture-preview" style="margin-bottom: 15px;">
+                  <img [src]="previewUrl || 'assets/images/default-avatar.svg'" 
+                       alt="Profile Picture" 
+                       style="width: 150px; height: 150px; border-radius: 50%; object-fit: cover; border: 4px solid #ddd;">
+                </div>
+                <div *ngIf="isEditing" class="picture-controls">
+                  <input type="file" 
+                         #fileInput 
+                         (change)="onFileSelected($event)" 
+                         accept="image/*" 
+                         style="display: none;">
+                  <button type="button" class="custom-button1" (click)="fileInput.click()" style="margin-right: 10px;">Choose Picture</button>
+                  <button type="button" 
+                          class="custom-button2" 
+                          (click)="uploadProfilePicture()" 
+                          [disabled]="!selectedFile || isUploadingPicture"
+                          *ngIf="selectedFile">
+                    {{ isUploadingPicture ? 'Uploading...' : 'Upload' }}
+                  </button>
+                  <button type="button" 
+                          class="custom-button1" 
+                          (click)="removeProfilePicture()" 
+                          *ngIf="previewUrl"
+                          style="margin-left: 10px;">
+                    Remove
+                  </button>
+                </div>
+                <p style="font-size: 12px; color: #666; margin-top: 10px;">Max file size: 5MB. Supported formats: JPG, PNG, GIF</p>
+              </div>
+              
               <form (ngSubmit)="updateProfile()">
                 <div class="row">
                   <div class="col-md-6">

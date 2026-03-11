@@ -17,7 +17,8 @@ export class ProfileComponent implements OnInit {
     lastName: '',
     email: '',
     phone: '',
-    country: ''
+    country: '',
+    profilePicture: ''
   };
 
   originalProfile = { ...this.profile };
@@ -33,6 +34,9 @@ export class ProfileComponent implements OnInit {
   countries = COUNTRIES;
   filteredCountries = COUNTRIES.slice(0, 5);
   showCountryDropdown = false;
+  selectedFile: File | null = null;
+  previewUrl: string | null = null;
+  isUploadingPicture = false;
 
   constructor(private successPopupService: SuccessPopupService) {}
 
@@ -51,9 +55,11 @@ export class ProfileComponent implements OnInit {
         lastName: names.slice(1).join(' ') || '',
         email: userData.email || '',
         phone: userData.phone || '',
-        country: userData.country || ''
+        country: userData.country || '',
+        profilePicture: userData.profilePicture || ''
       };
       this.originalProfile = { ...this.profile };
+      this.previewUrl = this.profile.profilePicture || null;
     }
   }
 
@@ -117,6 +123,81 @@ export class ProfileComponent implements OnInit {
   selectCountry(country: string) {
     this.profile.country = country;
     this.showCountryDropdown = false;
+  }
+
+  onFileSelected(event: any) {
+    const file = event.target.files[0];
+    if (file) {
+      if (file.size > 5 * 1024 * 1024) {
+        alert('File size must be less than 5MB');
+        return;
+      }
+      
+      if (!file.type.startsWith('image/')) {
+        alert('Please select an image file');
+        return;
+      }
+      
+      this.selectedFile = file;
+      
+      const reader = new FileReader();
+      reader.onload = (e: any) => {
+        this.previewUrl = e.target.result;
+      };
+      reader.readAsDataURL(file);
+    }
+  }
+
+  async uploadProfilePicture() {
+    if (!this.selectedFile) return;
+    
+    this.isUploadingPicture = true;
+    const token = localStorage.getItem('token');
+    const user = JSON.parse(localStorage.getItem('user') || '{}');
+    
+    const formData = new FormData();
+    formData.append('profilePicture', this.selectedFile);
+    formData.append('userId', user.id);
+    
+    try {
+      const response = await fetch(`${environment.apiUrl}/upload-profile-picture.php`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        },
+        body: formData
+      });
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      
+      const result = await response.json();
+      
+      if (result.success) {
+        // Build the URL to get the image
+        const imageUrl = `${environment.apiUrl}/get-file.php?id=${result.profilePictureId}`;
+        this.profile.profilePicture = imageUrl;
+        this.previewUrl = imageUrl;
+        user.profilePicture = imageUrl;
+        localStorage.setItem('user', JSON.stringify(user));
+        this.successPopupService.show('Profile picture updated successfully!', 'Success');
+        this.selectedFile = null;
+      } else {
+        alert(result.error || 'Failed to upload profile picture');
+      }
+    } catch (error: any) {
+      console.error('Upload error:', error);
+      alert('Network error. Please make sure the API server is running on port 8000.');
+    } finally {
+      this.isUploadingPicture = false;
+    }
+  }
+
+  removeProfilePicture() {
+    this.previewUrl = null;
+    this.selectedFile = null;
+    this.profile.profilePicture = '';
   }
 
   async updateProfile() {

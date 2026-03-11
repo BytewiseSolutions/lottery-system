@@ -1,4 +1,6 @@
 <?php
+error_reporting(E_ALL);
+ini_set('display_errors', 0);
 header('Content-Type: application/json');
 require_once 'config/cors.php';
 require_once 'config/database.php';
@@ -6,27 +8,32 @@ require_once 'config/jwt.php';
 
 $method = $_SERVER['REQUEST_METHOD'];
 
-if ($method === 'POST') {
-    $user = JWT::authenticate();
-    
-    $data = json_decode(file_get_contents('php://input'), true);
-    $userId = $user['id'];
-    $lottery = $data['lottery'] ?? '';
-    $numbers = $data['numbers'] ?? [];
-    $bonusNumbers = $data['bonusNumbers'] ?? [];
-    $drawDate = $data['drawDate'] ?? date('Y-m-d'); // Draw date (when lottery happens)
-    
-    if (empty($lottery) || empty($numbers) || empty($bonusNumbers)) {
-        http_response_code(400);
-        echo json_encode(['error' => 'Missing required fields']);
-        exit;
-    }
-    
-    if (count($numbers) !== 5 || count($bonusNumbers) !== 2) {
-        http_response_code(400);
-        echo json_encode(['error' => 'Invalid number selection']);
-        exit;
-    }
+try {
+    if ($method === 'POST') {
+        $user = JWT::authenticate();
+        
+        $data = json_decode(file_get_contents('php://input'), true);
+        error_log("Vote POST data: " . json_encode($data));
+        
+        $userId = $user['id'];
+        $lottery = $data['lottery'] ?? '';
+        $numbers = $data['numbers'] ?? [];
+        $bonusNumbers = $data['bonusNumbers'] ?? [];
+        $drawDate = $data['drawDate'] ?? date('Y-m-d');
+        
+        if (empty($lottery) || empty($numbers) || empty($bonusNumbers)) {
+            error_log("Vote validation failed - missing fields: lottery=$lottery, numbers=" . json_encode($numbers) . ", bonusNumbers=" . json_encode($bonusNumbers));
+            http_response_code(400);
+            echo json_encode(['error' => 'Missing required fields', 'received' => $data]);
+            exit;
+        }
+        
+        if (count($numbers) !== 5 || count($bonusNumbers) !== 2) {
+            error_log("Vote validation failed - invalid counts: numbers=" . count($numbers) . ", bonusNumbers=" . count($bonusNumbers));
+            http_response_code(400);
+            echo json_encode(['error' => 'Invalid number selection', 'numbersCount' => count($numbers), 'bonusCount' => count($bonusNumbers)]);
+            exit;
+        }
     
     $database = new Database();
     $db = $database->getConnection();
@@ -47,30 +54,35 @@ if ($method === 'POST') {
     
     echo json_encode(['success' => true, 'message' => 'Vote submitted successfully']);
     
-} elseif ($method === 'GET') {
-    $user = JWT::authenticate();
-    
-    $database = new Database();
-    $db = $database->getConnection();
-    
-    // Get user's votes with both creation date and draw date
-    $stmt = $db->prepare("SELECT id, lottery, numbers, bonus_numbers, vote_date, draw_date, created_at FROM vote WHERE user_id = ? ORDER BY created_at DESC");
-    $stmt->execute([$user['id']]);
-    $votes = $stmt->fetchAll(PDO::FETCH_ASSOC);
-    
-    $result = [];
-    foreach ($votes as $vote) {
-        $result[] = [
-            'id' => $vote['id'],
-            'lottery' => $vote['lottery'],
-            'numbers' => json_decode($vote['numbers']),
-            'bonusNumbers' => json_decode($vote['bonus_numbers']),
-            'voteDate' => $vote['vote_date'], // When vote was created
-            'drawDate' => $vote['draw_date'], // When lottery draw happens
-            'createdAt' => $vote['created_at']
-        ];
+    } elseif ($method === 'GET') {
+        $user = JWT::authenticate();
+        
+        $database = new Database();
+        $db = $database->getConnection();
+        
+        // Get user's votes with both creation date and draw date
+        $stmt = $db->prepare("SELECT id, lottery, numbers, bonus_numbers, vote_date, draw_date, created_at FROM vote WHERE user_id = ? ORDER BY created_at DESC");
+        $stmt->execute([$user['id']]);
+        $votes = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        
+        $result = [];
+        foreach ($votes as $vote) {
+            $result[] = [
+                'id' => $vote['id'],
+                'lottery' => $vote['lottery'],
+                'numbers' => json_decode($vote['numbers']),
+                'bonusNumbers' => json_decode($vote['bonus_numbers']),
+                'voteDate' => $vote['vote_date'], // When vote was created
+                'drawDate' => $vote['draw_date'], // When lottery draw happens
+                'createdAt' => $vote['created_at']
+            ];
+        }
+        
+        echo json_encode(['votes' => $result]);
     }
-    
-    echo json_encode(['votes' => $result]);
+} catch (Exception $e) {
+    error_log("Vote endpoint error: " . $e->getMessage());
+    http_response_code(500);
+    echo json_encode(['error' => 'Internal server error', 'details' => $e->getMessage()]);
 }
 ?>
