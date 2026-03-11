@@ -8,9 +8,9 @@ $db = $database->getConnection();
 
 $data = json_decode(file_get_contents("php://input"));
 
-if (!$data->fullName || (!$data->email && !$data->phone) || !$data->password) {
+if (!$data->fullName || (!$data->email && !$data->phone) || !$data->password || !$data->country) {
     http_response_code(400);
-    echo json_encode(['error' => 'Please fill in all required fields: Full name, email OR phone, and password']);
+    echo json_encode(['error' => 'Please fill in all required fields: Full name, email OR phone, password, and country']);
     exit;
 }
 
@@ -38,18 +38,19 @@ try {
     }
     
     $hashedPassword = password_hash($data->password, PASSWORD_DEFAULT);
-    $query = "INSERT INTO user (full_name, email, phone, password, is_active) VALUES (?, ?, ?, ?, 1)";
+    $query = "INSERT INTO user (full_name, email, phone, password, country, is_active) VALUES (?, ?, ?, ?, ?, 1)";
     $stmt = $db->prepare($query);
     $stmt->execute([
         $data->fullName,
         $data->email ?? null,
         $data->phone ?? null,
-        $hashedPassword
+        $hashedPassword,
+        $data->country
     ]);
     
     $userId = $db->lastInsertId();
     
-    $userQuery = "SELECT id, full_name, email, phone, role FROM user WHERE id = ?";
+    $userQuery = "SELECT id, full_name, email, phone, country, role FROM user WHERE id = ?";
     $userStmt = $db->prepare($userQuery);
     $userStmt->execute([$userId]);
     $user = $userStmt->fetch(PDO::FETCH_ASSOC);
@@ -86,6 +87,7 @@ try {
             'full_name' => $user['full_name'],
             'email' => $user['email'],
             'phone' => $user['phone'],
+            'country' => $user['country'],
             'role' => $user['role'] ?? 'user'
         ]
     ]);

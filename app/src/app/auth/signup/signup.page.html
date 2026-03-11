@@ -25,6 +25,12 @@
       <ion-input type="tel" [(ngModel)]="phone"></ion-input>
     </ion-item>
     <ion-item>
+      <ion-label position="floating">Country</ion-label>
+      <ion-select [(ngModel)]="country" placeholder="Select Country" interface="action-sheet">
+        <ion-select-option *ngFor="let c of countries" [value]="c">{{ c }}</ion-select-option>
+      </ion-select>
+    </ion-item>
+    <ion-item>
       <ion-label position="floating">Password</ion-label>
       <ion-input [type]="showPassword ? 'text' : 'password'" [(ngModel)]="password"></ion-input>
       <ion-button slot="end" fill="clear" (click)="togglePassword()">

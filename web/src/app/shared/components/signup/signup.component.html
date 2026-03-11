@@ -33,10 +33,32 @@
                   <input type="tel" class="my-form-control" [(ngModel)]="phone" [ngModelOptions]="{standalone: true}" placeholder="Enter Your Phone Number">
                 </div>
                 <div class="form-group half-width">
-                  <label>Password</label>
-                  <input [type]="showPassword ? 'text' : 'password'" class="my-form-control" [(ngModel)]="password" [ngModelOptions]="{standalone: true}" placeholder="Enter Your Password" required>
-                  <div *ngIf="validationErrors.password" class="error-message">{{ validationErrors.password }}</div>
+                  <label>Country</label>
+                  <input 
+                    type="text" 
+                    class="my-form-control" 
+                    [(ngModel)]="country" 
+                    [ngModelOptions]="{standalone: true}" 
+                    (input)="filterCountries($event)"
+                    (focus)="showCountryDropdown = true"
+                    placeholder="Type to search country"
+                    autocomplete="off"
+                    required>
+                  <div *ngIf="showCountryDropdown && filteredCountries.length > 0" class="country-dropdown">
+                    <div 
+                      *ngFor="let c of filteredCountries.slice(0, 5)" 
+                      class="country-option" 
+                      (click)="selectCountry(c)">
+                      {{ c }}
+                    </div>
+                  </div>
+                  <div *ngIf="validationErrors.country" class="error-message">{{ validationErrors.country }}</div>
                 </div>
+              </div>
+              <div class="form-group full-width">
+                <label>Password</label>
+                <input [type]="showPassword ? 'text' : 'password'" class="my-form-control" [(ngModel)]="password" [ngModelOptions]="{standalone: true}" placeholder="Enter Your Password" required>
+                <div *ngIf="validationErrors.password" class="error-message">{{ validationErrors.password }}</div>
               </div>
               <div class="custom-control custom-checkbox">
                 <input type="checkbox" class="custom-control-input" id="showPasswordSignup" [(ngModel)]="showPassword" [ngModelOptions]="{standalone: true}">

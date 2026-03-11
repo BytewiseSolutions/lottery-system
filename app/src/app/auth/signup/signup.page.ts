@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
 import { AlertController, LoadingController } from '@ionic/angular';
+import { COUNTRIES } from '../../shared/countries';
 
 @Component({
   selector: 'app-signup',
@@ -15,11 +16,13 @@ export class SignupPage implements OnInit {
   password = '';
   repeatPassword = '';
   phone = '';
+  country = '';
   otp = '';
   showOtp = false;
   showPassword = false;
   showRepeatPassword = false;
   agreeTerms = false;
+  countries = COUNTRIES;
 
   constructor(
     private auth: AuthService,
@@ -50,7 +53,7 @@ export class SignupPage implements OnInit {
     const loading = await this.loadingCtrl.create({ message: 'Registering...' });
     await loading.present();
 
-    this.auth.register({ name: this.name, email: this.email, password: this.password, repeatPassword: this.repeatPassword, phone: this.phone }).subscribe({
+    this.auth.register({ name: this.name, email: this.email, password: this.password, repeatPassword: this.repeatPassword, phone: this.phone, country: this.country }).subscribe({
       next: () => {
         loading.dismiss();
         this.showOtp = true;

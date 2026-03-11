@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { SuccessPopupService } from '../../../services/success-popup.service';
 import { environment } from '../../../../environments/environment';
+import { COUNTRIES } from '../../data/countries';
 
 @Component({
   selector: 'app-signup',
@@ -21,6 +22,9 @@ export class SignupComponent {
 
   // Validation errors
   validationErrors: any = {};
+  countries = COUNTRIES;
+  filteredCountries = COUNTRIES.slice(0, 5);
+  showCountryDropdown = false;
 
   constructor(private successPopupService: SuccessPopupService, private router: Router) {}
 
@@ -29,6 +33,7 @@ export class SignupComponent {
   lastName = '';
   email = '';
   phone = '';
+  country = '';
   password = '';
   agreeTerms = false;
   isLoading = false;
@@ -69,6 +74,7 @@ export class SignupComponent {
     this.lastName = '';
     this.email = '';
     this.phone = '';
+    this.country = '';
     this.password = '';
     this.agreeTerms = false;
     this.showPassword = false;
@@ -79,6 +85,8 @@ export class SignupComponent {
     this.errorMessage = '';
     this.verificationMode = false;
     this.validationErrors = {};
+    this.showCountryDropdown = false;
+    this.filteredCountries = COUNTRIES.slice(0, 5);
     // Reset verification states
     this.emailVerified = false;
     this.phoneVerified = false;
@@ -145,6 +153,10 @@ export class SignupComponent {
       this.validationErrors.contact = 'Please provide either email or phone number';
     }
     
+    if (!this.country) {
+      this.validationErrors.country = 'Country is required';
+    }
+    
     if (!this.password) {
       this.validationErrors.password = 'Password is required';
     } else if (this.password.length < 6) {
@@ -170,6 +182,7 @@ export class SignupComponent {
           fullName: `${this.firstName} ${this.lastName}`.trim(),
           email: this.email || null,
           phone: this.phone || null,
+          country: this.country,
           password: this.password
         })
       });
@@ -210,5 +223,22 @@ export class SignupComponent {
     this.clearForm();
     this.close();
     this.switchToLogin();
+  }
+
+  filterCountries(event: any) {
+    const searchTerm = event.target.value.toLowerCase();
+    if (!searchTerm) {
+      this.filteredCountries = COUNTRIES.slice(0, 5);
+    } else {
+      this.filteredCountries = COUNTRIES.filter(c => 
+        c.toLowerCase().startsWith(searchTerm)
+      );
+    }
+    this.showCountryDropdown = true;
+  }
+
+  selectCountry(country: string) {
+    this.country = country;
+    this.showCountryDropdown = false;
   }
 }
