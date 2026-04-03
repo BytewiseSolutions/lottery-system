@@ -36,50 +36,53 @@ export class VotingComponent implements OnInit {
   }
   
   loadUpcomingDraw() {
-    this.lotteryService.getUpcomingDraws().subscribe({
-      next: (draws: any) => {
-        const drawsArray = Array.isArray(draws) ? draws : draws.draws || [];
-        if (drawsArray.length > 0) {
-          this.upcomingDraw = drawsArray[0];
+    this.lotteryService.getCurrentVotingDraw().subscribe({
+      next: (response: any) => {
+        if (response.success && response.current_voting_draw) {
+          this.upcomingDraw = response.current_voting_draw;
+          this.isVotingTime = response.current_voting_draw.is_voting_open;
+        } else {
+          this.upcomingDraw = null;
+          this.isVotingTime = false;
         }
       },
-      error: (err) => console.error('Error loading draws:', err)
+      error: (err) => {
+        console.error('Error loading voting draw:', err);
+        this.isVotingTime = false;
+      }
     });
   }
   
   checkVotingTime() {
-    const now = new Date();
-    const hours = now.getHours();
-    const minutes = now.getMinutes();
-    const seconds = now.getSeconds();
-    
-    // Voting is always open except we need to show countdown
-    this.isVotingTime = true;
-    
-    if (!this.upcomingDraw) return;
-    
-    // Calculate time until draw closes (draw_date at 19:59)
-    const drawDate = new Date(this.upcomingDraw.draw_date);
-    drawDate.setHours(19, 59, 59, 999);
-    
-    const diff = drawDate.getTime() - now.getTime();
-    
-    if (diff <= 0) {
-      this.countdown = '00:00:00';
-      // Voting has closed, reload upcoming draws to get next lottery
+    if (!this.upcomingDraw || !this.upcomingDraw.voting_closes_at) {
       this.loadUpcomingDraw();
       return;
     }
     
+    const now = new Date();
+    const votingCloseTime = new Date(this.upcomingDraw.voting_closes_at);
+    
+    const diff = votingCloseTime.getTime() - now.getTime();
+    
+    if (diff <= 0) {
+      this.countdown = '00:00:00';
+      this.isVotingTime = false;
+      // Voting has closed, reload to get next voting lottery
+      this.loadUpcomingDraw();
+      return;
+    }
+    
+    this.isVotingTime = true;
+    
     const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-    const h = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-    const m = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-    const s = Math.floor((diff % (1000 * 60)) / 1000);
+    const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+    const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+    const seconds = Math.floor((diff % (1000 * 60)) / 1000);
     
     if (days > 0) {
-      this.countdown = `${days}d ${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+      this.countdown = `${days}d ${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
     } else {
-      this.countdown = `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+      this.countdown = `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
     }
   }
   
@@ -92,18 +95,27 @@ export class VotingComponent implements OnInit {
   
   selectNumber(num: number) {
     if (this.currentStep === 1 || this.currentStep === 2) {
+      // Main numbers selection
       const idx = this.selectedNumbers.indexOf(num);
       if (idx > -1) {
         this.selectedNumbers.splice(idx, 1);
       } else if (this.selectedNumbers.length < 5) {
         this.selectedNumbers.push(num);
+        this.selectedNumbers.sort((a, b) => a - b);
       }
     } else if (this.currentStep === 3 || this.currentStep === 4) {
+      // Bonus numbers selection - check if already selected in main numbers
+      if (this.selectedNumbers.includes(num)) {
+        this.toastService.showError(`Number ${num} is already selected in main numbers. Please choose a different number.`);
+        return;
+      }
+      
       const idx = this.selectedBonus.indexOf(num);
       if (idx > -1) {
         this.selectedBonus.splice(idx, 1);
       } else if (this.selectedBonus.length < 2) {
         this.selectedBonus.push(num);
+        this.selectedBonus.sort((a, b) => a - b);
       }
     }
   }
@@ -114,6 +126,14 @@ export class VotingComponent implements OnInit {
     }
     if (this.currentStep === 3 || this.currentStep === 4) {
       return this.selectedBonus.includes(num);
+    }
+    return false;
+  }
+  
+  isDisabled(num: number): boolean {
+    // In bonus number selection steps, disable numbers already selected in main numbers
+    if (this.currentStep === 3 || this.currentStep === 4) {
+      return this.selectedNumbers.includes(num);
     }
     return false;
   }
@@ -189,10 +209,10 @@ export class VotingComponent implements OnInit {
     console.log('Upcoming draw object:', this.upcomingDraw);
     
     const voteData = {
-      lottery: this.upcomingDraw.lottery || this.upcomingDraw.name || this.upcomingDraw.lottery_type || 'Unknown Lottery',
+      lottery: this.upcomingDraw.lottery || this.upcomingDraw.lottery_type || 'Unknown Lottery',
       numbers: this.selectedNumbers,
       bonusNumbers: this.selectedBonus,
-      drawDate: this.upcomingDraw.draw_date || this.upcomingDraw.drawDate
+      drawDate: this.upcomingDraw.draw_date?.split(' ')[0] || this.upcomingDraw.drawDate
     };
     
     console.log('Vote data being sent:', voteData);
@@ -241,7 +261,9 @@ export class VotingComponent implements OnInit {
   
   quickPickBonus() {
     this.selectedBonus = [];
-    const available = [...this.numbers];
+    // Filter out numbers already selected in main numbers
+    const available = this.numbers.filter(num => !this.selectedNumbers.includes(num));
+    
     for (let i = 0; i < 2; i++) {
       const randomIndex = Math.floor(Math.random() * available.length);
       this.selectedBonus.push(available[randomIndex]);
@@ -264,8 +286,8 @@ export class VotingComponent implements OnInit {
     if (!this.upcomingDraw) return;
     
     this.lotteryService.getLeadingNumbers(
-      this.upcomingDraw.lottery_type, 
-      this.upcomingDraw.draw_date.split(' ')[0]
+      this.upcomingDraw.lottery || this.upcomingDraw.lottery_type, 
+      this.upcomingDraw.draw_date?.split(' ')[0] || this.upcomingDraw.drawDate
     ).subscribe({
       next: (data) => {
         this.leadingNumbers = data;

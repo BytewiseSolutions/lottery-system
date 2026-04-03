@@ -49,9 +49,9 @@
           <div class="numbers-grid mobile-grid" style="display: grid; grid-template-columns: repeat(10, 1fr); gap: 10px; margin: 20px 0;">
             <button *ngFor="let num of numbers" 
                     class="bonus-number-btn" 
-                    [class.selected]="selectedBonusNumbers.includes(num)"
-                    (click)="toggleBonusNumber(num)"
-                    [disabled]="!selectedBonusNumbers.includes(num) && selectedBonusNumbers.length >= 2">
+                    [class.selected]="isBonusNumberSelected(num)"
+                    [disabled]="isBonusNumberDisabled(num) || (!isBonusNumberSelected(num) && selectedBonusNumbers.length >= 2)"
+                    (click)="toggleBonusNumber(num)">
               {{num}}
             </button>
           </div>

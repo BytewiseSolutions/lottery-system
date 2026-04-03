@@ -1,5 +1,26 @@
 <app-layout>
 <div class="voting-container">
+  <!-- Loading Overlay -->
+  @if (isLoading || isSubmitting) {
+    <div class="loading-overlay">
+      <div class="loading-content">
+        <div class="loading-spinner"></div>
+        <p>{{ loadingMessage }}</p>
+      </div>
+    </div>
+  }
+
+  <!-- Error Dialog -->
+  @if (showErrorDialog) {
+    <div class="error-dialog-overlay" (click)="closeErrorDialog()">
+      <div class="error-dialog" (click)="$event.stopPropagation()">
+        <h3>Error</h3>
+        <p>{{ errorMessage }}</p>
+        <button (click)="closeErrorDialog()">Close</button>
+      </div>
+    </div>
+  }
+
   <div class="voting-tabs">
     <button [class.active]="activeTab === 'voting'" (click)="setTab('voting')">Voting Space</button>
     <button [class.active]="activeTab === 'leading'" (click)="setTab('leading')">Leading Numbers Now</button>
@@ -12,19 +33,26 @@
         <div>
           @if (upcomingDraw) {
             <div class="lottery-info">
-              <h2>{{ upcomingDraw.lottery_type }}</h2>
+              <h2>{{ upcomingDraw.lottery }}</h2>
               <p>For {{ upcomingDraw.draw_date | date:'EEEE, MMMM d, y' }}</p>
             </div>
           }
-          <button class="vote-btn" (click)="startVoting()">Vote Now</button>
-          <p class="countdown">Voting Closes: {{ countdown }}</p>
+          @if (isVotingTime) {
+            <button class="vote-btn" (click)="startVoting()">Vote Now</button>
+            <p class="countdown">Voting Closes: {{ countdown }}</p>
+          } @else {
+            <div style="text-align: center; padding: 40px;">
+              <h3>Voting is currently closed</h3>
+              <p>Please wait for the next voting period to open.</p>
+            </div>
+          }
         </div>
       }
       @else if (currentStep === 1) {
         <div>
           @if (upcomingDraw) {
             <div class="lottery-info">
-              <h2>{{ upcomingDraw.lottery_type }}</h2>
+              <h2>{{ upcomingDraw.lottery }}</h2>
               <p>For {{ upcomingDraw.draw_date | date:'EEEE, MMMM d, y' }}</p>
             </div>
           }
@@ -32,10 +60,18 @@
           <button class="quick-pick-btn" (click)="quickPick()">Quick Pick</button>
           <div class="number-grid">
             @for (num of numbers; track num) {
-              <button [class.selected]="isSelected(num)" (click)="selectNumber(num)">{{ num }}</button>
+              <button 
+                [class.selected]="isSelected(num)" 
+                [disabled]="isDisabled(num)"
+                (click)="selectNumber(num)">
+                {{ num }}
+              </button>
             }
           </div>
-          <button class="next-btn" [disabled]="selectedNumbers.length !== 5" (click)="nextStep()">Next</button>
+          <div class="button-group">
+            <button class="next-btn" [disabled]="!numbersValid" (click)="nextStep()">Next</button>
+            <button class="edit-btn" (click)="resetVoting()">Reset</button>
+          </div>
         </div>
       }
 
@@ -43,7 +79,7 @@
         <div>
           @if (upcomingDraw) {
             <div class="lottery-info">
-              <h2>{{ upcomingDraw.lottery_type }}</h2>
+              <h2>{{ upcomingDraw.lottery }}</h2>
               <p>For {{ upcomingDraw.draw_date | date:'EEEE, MMMM d, y' }}</p>
             </div>
           }
@@ -55,12 +91,17 @@
           </div>
           <div class="number-grid">
             @for (num of numbers; track num) {
-              <button [class.selected]="isSelected(num)" (click)="selectNumber(num)">{{ num }}</button>
+              <button 
+                [class.selected]="isSelected(num)" 
+                [disabled]="isDisabled(num)"
+                (click)="selectNumber(num)">
+                {{ num }}
+              </button>
             }
           </div>
           <div class="button-group">
             <button class="next-btn" (click)="nextStep()">Next</button>
-            <button class="edit-btn" (click)="currentStep = 1">Edit</button>
+            <button class="edit-btn" (click)="previousStep()">Back</button>
           </div>
         </div>
       }
@@ -69,7 +110,7 @@
         <div>
           @if (upcomingDraw) {
             <div class="lottery-info">
-              <h2>{{ upcomingDraw.lottery_type }}</h2>
+              <h2>{{ upcomingDraw.lottery }}</h2>
               <p>For {{ upcomingDraw.draw_date | date:'EEEE, MMMM d, y' }}</p>
             </div>
           }
@@ -85,7 +126,10 @@
               </button>
             }
           </div>
-          <button class="next-btn" [disabled]="selectedBonus.length !== 2" (click)="nextStep()">Next</button>
+          <div class="button-group">
+            <button class="next-btn" [disabled]="!bonusValid" (click)="nextStep()">Next</button>
+            <button class="edit-btn" (click)="previousStep()">Back</button>
+          </div>
         </div>
       }
 
@@ -93,7 +137,7 @@
         <div>
           @if (upcomingDraw) {
             <div class="lottery-info">
-              <h2>{{ upcomingDraw.lottery_type }}</h2>
+              <h2>{{ upcomingDraw.lottery }}</h2>
               <p>For {{ upcomingDraw.draw_date | date:'EEEE, MMMM d, y' }}</p>
             </div>
           }
@@ -115,7 +159,7 @@
           </div>
           <div class="button-group">
             <button class="next-btn" (click)="nextStep()">Next</button>
-            <button class="edit-btn" (click)="currentStep = 3">Edit</button>
+            <button class="edit-btn" (click)="previousStep()">Back</button>
           </div>
         </div>
       }
@@ -124,14 +168,14 @@
         <div>
           @if (upcomingDraw) {
             <div class="lottery-info">
-              <h2>{{ upcomingDraw.lottery_type }}</h2>
+              <h2>{{ upcomingDraw.lottery }}</h2>
               <p>For {{ upcomingDraw.draw_date | date:'EEEE, MMMM d, y' }}</p>
             </div>
           }
           <h3>How you are about to vote</h3>
           <div class="confirmation">
             <div class="section">
-              <h4>Section 1</h4>
+              <h4>Section 1 (Main Numbers)</h4>
               <div class="selected-numbers">
                 @for (num of selectedNumbers; track num) {
                   <span>{{ num }}</span>
@@ -139,7 +183,7 @@
               </div>
             </div>
             <div class="section">
-              <h4>Section 2</h4>
+              <h4>Section 2 (Bonus Numbers)</h4>
               <div class="selected-numbers">
                 @for (num of selectedBonus; track num) {
                   <span>{{ num }}</span>
@@ -148,9 +192,12 @@
             </div>
           </div>
           <div class="button-group">
-            <button class="submit-btn" (click)="submitVote()">Submit</button>
+            <button class="submit-btn" (click)="submitVote()" [disabled]="isSubmitting">
+              {{ isSubmitting ? 'Submitting...' : 'Submit Vote' }}
+            </button>
             <button class="edit-btn" (click)="editSection1()">Edit Section 1</button>
             <button class="edit-btn" (click)="editSection2()">Edit Section 2</button>
+            <button class="edit-btn" (click)="resetVoting()">Start Over</button>
           </div>
         </div>
       }
@@ -207,6 +254,10 @@
         <button class="full-list-btn" (click)="showFullList = !showFullList">
           {{ showFullList ? 'Show Less' : 'Full List' }}
         </button>
+      } @else {
+        <div style="text-align: center; padding: 40px;">
+          <p>Loading leading numbers...</p>
+        </div>
       }
     </div>
   }
@@ -222,7 +273,7 @@
       @for (vote of votingHistory; track vote.id) {
         <div class="history-item">
           <div class="history-header">
-            <strong>{{ vote.lottery }} for {{ vote.voteDate | date:'EEEE, MMMM d, y' }}</strong>
+            <strong>{{ vote.lottery }} for {{ vote.drawDate | date:'EEEE, MMMM d, y' }}</strong>
             <span class="entry-time">Voted at: {{ vote.createdAt | date:'short' }}</span>
           </div>
           <div class="history-numbers">
@@ -246,7 +297,7 @@
     <div class="success-popup" (click)="$event.stopPropagation()">
       <div class="success-icon">✓</div>
       <h2>Vote Submitted Successfully!</h2>
-      <p>Your vote has been recorded for {{ upcomingDraw?.lottery_type }}</p>
+      <p>Your vote has been recorded for {{ upcomingDraw?.lottery }}</p>
       <button class="close-btn" (click)="dismissSuccessPopup()">Close</button>
     </div>
   </div>

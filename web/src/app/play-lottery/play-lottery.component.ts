@@ -80,6 +80,12 @@ export class PlayLotteryComponent implements OnInit {
   }
 
   toggleBonusNumber(num: number) {
+    // Check if number is already selected in main numbers
+    if (this.selectedNumbers.includes(num)) {
+      this.toastService.showError(`Number ${num} is already selected in main numbers. Please choose a different number.`);
+      return;
+    }
+    
     const index = this.selectedBonusNumbers.indexOf(num);
     if (index > -1) {
       this.selectedBonusNumbers.splice(index, 1);
@@ -285,12 +291,27 @@ export class PlayLotteryComponent implements OnInit {
 
   quickPickBonus() {
     this.selectedBonusNumbers = [];
-    const available = [...this.numbers];
+    // Filter out numbers already selected in main numbers
+    const available = this.numbers.filter(num => !this.selectedNumbers.includes(num));
+    
     for (let i = 0; i < 2; i++) {
       const randomIndex = Math.floor(Math.random() * available.length);
       this.selectedBonusNumbers.push(available[randomIndex]);
       available.splice(randomIndex, 1);
     }
     this.selectedBonusNumbers.sort((a, b) => a - b);
+  }
+  
+  isNumberSelected(num: number): boolean {
+    return this.selectedNumbers.includes(num);
+  }
+  
+  isBonusNumberSelected(num: number): boolean {
+    return this.selectedBonusNumbers.includes(num);
+  }
+  
+  isBonusNumberDisabled(num: number): boolean {
+    // Disable bonus numbers that are already selected in main numbers
+    return this.selectedNumbers.includes(num);
   }
 }

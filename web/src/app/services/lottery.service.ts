@@ -42,11 +42,14 @@ export class LotteryService {
     return this.http.get<any[]>(`${this.apiUrl}/upcoming-draws`);
   }
 
+  getCurrentVotingDraw(): Observable<any> {
+    return this.http.get<any>(`${this.apiUrl}/current-voting-draw`);
+  }
+
   getDashboardStats(): Observable<any> {
     return this.http.get<any>(`${this.apiUrl}/dashboard-stats`);
   }
 
-  // User Management
   getUsers(page: number = 1, limit: number = 10, search: string = ''): Observable<any> {
     return this.http.get<any>(`${this.apiUrl}/users?page=${page}&limit=${limit}&search=${search}`);
   }
@@ -63,7 +66,6 @@ export class LotteryService {
     return this.http.delete<any>(`${this.apiUrl}/users`, { body: { id } });
   }
 
-  // Analytics
   getAnalytics(range: string, dateFrom?: string, dateTo?: string): Observable<any> {
     let url = `${this.apiUrl}/analytics?range=${range}`;
     if (range === 'custom' && dateFrom && dateTo) {
