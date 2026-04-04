@@ -273,7 +273,7 @@
       @for (vote of votingHistory; track vote.id) {
         <div class="history-item">
           <div class="history-header">
-            <strong>{{ vote.lottery }} for {{ vote.drawDate | date:'EEEE, MMMM d, y' }}</strong>
+            <strong>{{ vote.lottery }} voted on {{ vote.drawDate | date:'EEEE, MMMM d, y' }}</strong>
             <span class="entry-time">Voted at: {{ vote.createdAt | date:'short' }}</span>
           </div>
           <div class="history-numbers">

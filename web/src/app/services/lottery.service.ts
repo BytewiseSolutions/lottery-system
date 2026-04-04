@@ -53,12 +53,9 @@ export class LotteryService {
 
   // Get quick pick numbers from backend
   getQuickPickNumbers(type: 'main' | 'bonus', excludeNumbers: number[] = []): Observable<any> {
-    const token = localStorage.getItem('token');
     return this.http.post<any>(`${this.apiUrl}/quick-pick`, {
       type: type,
       excludeNumbers: excludeNumbers
-    }, {
-      headers: { 'Authorization': `Bearer ${token}` }
     });
   }
 

@@ -79,7 +79,7 @@
             }
           </div>
           <div class="button-group">
-            <button class="next-btn" (click)="nextStep()">Next</button>
+            <button class="next-btn" [disabled]="selectedNumbers.length !== 5" (click)="nextStep()">Next</button>
             <button class="edit-btn" (click)="currentStep = 1">Edit</button>
           </div>
         </div>
@@ -134,7 +134,7 @@
             }
           </div>
           <div class="button-group">
-            <button class="next-btn" (click)="nextStep()">Next</button>
+            <button class="next-btn" [disabled]="selectedBonus.length !== 2" (click)="nextStep()">Next</button>
             <button class="edit-btn" (click)="currentStep = 3">Edit</button>
           </div>
         </div>
@@ -168,7 +168,7 @@
             </div>
           </div>
           <div class="button-group">
-            <button class="submit-btn" (click)="submitVote()">Submit</button>
+            <button class="submit-btn" [disabled]="selectedNumbers.length !== 5 || selectedBonus.length !== 2" (click)="submitVote()">Submit</button>
             <button class="edit-btn" (click)="editSection1()">Edit Section 1</button>
             <button class="edit-btn" (click)="editSection2()">Edit Section 2</button>
           </div>
@@ -242,7 +242,7 @@
       @for (vote of votingHistory; track vote.id) {
         <div class="history-item">
           <div class="history-header">
-            <strong>{{ vote.lottery }} for {{ vote.voteDate | date:'EEEE, MMMM d, y' }}</strong>
+            <strong>{{ vote.lottery }} voted on {{ vote.voteDate | date:'EEEE, MMMM d, y' }}</strong>
             <span class="entry-time">Voted at: {{ vote.createdAt | date:'short' }}</span>
           </div>
           <div class="history-numbers">

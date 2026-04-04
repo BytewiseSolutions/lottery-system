@@ -95,7 +95,7 @@ export class VotingComponent implements OnInit {
       }
     });
   }
-  
+
   checkVotingTime() {
 
     this.lotteryService.getVotingCountdown().subscribe({
@@ -192,10 +192,18 @@ export class VotingComponent implements OnInit {
     if (this.currentStep === 1 && this.selectedNumbers.length === 5) {
       this.currentStep = 2;
     } else if (this.currentStep === 2) {
+      if (this.selectedNumbers.length !== 5) {
+        this.toastService.showError('Please select exactly 5 numbers for Section 1');
+        return;
+      }
       this.currentStep = 3;
     } else if (this.currentStep === 3 && this.selectedBonus.length === 2) {
       this.currentStep = 4;
     } else if (this.currentStep === 4) {
+      if (this.selectedBonus.length !== 2) {
+        this.toastService.showError('Please select exactly 2 bonus numbers for Section 2');
+        return;
+      }
       this.currentStep = 5;
     }
     setTimeout(() => {
@@ -240,13 +248,25 @@ export class VotingComponent implements OnInit {
       this.currentStep = 1;
       return;
     }
+
+    if (this.selectedNumbers.length !== 5) {
+      this.toastService.showError('Please select exactly 5 numbers for Section 1');
+      this.currentStep = 2;
+      return;
+    }
+
+    if (this.selectedBonus.length !== 2) {
+      this.toastService.showError('Please select exactly 2 bonus numbers for Section 2');
+      this.currentStep = 4;
+      return;
+    }
     
     console.log('Upcoming draw object:', this.upcomingDraw);
     
     const voteData = {
       lottery: this.upcomingDraw.lottery || this.upcomingDraw.lottery_type || 'Unknown Lottery',
-      numbers: this.selectedNumbers,
-      bonusNumbers: this.selectedBonus,
+      numbers: [...this.selectedNumbers].sort((a, b) => a - b),
+      bonusNumbers: [...this.selectedBonus].sort((a, b) => a - b),
       drawDate: this.upcomingDraw.draw_date?.split(' ')[0] || this.upcomingDraw.drawDate
     };
     

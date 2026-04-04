@@ -1,11 +1,9 @@
 RewriteEngine On
 
-# Remove /api/ from the URL and serve files directly
-RewriteRule ^api/(.*)$ $1 [L]
-
-# Handle CORS preflight requests
-RewriteCond %{REQUEST_METHOD} OPTIONS
-RewriteRule ^(.*)$ $1 [R=200,L]
+# Route extensionless API requests through the front controller
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^.*$ index.php [QSA,L]
 
 # Set CORS headers
 Header always set Access-Control-Allow-Origin "*"

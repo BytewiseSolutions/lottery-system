@@ -105,30 +105,8 @@ export class VotingEnhancedComponent implements OnInit, OnDestroy {
   
   checkVotingEligibility() {
     if (!this.upcomingDraw) return;
-    
-    // Check if user already voted for this draw
-    const token = localStorage.getItem('token');
-    if (token) {
-      this.lotteryService.getVotingHistory().subscribe({
-        next: (data) => {
-          const existingVote = data.votes?.find((vote: VotingHistory) => 
-            vote.lottery === this.upcomingDraw.lottery && 
-            vote.drawDate === this.upcomingDraw.draw_date.split(' ')[0]
-          );
-          
-          if (existingVote) {
-            this.showError(`You have already voted for ${this.upcomingDraw.lottery} on this date`);
-            this.isVotingTime = false;
-          } else {
-            this.isVotingTime = true;
-          }
-        },
-        error: (err) => {
-          console.error('Error checking voting eligibility:', err);
-          this.isVotingTime = true; // Allow voting if check fails
-        }
-      });
-    }
+
+    this.isVotingTime = true;
   }
   
   startCountdown() {

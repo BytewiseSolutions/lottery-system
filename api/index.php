@@ -119,6 +119,15 @@ switch ($path) {
     case 'api/leading-numbers':
         require 'leading-numbers.php';
         break;
+    case 'api/voting-countdown':
+        require 'voting-countdown.php';
+        break;
+    case 'api/current-voting-draw':
+        require 'current-voting-draw.php';
+        break;
+    case 'api/quick-pick':
+        require 'quick-pick.php';
+        break;
     case 'api/voting-history':
         require 'voting-history.php';
         break;
