@@ -36,6 +36,11 @@ if (strpos($path, '/api/') === 0) {
     $path = substr($path, 5); 
 }
 
+// Remove leading slash if present
+if (strpos($path, '/') === 0) {
+    $path = substr($path, 1);
+}
+
 $urlMappings = [
     'draws' => 'draw.php',
     'user-stats' => 'user-stats.php',
@@ -60,9 +65,15 @@ $urlMappings = [
     'winners' => 'winner.php',
     'contact' => 'contact.php',
     'analytics' => 'analytics.php',
+    'stats' => 'stat.php',
     'dashboard-stats' => 'dashboard-stats.php',
     'leading-numbers' => 'leading-numbers.php',
-    'voting-history' => 'voting-history.php'
+    'voting-history' => 'voting-history.php',
+    'voting-countdown' => 'voting-countdown.php',
+    'current-voting-draw' => 'current-voting-draw.php',
+    'quick-pick' => 'quick-pick.php',
+    'test-connection' => 'test-connection.php',
+    'database-check' => 'database-check.php'
 ];
 
 if (empty($path) || $path === '/') {
@@ -83,7 +94,11 @@ if (isset($urlMappings[$pathWithoutQuery])) {
     $file = __DIR__ . '/' . $urlMappings[$pathWithoutQuery];
 } else {
     // Check if the requested file exists as-is
-    $file = __DIR__ . '/' . $path;
+    $file = __DIR__ . '/' . $pathWithoutQuery;
+    // Also try with .php extension
+    if (!file_exists($file) && substr($pathWithoutQuery, -4) !== '.php') {
+        $file = __DIR__ . '/' . $pathWithoutQuery . '.php';
+    }
 }
 
 if (file_exists($file) && is_file($file)) {
@@ -100,6 +115,6 @@ if (file_exists($file) && is_file($file)) {
     // File not found
     http_response_code(404);
     header('Content-Type: application/json');
-    echo json_encode(['error' => 'Endpoint not found: ' . $path]);
+    echo json_encode(['error' => 'Endpoint not found']);
 }
 ?>

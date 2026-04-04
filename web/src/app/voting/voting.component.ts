@@ -24,6 +24,8 @@ export class VotingComponent implements OnInit {
   votingStarted = false;
   showSuccessPopup = false;
   showFullList = false;
+  isLoadingDraw = false;
+  drawLoadError = '';
   
   constructor(private lotteryService: LotteryService, private toastService: ToastService) {}
   
@@ -36,54 +38,87 @@ export class VotingComponent implements OnInit {
   }
   
   loadUpcomingDraw() {
+    this.isLoadingDraw = true;
+    this.drawLoadError = '';
+    this.upcomingDraw = null;
+    console.log('Loading upcoming draw...');
+    
     this.lotteryService.getCurrentVotingDraw().subscribe({
       next: (response: any) => {
-        if (response.success && response.current_voting_draw) {
+        console.log('getCurrentVotingDraw response:', response);
+        this.isLoadingDraw = false;
+        if (response && response.success && response.current_voting_draw) {
           this.upcomingDraw = response.current_voting_draw;
           this.isVotingTime = response.current_voting_draw.is_voting_open;
+          console.log('upcomingDraw set to:', this.upcomingDraw);
         } else {
-          this.upcomingDraw = null;
+          console.log('No upcoming draw in response or invalid response');
           this.isVotingTime = false;
+          this.drawLoadError = response?.message || 'No voting draw is available right now.';
         }
       },
       error: (err) => {
         console.error('Error loading voting draw:', err);
+        console.error('Error status:', err.status);
+        console.error('Error message:', err.message);
         this.isVotingTime = false;
+        this.loadFallbackDraw();
+      }
+    });
+  }
+  
+  loadFallbackDraw() {
+    this.lotteryService.getUpcomingDraws().subscribe({
+      next: (draws: any) => {
+        const drawsArray = Array.isArray(draws) ? draws : draws.draws || [];
+        if (drawsArray.length > 0) {
+          this.upcomingDraw = {
+            ...drawsArray[0],
+            lottery_type: drawsArray[0].lottery,
+            is_voting_open: true
+          };
+          this.isVotingTime = true;
+          this.drawLoadError = '';
+        } else {
+          this.upcomingDraw = null;
+          this.isVotingTime = false;
+          this.drawLoadError = 'No voting draw is available right now.';
+        }
+        this.isLoadingDraw = false;
+      },
+      error: (err) => {
+        console.error('Error loading fallback draws:', err);
+        this.upcomingDraw = null;
+        this.isVotingTime = false;
+        this.drawLoadError = 'Unable to load voting information right now. Please try again.';
+        this.isLoadingDraw = false;
       }
     });
   }
   
   checkVotingTime() {
-    if (!this.upcomingDraw || !this.upcomingDraw.voting_closes_at) {
-      this.loadUpcomingDraw();
-      return;
-    }
-    
-    const now = new Date();
-    const votingCloseTime = new Date(this.upcomingDraw.voting_closes_at);
-    
-    const diff = votingCloseTime.getTime() - now.getTime();
-    
-    if (diff <= 0) {
-      this.countdown = '00:00:00';
-      this.isVotingTime = false;
-      // Voting has closed, reload to get next voting lottery
-      this.loadUpcomingDraw();
-      return;
-    }
-    
-    this.isVotingTime = true;
-    
-    const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-    const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-    const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-    const seconds = Math.floor((diff % (1000 * 60)) / 1000);
-    
-    if (days > 0) {
-      this.countdown = `${days}d ${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
-    } else {
-      this.countdown = `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
-    }
+
+    this.lotteryService.getVotingCountdown().subscribe({
+      next: (response: any) => {
+        if (response.success) {
+          this.countdown = response.countdown;
+          this.isVotingTime = response.isVotingOpen;
+        } else {
+          this.countdown = '00:00:00';
+          this.isVotingTime = false;
+        }
+      },
+      error: (err) => {
+        console.error('Error getting countdown:', err);
+        this.countdown = '00:00:00';
+        this.isVotingTime = false;
+        // Set fallback countdown if we have an upcoming draw
+        if (this.upcomingDraw) {
+          this.countdown = '02:00:00'; // Fallback 2 hours
+          this.isVotingTime = true;
+        }
+      }
+    });
   }
   
   setTab(tab: 'voting' | 'leading' | 'history') {
@@ -101,7 +136,7 @@ export class VotingComponent implements OnInit {
         this.selectedNumbers.splice(idx, 1);
       } else if (this.selectedNumbers.length < 5) {
         this.selectedNumbers.push(num);
-        this.selectedNumbers.sort((a, b) => a - b);
+        // Let backend handle sorting when needed
       }
     } else if (this.currentStep === 3 || this.currentStep === 4) {
       // Bonus numbers selection - check if already selected in main numbers
@@ -115,7 +150,7 @@ export class VotingComponent implements OnInit {
         this.selectedBonus.splice(idx, 1);
       } else if (this.selectedBonus.length < 2) {
         this.selectedBonus.push(num);
-        this.selectedBonus.sort((a, b) => a - b);
+        // Let backend handle sorting when needed
       }
     }
   }
@@ -249,27 +284,37 @@ export class VotingComponent implements OnInit {
   }
   
   quickPick() {
-    this.selectedNumbers = [];
-    const available = [...this.numbers];
-    for (let i = 0; i < 5; i++) {
-      const randomIndex = Math.floor(Math.random() * available.length);
-      this.selectedNumbers.push(available[randomIndex]);
-      available.splice(randomIndex, 1);
-    }
-    this.selectedNumbers.sort((a, b) => a - b);
+    // Get quick pick numbers from backend
+    this.lotteryService.getQuickPickNumbers('main').subscribe({
+      next: (response: any) => {
+        if (response.success) {
+          this.selectedNumbers = response.numbers;
+        } else {
+          this.toastService.showError('Failed to generate quick pick numbers');
+        }
+      },
+      error: (err) => {
+        this.toastService.showError('Failed to generate quick pick numbers');
+        console.error('Quick pick error:', err);
+      }
+    });
   }
   
   quickPickBonus() {
-    this.selectedBonus = [];
-    // Filter out numbers already selected in main numbers
-    const available = this.numbers.filter(num => !this.selectedNumbers.includes(num));
-    
-    for (let i = 0; i < 2; i++) {
-      const randomIndex = Math.floor(Math.random() * available.length);
-      this.selectedBonus.push(available[randomIndex]);
-      available.splice(randomIndex, 1);
-    }
-    this.selectedBonus.sort((a, b) => a - b);
+    // Get quick pick bonus numbers from backend, excluding main numbers
+    this.lotteryService.getQuickPickNumbers('bonus', this.selectedNumbers).subscribe({
+      next: (response: any) => {
+        if (response.success) {
+          this.selectedBonus = response.numbers;
+        } else {
+          this.toastService.showError('Failed to generate quick pick bonus numbers');
+        }
+      },
+      error: (err) => {
+        this.toastService.showError('Failed to generate quick pick bonus numbers');
+        console.error('Quick pick bonus error:', err);
+      }
+    });
   }
   
   loadHistory() {
@@ -291,18 +336,16 @@ export class VotingComponent implements OnInit {
     ).subscribe({
       next: (data) => {
         this.leadingNumbers = data;
-        // Sort the top numbers numerically for display
+        // Backend should handle sorting, but keep this for compatibility
         if (this.leadingNumbers.section1) {
           this.leadingNumbers.topSection1 = this.leadingNumbers.section1
             .slice(0, 5)
-            .map((item: any) => item.number)
-            .sort((a: number, b: number) => a - b);
+            .map((item: any) => item.number);
         }
         if (this.leadingNumbers.section2) {
           this.leadingNumbers.topSection2 = this.leadingNumbers.section2
             .slice(0, 2)
-            .map((item: any) => item.number)
-            .sort((a: number, b: number) => a - b);
+            .map((item: any) => item.number);
         }
       },
       error: (err) => console.error(err)

@@ -12,12 +12,32 @@
         <div>
           @if (upcomingDraw) {
             <div class="lottery-info">
-              <h2>{{ upcomingDraw.lottery_type }}</h2>
+              <h2>{{ upcomingDraw.lottery_type || upcomingDraw.lottery }}</h2>
               <p>For {{ upcomingDraw.draw_date | date:'EEEE, MMMM d, y' }}</p>
             </div>
+            @if (isVotingTime) {
+              <button class="vote-btn" (click)="startVoting()">Vote Now</button>
+              <p class="countdown">Voting Closes: {{ countdown }}</p>
+            } @else {
+              <div style="text-align: center; padding: 40px;">
+                <h3>Voting is currently closed</h3>
+                <p>Please wait for the next voting period to open.</p>
+              </div>
+            }
+          } @else {
+            <div style="text-align: center; padding: 40px;">
+              @if (isLoadingDraw) {
+                <h3>Loading voting information...</h3>
+                <p>Please wait while we load the current lottery draw.</p>
+              } @else {
+                <h3>{{ drawLoadError || 'Voting information is unavailable right now.' }}</h3>
+                <p>Please retry once the API is reachable.</p>
+              }
+              <div style="margin-top: 20px;">
+                <button class="vote-btn" (click)="loadUpcomingDraw()">Retry Loading</button>
+              </div>
+            </div>
           }
-          <button class="vote-btn" (click)="startVoting()">Vote Now</button>
-          <p class="countdown">Voting Closes: {{ countdown }}</p>
         </div>
       }
       @else if (currentStep === 1) {

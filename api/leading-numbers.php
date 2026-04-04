@@ -74,16 +74,25 @@ foreach ($adminEntries as $entry) {
 arsort($numberCounts);
 arsort($bonusCounts);
 
-$topNumbers = array_slice($numberCounts, 0, 5, true);
-$topBonus = array_slice($bonusCounts, 0, 2, true);
+// Get top 5 main numbers and top 2 bonus numbers (sorted)
+$topMainNumbers = array_slice(array_keys($numberCounts), 0, 5, true);
+$topBonusNumbers = array_slice(array_keys($bonusCounts), 0, 2, true);
+
+// Sort the top numbers numerically for display
+sort($topMainNumbers);
+sort($topBonusNumbers);
 
 $response = [
+    'lottery' => $lottery,
+    'draw_date' => $voteDate,
     'section1' => array_map(function($num, $count) {
-        return ['number' => $num, 'votes' => $count];
+        return ['number' => (int)$num, 'votes' => (int)$count];
     }, array_keys($numberCounts), array_values($numberCounts)),
     'section2' => array_map(function($num, $count) {
-        return ['number' => $num, 'votes' => $count];
-    }, array_keys($bonusCounts), array_values($bonusCounts))
+        return ['number' => (int)$num, 'votes' => (int)$count];
+    }, array_keys($bonusCounts), array_values($bonusCounts)),
+    'topSection1' => $topMainNumbers,
+    'topSection2' => $topBonusNumbers
 ];
 
 echo json_encode($response);

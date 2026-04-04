@@ -46,6 +46,22 @@ export class LotteryService {
     return this.http.get<any>(`${this.apiUrl}/current-voting-draw`);
   }
 
+  // Get voting countdown from backend
+  getVotingCountdown(): Observable<any> {
+    return this.http.get<any>(`${this.apiUrl}/voting-countdown`);
+  }
+
+  // Get quick pick numbers from backend
+  getQuickPickNumbers(type: 'main' | 'bonus', excludeNumbers: number[] = []): Observable<any> {
+    const token = localStorage.getItem('token');
+    return this.http.post<any>(`${this.apiUrl}/quick-pick`, {
+      type: type,
+      excludeNumbers: excludeNumbers
+    }, {
+      headers: { 'Authorization': `Bearer ${token}` }
+    });
+  }
+
   getDashboardStats(): Observable<any> {
     return this.http.get<any>(`${this.apiUrl}/dashboard-stats`);
   }

@@ -75,7 +75,7 @@ export class PlayLotteryComponent implements OnInit {
       this.selectedNumbers.splice(index, 1);
     } else if (this.selectedNumbers.length < 5) {
       this.selectedNumbers.push(num);
-      this.selectedNumbers.sort((a, b) => a - b);
+      // Let backend handle sorting when needed
     }
   }
 
@@ -91,7 +91,7 @@ export class PlayLotteryComponent implements OnInit {
       this.selectedBonusNumbers.splice(index, 1);
     } else if (this.selectedBonusNumbers.length < 2) {
       this.selectedBonusNumbers.push(num);
-      this.selectedBonusNumbers.sort((a, b) => a - b);
+      // Let backend handle sorting when needed
     }
   }
 
@@ -279,27 +279,37 @@ export class PlayLotteryComponent implements OnInit {
   }
 
   quickPick() {
-    this.selectedNumbers = [];
-    const available = [...this.numbers];
-    for (let i = 0; i < 5; i++) {
-      const randomIndex = Math.floor(Math.random() * available.length);
-      this.selectedNumbers.push(available[randomIndex]);
-      available.splice(randomIndex, 1);
-    }
-    this.selectedNumbers.sort((a, b) => a - b);
+    // Get quick pick numbers from backend
+    this.lotteryService.getQuickPickNumbers('main').subscribe({
+      next: (response: any) => {
+        if (response.success) {
+          this.selectedNumbers = response.numbers;
+        } else {
+          this.toastService.showError('Failed to generate quick pick numbers');
+        }
+      },
+      error: (err) => {
+        this.toastService.showError('Failed to generate quick pick numbers');
+        console.error('Quick pick error:', err);
+      }
+    });
   }
 
   quickPickBonus() {
-    this.selectedBonusNumbers = [];
-    // Filter out numbers already selected in main numbers
-    const available = this.numbers.filter(num => !this.selectedNumbers.includes(num));
-    
-    for (let i = 0; i < 2; i++) {
-      const randomIndex = Math.floor(Math.random() * available.length);
-      this.selectedBonusNumbers.push(available[randomIndex]);
-      available.splice(randomIndex, 1);
-    }
-    this.selectedBonusNumbers.sort((a, b) => a - b);
+    // Get quick pick bonus numbers from backend, excluding main numbers
+    this.lotteryService.getQuickPickNumbers('bonus', this.selectedNumbers).subscribe({
+      next: (response: any) => {
+        if (response.success) {
+          this.selectedBonusNumbers = response.numbers;
+        } else {
+          this.toastService.showError('Failed to generate quick pick bonus numbers');
+        }
+      },
+      error: (err) => {
+        this.toastService.showError('Failed to generate quick pick bonus numbers');
+        console.error('Quick pick bonus error:', err);
+      }
+    });
   }
   
   isNumberSelected(num: number): boolean {
