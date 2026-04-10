@@ -6,6 +6,9 @@ header('Access-Control-Allow-Origin: *');
 header('Access-Control-Allow-Methods: GET');
 header('Access-Control-Allow-Headers: Content-Type, Authorization');
 
+// Set timezone to ensure consistent behavior
+date_default_timezone_set('America/New_York'); // or your preferred timezone
+
 require_once 'config/database.php';
 
 try {

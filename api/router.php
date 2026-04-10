@@ -72,8 +72,7 @@ $urlMappings = [
     'voting-countdown' => 'voting-countdown.php',
     'current-voting-draw' => 'current-voting-draw.php',
     'quick-pick' => 'quick-pick.php',
-    'test-connection' => 'test-connection.php',
-    'database-check' => 'database-check.php'
+    'test-connection' => 'test-connection.php'
 ];
 
 if (empty($path) || $path === '/') {

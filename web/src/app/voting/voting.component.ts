@@ -97,28 +97,38 @@ export class VotingComponent implements OnInit {
   }
 
   checkVotingTime() {
+    if (!this.upcomingDraw) {
+      this.countdown = '00:00:00';
+      this.isVotingTime = false;
+      return;
+    }
 
-    this.lotteryService.getVotingCountdown().subscribe({
-      next: (response: any) => {
-        if (response.success) {
-          this.countdown = response.countdown;
-          this.isVotingTime = response.isVotingOpen;
-        } else {
-          this.countdown = '00:00:00';
-          this.isVotingTime = false;
-        }
-      },
-      error: (err) => {
-        console.error('Error getting countdown:', err);
-        this.countdown = '00:00:00';
-        this.isVotingTime = false;
-        // Set fallback countdown if we have an upcoming draw
-        if (this.upcomingDraw) {
-          this.countdown = '02:00:00'; // Fallback 2 hours
-          this.isVotingTime = true;
-        }
-      }
-    });
+    const now = new Date();
+    const drawDate = new Date(this.upcomingDraw.draw_date || this.upcomingDraw.drawDate);
+    
+    drawDate.setHours(19, 59, 59, 999);
+    
+    const diff = drawDate.getTime() - now.getTime();
+    
+    if (diff <= 0) {
+      this.countdown = '00:00:00';
+      this.isVotingTime = false;
+      this.loadUpcomingDraw();
+      return;
+    }
+    
+    this.isVotingTime = true;
+    
+    const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+    const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+    const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+    const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+    
+    if (days > 0) {
+      this.countdown = `${days}d ${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+    } else {
+      this.countdown = `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+    }
   }
   
   setTab(tab: 'voting' | 'leading' | 'history') {
