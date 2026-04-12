@@ -67,9 +67,6 @@ switch ($path) {
     case 'api/analytics':
         require 'analytics.php';
         break;
-    case 'api/users':
-        require 'user.php';
-        break;
     case 'api/winners':
         require 'winner.php';
         break;
