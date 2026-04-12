@@ -1,5 +1,5 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { HttpClientModule } from '@angular/common/http';
@@ -145,6 +145,7 @@ export class AdminComponent implements OnInit, OnDestroy {
 
   constructor(
     private router: Router,
+    private route: ActivatedRoute,
     private fb: FormBuilder,
     private lotteryService: LotteryService
   ) {
@@ -173,6 +174,12 @@ export class AdminComponent implements OnInit, OnDestroy {
 
   ngOnInit() {
     this.checkAuth();
+    this.route.queryParamMap.pipe(takeUntil(this.destroy$)).subscribe((params) => {
+      const section = params.get('section');
+      if (section && section !== this.activeSection) {
+        this.activeSection = section;
+      }
+    });
     if (this.isAuthenticated) {
       this.initializeDashboard();
       this.startSystemUpdates();

@@ -12,11 +12,12 @@
           <div class="form-section">
             <div class="form-group">
               <label>Lottery</label>
-              <select [(ngModel)]="lottery" class="form-control">
+              <select [(ngModel)]="lottery" (change)="onLotteryChange()" class="form-control">
                 <option>Monday Lotto</option>
                 <option>Wednesday Lotto</option>
                 <option>Friday Lotto</option>
               </select>
+              <p class="info">Draw date will automatically update based on selected lottery type</p>
             </div>
             
             <div class="form-group">
@@ -26,7 +27,13 @@
                 [(ngModel)]="drawDate" 
                 class="form-control" 
                 required>
-              <p class="info">Select any date for this lottery draw (past, present, or future)</p>
+              <p class="info">Auto-filled with next {{ lottery }} draw date. You can create multiple allocations for the same date.</p>
+              <div class="draw-schedule-info">
+                <small>
+                  <strong>Draw Schedule:</strong> 
+                  Monday Lotto (Mondays) • Wednesday Lotto (Wednesdays) • Friday Lotto (Fridays)
+                </small>
+              </div>
               <div class="warning" *ngIf="drawDate && drawDate < getTodayDate()">
                 ⚠️ You are allocating votes for a past date ({{ drawDate }}). This is typically used for historical data entry or corrections.
               </div>
@@ -156,21 +163,23 @@
               </div>
               
               <div class="filter-group">
-                <label>Date From: (dd/mm/yyyy)</label>
+                <label>Created From:</label>
                 <input 
                   type="date" 
                   [(ngModel)]="dateFromFilter" 
                   (change)="onFilterChange()"
                   class="form-control">
+                <small class="filter-help">Filter by allocation creation date</small>
               </div>
               
               <div class="filter-group">
-                <label>Date To: (dd/mm/yyyy)</label>
+                <label>Created To:</label>
                 <input 
                   type="date" 
                   [(ngModel)]="dateToFilter" 
                   (change)="onFilterChange()"
                   class="form-control">
+                <small class="filter-help">Filter by allocation creation date</small>
               </div>
               
               <div class="filter-group">
@@ -198,7 +207,7 @@
               <div class="sort-group">
                 <label>Sort by:</label>
                 <select [(ngModel)]="sortBy" (change)="onFilterChange()" class="form-control">
-                  <option value="date">Date</option>
+                  <option value="date">Created Date</option>
                   <option value="lottery">Lottery</option>
                   <option value="votes">Vote Count</option>
                 </select>
@@ -311,10 +320,10 @@
                           <span class="date-label">Draw:</span>
                           <span class="date-value">{{ vote.drawDate || vote.voteDate }}</span>
                         </div>
-                        <div class="date-item" *ngIf="vote.drawDate && vote.voteDate !== vote.drawDate">
+                        <div class="date-item">
                           <i class="fas fa-clock"></i>
                           <span class="date-label">Created:</span>
-                          <span class="date-value">{{ vote.voteDate }}</span>
+                          <span class="date-value">{{ vote.createdAt ? (vote.createdAt | date:'short') : (vote.voteDate | date:'short') }}</span>
                         </div>
                       </div>
                     </div>
@@ -490,10 +499,10 @@
                   <span class="label">Draw Date:</span>
                   <span class="value">{{ voteToDelete.drawDate || voteToDelete.voteDate }}</span>
                 </div>
-                <div class="detail-row" *ngIf="voteToDelete.voteDate !== voteToDelete.drawDate">
+                <div class="detail-row">
                   <i class="fas fa-clock"></i>
                   <span class="label">Created:</span>
-                  <span class="value">{{ voteToDelete.voteDate }}</span>
+                  <span class="value">{{ voteToDelete.createdAt ? (voteToDelete.createdAt | date:'short') : (voteToDelete.voteDate | date:'short') }}</span>
                 </div>
                 <div class="detail-row" *ngIf="voteToDelete.numbers && voteToDelete.numbers.length > 0">
                   <i class="fas fa-list-ol"></i>
@@ -616,12 +625,12 @@
           </div>
           <div class="info-tips" *ngIf="infoMessage.includes('already exists')">
             <div class="tip-item">
-              <i class="fas fa-calendar-alt"></i>
-              <span>Try selecting a different date</span>
+              <i class="fas fa-plus"></i>
+              <span>You can now create multiple allocations for the same lottery and date</span>
             </div>
             <div class="tip-item">
-              <i class="fas fa-edit"></i>
-              <span>Or edit the existing allocation</span>
+              <i class="fas fa-layer-group"></i>
+              <span>Each allocation is independent and will be saved separately</span>
             </div>
           </div>
         </div>

@@ -10,6 +10,11 @@ $path = parse_url($request, PHP_URL_PATH);
 $path = trim($path, '/');
 
 // Route API requests
+if ($path === 'api/users' || strpos($path, 'api/users/') === 0) {
+    require 'users.php';
+    exit;
+}
+
 switch ($path) {
     case 'api/health':
         require 'health.php';

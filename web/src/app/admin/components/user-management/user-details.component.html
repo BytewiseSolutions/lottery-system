@@ -1,0 +1,94 @@
+<section class="user-details-panel">
+  <div class="panel-header">
+    <div class="header-copy">
+      <p class="eyebrow">User Details</p>
+      <h2>{{ user.full_name }}</h2>
+      <span class="user-meta">User ID: {{ user.id }}</span>
+    </div>
+
+    <div class="header-actions">
+      <button type="button" class="btn btn-secondary" (click)="closeDetails.emit()">
+        Close
+      </button>
+      <button type="button" class="btn btn-primary" (click)="editUser.emit(user)">
+        <i class="fas fa-edit"></i> Edit User
+      </button>
+    </div>
+  </div>
+
+  <div class="panel-body">
+    <div class="identity-card">
+      <div class="avatar-shell">
+        @if (user.profile_picture) {
+          <img [src]="user.profile_picture" [alt]="user.full_name">
+        } @else {
+          <i class="fas fa-user-circle"></i>
+        }
+      </div>
+
+      <div class="identity-copy">
+        <div class="badges">
+          <span class="status-badge" [class]="getStatusClass()">
+            {{ user.is_active ? 'Active' : 'Inactive' }}
+          </span>
+          <span class="role-badge" [class.admin]="user.role === 'admin'">
+            {{ user.role || 'user' }}
+          </span>
+        </div>
+
+        <div class="primary-line">
+          <i class="fas fa-envelope"></i>
+          <span>{{ user.email }}</span>
+        </div>
+
+        <div class="primary-line">
+          <i class="fas fa-phone"></i>
+          <span>{{ user.phone || 'Not provided' }}</span>
+        </div>
+
+        <div class="primary-line">
+          <i class="fas fa-globe"></i>
+          <span>{{ user.country || 'Not provided' }}</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="details-grid">
+      <div class="detail-card">
+        <h3>Account</h3>
+        <div class="detail-row">
+          <span>Email Verified</span>
+          <strong>{{ user.email_verified ? 'Yes' : 'No' }}</strong>
+        </div>
+        <div class="detail-row">
+          <span>Phone Verified</span>
+          <strong>{{ user.phone_verified ? 'Yes' : 'No' }}</strong>
+        </div>
+        <div class="detail-row">
+          <span>Last Login</span>
+          <strong>{{ formatDateTime(user.last_login) }}</strong>
+        </div>
+        <div class="detail-row">
+          <span>Joined</span>
+          <strong>{{ formatDateTime(user.created_at) }}</strong>
+        </div>
+      </div>
+
+      <div class="detail-card">
+        <h3>Activity</h3>
+        <div class="detail-row">
+          <span>Total Votes</span>
+          <strong>{{ user.total_votes || 0 }}</strong>
+        </div>
+        <div class="detail-row">
+          <span>Total Winnings</span>
+          <strong>${{ user.total_winnings || 0 }}</strong>
+        </div>
+        <div class="detail-row">
+          <span>Login Count</span>
+          <strong>{{ user.login_count || 0 }}</strong>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>

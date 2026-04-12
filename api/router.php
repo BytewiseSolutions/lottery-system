@@ -88,15 +88,19 @@ if (empty($path) || $path === '/') {
 // Remove query string from path for mapping
 $pathWithoutQuery = strtok($path, '?');
 
-// Check if we have a mapping for this URL
-if (isset($urlMappings[$pathWithoutQuery])) {
-    $file = __DIR__ . '/' . $urlMappings[$pathWithoutQuery];
+if ($pathWithoutQuery === 'users' || strpos($pathWithoutQuery, 'users/') === 0) {
+    $file = __DIR__ . '/users.php';
 } else {
-    // Check if the requested file exists as-is
-    $file = __DIR__ . '/' . $pathWithoutQuery;
-    // Also try with .php extension
-    if (!file_exists($file) && substr($pathWithoutQuery, -4) !== '.php') {
-        $file = __DIR__ . '/' . $pathWithoutQuery . '.php';
+    // Check if we have a mapping for this URL
+    if (isset($urlMappings[$pathWithoutQuery])) {
+        $file = __DIR__ . '/' . $urlMappings[$pathWithoutQuery];
+    } else {
+        // Check if the requested file exists as-is
+        $file = __DIR__ . '/' . $pathWithoutQuery;
+        // Also try with .php extension
+        if (!file_exists($file) && substr($pathWithoutQuery, -4) !== '.php') {
+            $file = __DIR__ . '/' . $pathWithoutQuery . '.php';
+        }
     }
 }
 

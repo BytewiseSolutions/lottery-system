@@ -1,0 +1,121 @@
+<div class="user-form-shell">
+  <div class="user-form-header">
+    <div>
+      <h3>
+        <i class="fas fa-user"></i>
+        {{ isEditMode ? 'Edit User' : 'Add New User' }}
+      </h3>
+      <p>{{ isEditMode ? 'Update the selected user details.' : 'Create a new account and set the initial access details.' }}</p>
+    </div>
+    <button type="button" class="close-btn" (click)="cancel.emit()" aria-label="Close user form">×</button>
+  </div>
+
+  @if (errorMessage) {
+    <div class="form-error">
+      <i class="fas fa-circle-exclamation"></i>
+      <span>{{ errorMessage }}</span>
+    </div>
+  }
+
+  <form class="user-form-body" (ngSubmit)="submit()">
+    <div class="form-row">
+      <div class="form-group">
+        <label for="user-full-name">Full Name *</label>
+        <input
+          id="user-full-name"
+          type="text"
+          [(ngModel)]="formModel.full_name"
+          name="full_name"
+          required>
+      </div>
+
+      <div class="form-group">
+        <label for="user-email">Email *</label>
+        <input
+          id="user-email"
+          type="email"
+          [(ngModel)]="formModel.email"
+          name="email"
+          required>
+      </div>
+    </div>
+
+    <div class="form-row">
+      <div class="form-group">
+        <label for="user-phone">Phone</label>
+        <input
+          id="user-phone"
+          type="tel"
+          [(ngModel)]="formModel.phone"
+          name="phone">
+      </div>
+
+      <div class="form-group">
+        <label for="user-country">Country</label>
+        <input
+          id="user-country"
+          type="text"
+          [(ngModel)]="formModel.country"
+          name="country">
+      </div>
+    </div>
+
+    @if (!isEditMode) {
+      <div class="form-group">
+        <label for="user-password">Password *</label>
+        <input
+          id="user-password"
+          type="password"
+          [(ngModel)]="formModel.password"
+          name="password"
+          required>
+      </div>
+    }
+
+    <div class="form-row">
+      <div class="form-group">
+        <label for="user-role">Role</label>
+        <select id="user-role" [(ngModel)]="formModel.role" name="role">
+          <option value="user">User</option>
+          <option value="admin">Admin</option>
+        </select>
+      </div>
+
+      <div class="form-group checkbox-group">
+        <label>
+          <input
+            type="checkbox"
+            [(ngModel)]="formModel.is_active"
+            name="is_active">
+          Active
+        </label>
+        <label>
+          <input
+            type="checkbox"
+            [(ngModel)]="formModel.email_verified"
+            name="email_verified">
+          Email Verified
+        </label>
+        <label>
+          <input
+            type="checkbox"
+            [(ngModel)]="formModel.phone_verified"
+            name="phone_verified">
+          Phone Verified
+        </label>
+      </div>
+    </div>
+
+    <div class="user-form-footer">
+      <button type="button" class="btn btn-secondary" (click)="cancel.emit()">Cancel</button>
+      <button type="submit" class="btn btn-primary" [disabled]="loading">
+        @if (loading) {
+          <i class="fas fa-spinner fa-spin"></i>
+        } @else {
+          <i class="fas fa-save"></i>
+        }
+        {{ isEditMode ? 'Update User' : 'Create User' }}
+      </button>
+    </div>
+  </form>
+</div>

@@ -75,7 +75,7 @@ export class VotingManagementComponent implements OnInit {
   
   ngOnInit() {
     this.loadAdminVotes();
-    this.drawDate = this.getTodayDate();
+    this.drawDate = this.getNextDrawDate(this.lottery); // Set initial draw date
     this.setDefaultDateRange();
     this.filteredAdminVotes = this.adminVotes;
   }
@@ -83,6 +83,46 @@ export class VotingManagementComponent implements OnInit {
   getTodayDate(): string {
     const today = new Date();
     return today.toISOString().split('T')[0];
+  }
+  
+  getNextDrawDate(lotteryType: string): string {
+    const today = new Date();
+    const currentDay = today.getDay(); // 0 = Sunday, 1 = Monday, ..., 6 = Saturday
+    let targetDay: number;
+    
+    // Map lottery types to their draw days
+    switch (lotteryType) {
+      case 'Monday Lotto':
+        targetDay = 1; // Monday
+        break;
+      case 'Wednesday Lotto':
+        targetDay = 3; // Wednesday
+        break;
+      case 'Friday Lotto':
+        targetDay = 5; // Friday
+        break;
+      default:
+        return this.getTodayDate(); // Fallback to today
+    }
+    
+    // Calculate days until next draw
+    let daysUntilDraw = targetDay - currentDay;
+    
+    // If the draw day has passed this week, move to next week
+    if (daysUntilDraw <= 0) {
+      daysUntilDraw += 7;
+    }
+    
+    // Create the next draw date
+    const nextDrawDate = new Date(today);
+    nextDrawDate.setDate(today.getDate() + daysUntilDraw);
+    
+    return nextDrawDate.toISOString().split('T')[0];
+  }
+  
+  onLotteryChange() {
+    // Auto-update draw date when lottery type changes
+    this.drawDate = this.getNextDrawDate(this.lottery);
   }
   
   setDefaultDateRange() {
@@ -196,16 +236,6 @@ export class VotingManagementComponent implements OnInit {
       return;
     }
     
-    // Check if allocation already exists for this lottery and date
-    const existingAllocation = this.adminVotes.find(vote => 
-      vote.lottery === this.lottery && vote.drawDate === this.drawDate
-    );
-    
-    if (existingAllocation) {
-      this.showInfoMessage(`Vote allocation already exists for ${this.lottery} on ${this.drawDate}. Please choose a different date or delete the existing allocation.`);
-      return;
-    }
-    
     this.isSaving = true;
     this.loadingMessage = 'Allocating votes...';
     
@@ -256,7 +286,7 @@ export class VotingManagementComponent implements OnInit {
     this.mainNumberVotes = {};
     this.bonusNumberVotes = {};
     this.allocatedVotes = 1000;
-    this.drawDate = this.getTodayDate();
+    this.drawDate = this.getNextDrawDate(this.lottery); // Reset to next draw date
   }
   
   loadAdminVotes() {
@@ -486,18 +516,18 @@ export class VotingManagementComponent implements OnInit {
       filtered = filtered.filter(vote => vote.lottery === this.selectedLotteryFilter);
     }
     
-    // Date range filter
+    // Date range filter - based on CREATED DATE, not draw date
     if (this.dateFromFilter) {
       filtered = filtered.filter(vote => {
-        const voteDate = vote.drawDate || vote.voteDate;
-        return voteDate >= this.dateFromFilter;
+        const createdDate = vote.createdAt ? vote.createdAt.split(' ')[0] : (vote.voteDate || vote.drawDate);
+        return createdDate >= this.dateFromFilter;
       });
     }
     
     if (this.dateToFilter) {
       filtered = filtered.filter(vote => {
-        const voteDate = vote.drawDate || vote.voteDate;
-        return voteDate <= this.dateToFilter;
+        const createdDate = vote.createdAt ? vote.createdAt.split(' ')[0] : (vote.voteDate || vote.drawDate);
+        return createdDate <= this.dateToFilter;
       });
     }
     
@@ -527,8 +557,9 @@ export class VotingManagementComponent implements OnInit {
           break;
         case 'date':
         default:
-          aValue = a.drawDate || a.voteDate;
-          bValue = b.drawDate || b.voteDate;
+          // Sort by created date, not draw date
+          aValue = a.createdAt || a.voteDate || a.drawDate;
+          bValue = b.createdAt || b.voteDate || b.drawDate;
           break;
       }
       

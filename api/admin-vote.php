@@ -40,16 +40,6 @@ if ($method === 'POST') {
             exit;
         }
         
-        // Check for existing allocation for same lottery and draw date
-        $checkStmt = $db->prepare("SELECT id FROM admin_vote WHERE lottery = ? AND draw_date = ?");
-        $checkStmt->execute([$lottery, $voteDate]);
-        
-        if ($checkStmt->rowCount() > 0) {
-            http_response_code(400);
-            echo json_encode(['error' => "Vote allocation already exists for {$lottery} on {$voteDate}. Please choose a different date or delete the existing allocation."]);
-            exit;
-        }
-        
         // Insert with both old and new format for compatibility
         $stmt = $db->prepare("INSERT INTO admin_vote (admin_id, lottery, numbers, bonus_numbers, allocated_votes, voting_data, total_votes, vote_date, draw_date) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)");
         $stmt->execute([
@@ -199,15 +189,8 @@ if ($method === 'POST') {
         exit;
     }
     
-    // Check for duplicate lottery/date combination (excluding current record)
-    $duplicateStmt = $db->prepare("SELECT id FROM admin_vote WHERE lottery = ? AND draw_date = ? AND id != ?");
-    $duplicateStmt->execute([$lottery, $voteDate, $voteId]);
-    
-    if ($duplicateStmt->rowCount() > 0) {
-        http_response_code(400);
-        echo json_encode(['error' => "Another vote allocation already exists for {$lottery} on {$voteDate}. Please choose a different date."]);
-        exit;
-    }
+    // Check for duplicate lottery/date combination (excluding current record) - REMOVED
+    // Admins can now create multiple allocations for the same lottery and date
     
     // Update the vote allocation
     $updateStmt = $db->prepare("

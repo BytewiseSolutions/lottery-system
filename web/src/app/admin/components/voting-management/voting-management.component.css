@@ -850,6 +850,13 @@
   border: 1px solid #ddd;
 }
 
+.filter-help {
+  color: #6c757d;
+  font-size: 11px;
+  margin-top: 4px;
+  font-style: italic;
+}
+
 .filter-actions {
   display: flex;
   align-items: end;
@@ -1718,10 +1725,39 @@
   100% { transform: rotate(360deg); }
 }
 
-/* Button Loading States */
-button:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
+/* Draw schedule info styling */
+.draw-schedule-info {
+  margin-top: 8px;
+  padding: 8px 12px;
+  background: #e3f2fd;
+  border-radius: 6px;
+  border-left: 4px solid #2196f3;
+}
+
+.draw-schedule-info small {
+  color: #1565c0;
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+.draw-schedule-info strong {
+  color: #0d47a1;
+  font-weight: 600;
+}
+
+/* Auto-fill indicator */
+.form-group .info {
+  color: #666;
+  font-size: 13px;
+  margin-top: 6px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.form-group .info::before {
+  content: "ℹ️";
+  font-size: 14px;
 }
 
 button .fa-spinner {

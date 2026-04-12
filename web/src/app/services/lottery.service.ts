@@ -28,6 +28,11 @@ export class LotteryService {
 
   constructor(private http: HttpClient) {}
 
+  private getAuthOptions() {
+    const token = localStorage.getItem('token');
+    return token ? { headers: { Authorization: `Bearer ${token}` } } : {};
+  }
+
   getResults(): Observable<any[]> {
     const token = localStorage.getItem('token');
     if (token) {
@@ -64,19 +69,25 @@ export class LotteryService {
   }
 
   getUsers(page: number = 1, limit: number = 10, search: string = ''): Observable<any> {
-    return this.http.get<any>(`${this.apiUrl}/users?page=${page}&limit=${limit}&search=${search}`);
+    return this.http.get<any>(
+      `${this.apiUrl}/users?page=${page}&limit=${limit}&search=${search}`,
+      this.getAuthOptions()
+    );
   }
 
   createUser(user: any): Observable<any> {
-    return this.http.post<any>(`${this.apiUrl}/users`, user);
+    return this.http.post<any>(`${this.apiUrl}/users`, user, this.getAuthOptions());
   }
 
   updateUser(user: any): Observable<any> {
-    return this.http.put<any>(`${this.apiUrl}/users`, user);
+    return this.http.put<any>(`${this.apiUrl}/users`, user, this.getAuthOptions());
   }
 
   deleteUser(id: number): Observable<any> {
-    return this.http.delete<any>(`${this.apiUrl}/users`, { body: { id } });
+    return this.http.delete<any>(`${this.apiUrl}/users`, {
+      ...this.getAuthOptions(),
+      body: { id }
+    });
   }
 
   getAnalytics(range: string, dateFrom?: string, dateTo?: string): Observable<any> {

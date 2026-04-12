@@ -610,18 +610,7 @@
 
         <!-- User Management Section -->
         @if (activeSection === 'users') {
-          <app-user-management
-            [users]="users"
-            [totalUsersCount]="totalUsersCount"
-            [usersCurrentPage]="usersCurrentPage"
-            [usersTotalPages]="usersTotalPages"
-            [usersSearchQuery]="usersSearchQuery"
-            (searchUsers)="onSearchUsers($event)"
-            (addUser)="onAddUser()"
-            (editUser)="onEditUser($event)"
-            (deleteUser)="onDeleteUser($event)"
-            (pageChange)="onUsersPageChange($event)">
-          </app-user-management>
+          <app-user-management></app-user-management>
         }
 
         <!-- Entries Section -->
