@@ -35,15 +35,17 @@
         </div>
       </div>
       
-      <div class="stat-card">
-        <div class="stat-icon verified">
-          <i class="fas fa-shield-alt"></i>
+      @if (userStats.verified_users > 0) {
+        <div class="stat-card">
+          <div class="stat-icon verified">
+            <i class="fas fa-shield-alt"></i>
+          </div>
+          <div class="stat-content">
+            <h3>{{userStats.verified_users | number}}</h3>
+            <p>Verified Users</p>
+          </div>
         </div>
-        <div class="stat-content">
-          <h3>{{userStats.verified_users | number}}</h3>
-          <p>Verified Users</p>
-        </div>
-      </div>
+      }
       
       <div class="stat-card">
         <div class="stat-icon new">
@@ -304,7 +306,6 @@
             <th>User</th>
             <th>Contact</th>
             <th>Status</th>
-            <th>Activity</th>
             <th>Actions</th>
           </tr>
         </thead>
@@ -377,26 +378,6 @@
                       <i class="fas fa-toggle-off"></i>
                     }
                   </button>
-                </div>
-              </td>
-              
-              <td class="activity-cell">
-                <div class="activity-info">
-                  <div class="joined">
-                    <i class="fas fa-calendar-plus"></i>
-                    <span>{{formatDate(user.created_at)}}</span>
-                  </div>
-                  @if (user.last_login) {
-                    <div class="last-login">
-                      <i class="fas fa-clock"></i>
-                      <span>{{formatDateTime(user.last_login)}}</span>
-                    </div>
-                  } @else {
-                    <div class="never-logged">
-                      <i class="fas fa-exclamation-triangle"></i>
-                      <span>Never logged in</span>
-                    </div>
-                  }
                 </div>
               </td>
               
@@ -493,7 +474,7 @@
   } @else if (!loading) {
     <div class="no-data">
       <div class="no-data-icon">
-        <i class="fas fa-users-slash"></i>
+        <i class="fas fa-users"></i>
       </div>
       <h3>No users found</h3>
       <p>Try adjusting your search or filters to find more accounts.</p>

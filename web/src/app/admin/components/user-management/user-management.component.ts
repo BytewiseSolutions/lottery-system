@@ -264,6 +264,8 @@ export class UserManagementComponent implements OnInit {
   }
 
   validateUserForm(): string | null {
+    const trimmedPassword = this.userForm.password?.trim() ?? '';
+
     if (!this.userForm.full_name?.trim()) {
       return 'Full name is required.';
     }
@@ -273,10 +275,10 @@ export class UserManagementComponent implements OnInit {
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(this.userForm.email.trim())) {
       return 'Enter a valid email address.';
     }
-    if (!this.isEditMode && !this.userForm.password?.trim()) {
+    if (!this.isEditMode && !trimmedPassword) {
       return 'Password is required for new users.';
     }
-    if (!this.isEditMode && this.userForm.password.trim().length < 8) {
+    if (!this.isEditMode && trimmedPassword.length < 8) {
       return 'Password must be at least 8 characters long.';
     }
     return null;
