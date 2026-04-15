@@ -227,8 +227,13 @@ export class LotteryService {
     });
   }
 
-  getLeadingNumbers(lottery: string, voteDate: string): Observable<any> {
-    return this.http.get<any>(`${this.apiUrl}/leading-numbers?lottery=${encodeURIComponent(lottery)}&voteDate=${voteDate}`);
+  getLeadingNumbers(lottery?: string, voteDate?: string): Observable<any> {
+    let url = `${this.apiUrl}/leading-numbers`;
+    const params = [];
+    if (lottery) params.push(`lottery=${encodeURIComponent(lottery)}`);
+    if (voteDate) params.push(`voteDate=${voteDate}`);
+    if (params.length > 0) url += `?${params.join('&')}`;
+    return this.http.get<any>(url);
   }
 
   getVotingHistory(): Observable<any> {
@@ -250,5 +255,13 @@ export class LotteryService {
     return this.http.get<any>(`${this.apiUrl}/admin-vote`, {
       headers: { 'Authorization': `Bearer ${token}` }
     });
+  }
+
+  getLastDrawnDates(numbers: number[], lottery: string): Observable<any> {
+    const token = localStorage.getItem('token');
+    return this.http.post<any>(`${this.apiUrl}/last-drawn-dates`, 
+      { numbers, lottery },
+      { headers: { 'Authorization': `Bearer ${token}` } }
+    );
   }
 }

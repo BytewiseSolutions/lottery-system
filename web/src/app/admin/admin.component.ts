@@ -142,6 +142,8 @@ export class AdminComponent implements OnInit, OnDestroy {
   showCustomDateModal = false;
   showAddUserModal = false;
   newUserData = { full_name: '', email: '', phone: '', password: '' };
+  leadingNumbers: any[] = [];
+  selectedLotteryType = 'Monday Lotto';
 
   constructor(
     private router: Router,
@@ -347,6 +349,9 @@ export class AdminComponent implements OnInit, OnDestroy {
       case 'contact-messages':
         this.loadContactMessages();
         break;
+      case 'leading-numbers':
+        this.loadLeadingNumbers();
+        break;
     }
   }
 
@@ -364,6 +369,7 @@ export class AdminComponent implements OnInit, OnDestroy {
       'logs': 'Activity Logs',
       'contact-messages': 'Contact Messages',
       'voting': 'Voting Management',
+      'leading-numbers': 'Leading Numbers',
       'settings': 'Settings'
     };
     return titles[this.activeSection] || 'Dashboard';
@@ -1163,7 +1169,7 @@ export class AdminComponent implements OnInit, OnDestroy {
     }
   }
 
-  onLotteryTypeChange() {
+  onLotteryUploadTypeChange() {
     const lotteryType = this.uploadForm.get('lottery')?.value;
     console.log('Selected lottery:', lotteryType);
     
@@ -1400,5 +1406,148 @@ export class AdminComponent implements OnInit, OnDestroy {
           }
         });
     }
+  }
+
+  loadLeadingNumbers() {
+    // For admin panel, we want to see the latest available data, not necessarily today's date
+    this.lotteryService.getLeadingNumbers(this.selectedLotteryType)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (data) => {
+          console.log('Leading numbers data received:', data);
+          // Transform the data to match the admin table format
+          this.leadingNumbers = this.transformLeadingNumbersData(data);
+        },
+        error: (error) => {
+          console.error('Error loading leading numbers:', error);
+          this.leadingNumbers = [];
+        }
+      });
+  }
+
+  transformLeadingNumbersData(data: any): any[] {
+    console.log('Raw leading numbers data:', data);
+    const transformed: any[] = [];
+    
+    // Check if we have any actual data
+    const hasMainData = data.section1 && Array.isArray(data.section1) && data.section1.length > 0;
+    const hasBonusData = data.section2 && Array.isArray(data.section2) && data.section2.length > 0;
+    
+    if (!hasMainData && !hasBonusData) {
+      console.log('No voting data available for this lottery');
+      return [];
+    }
+    
+    // Process main numbers (section1) - limit to 5
+    if (hasMainData) {
+      console.log('Section1 data:', data.section1);
+      const limitedSection1 = data.section1.slice(0, 5);
+      limitedSection1.forEach((item: any, index: number) => {
+        if (item.number && item.votes > 0) {
+          transformed.push({
+            number: item.number,
+            frequency: item.votes,
+            last_drawn: null, // Will be populated by getLastDrawnDates
+            percentage: this.calculatePercentage(item.votes, data.total_main_votes || 100),
+            trend: this.getTrendIndicator(index),
+            type: 'main'
+          });
+        }
+      });
+    }
+    
+    // Process bonus numbers (section2) - limit to 2
+    if (hasBonusData) {
+      console.log('Section2 data:', data.section2);
+      const limitedSection2 = data.section2.slice(0, 2);
+      limitedSection2.forEach((item: any, index: number) => {
+        if (item.number && item.votes > 0) {
+          transformed.push({
+            number: item.number,
+            frequency: item.votes,
+            last_drawn: null, // Will be populated by getLastDrawnDates
+            percentage: this.calculatePercentage(item.votes, data.total_bonus_votes || 100),
+            trend: this.getTrendIndicator(index + 5),
+            type: 'bonus'
+          });
+        }
+      });
+    }
+    
+    // Sort by frequency (highest first) and ensure we only have 7 numbers total
+    const sortedTransformed = transformed.sort((a, b) => b.frequency - a.frequency);
+    
+    // Ensure exactly 7 numbers: 5 main + 2 bonus
+    const mainNumbers = sortedTransformed.filter(item => item.type === 'main').slice(0, 5);
+    const bonusNumbers = sortedTransformed.filter(item => item.type === 'bonus').slice(0, 2);
+    
+    const finalNumbers = [...mainNumbers, ...bonusNumbers];
+    console.log('Final transformed numbers:', finalNumbers);
+    
+    // Get real last drawn dates for these numbers
+    if (finalNumbers.length > 0) {
+      this.getLastDrawnDates(finalNumbers);
+    }
+    
+    return finalNumbers;
+  }
+
+  calculatePercentage(votes: number, total: number): number {
+    return total > 0 ? Math.round((votes / total) * 100) : 0;
+  }
+
+  getTrendIndicator(index: number): string {
+    // Simple trend logic based on position
+    if (index < 3) return 'up';
+    if (index < 6) return 'stable';
+    return 'down';
+  }
+
+  getLastDrawnDates(numbers: any[]) {
+    const numbersList = numbers.map(item => item.number);
+    
+    // Get real last drawn dates from the API
+    this.lotteryService.getLastDrawnDates(numbersList, this.selectedLotteryType)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (response) => {
+          if (response.success && response.last_drawn_dates) {
+            numbers.forEach(numberItem => {
+              const lastDrawnInfo = response.last_drawn_dates[numberItem.number];
+              if (lastDrawnInfo && lastDrawnInfo.last_drawn) {
+                numberItem.last_drawn = new Date(lastDrawnInfo.last_drawn);
+              } else {
+                numberItem.last_drawn = null; // Never drawn
+              }
+            });
+          } else {
+            // Fallback: set all to null (never drawn)
+            numbers.forEach(numberItem => {
+              numberItem.last_drawn = null;
+            });
+          }
+          
+          // Update the display
+          this.leadingNumbers = [...numbers];
+        },
+        error: (error) => {
+          console.error('Error fetching last drawn dates:', error);
+          // Fallback: set all to null
+          numbers.forEach(numberItem => {
+            numberItem.last_drawn = null;
+          });
+          this.leadingNumbers = [...numbers];
+        }
+      });
+  }
+
+  onLotteryTypeChange() {
+    this.loadLeadingNumbers();
+  }
+
+  refreshLeadingNumbers() {
+    this.isRefreshing = true;
+    this.loadLeadingNumbers();
+    setTimeout(() => this.isRefreshing = false, 1000);
   }
 }

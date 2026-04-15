@@ -333,7 +333,7 @@
               <form [formGroup]="uploadForm" (ngSubmit)="uploadResult()" class="modal-form">
                 <div class="form-group">
                   <label for="lottery">Lottery Type</label>
-                  <select id="lottery" formControlName="lottery" class="form-control select-field" (ngModelChange)="onLotteryTypeChange()" [ngModel]="uploadForm.get('lottery')?.value" required>
+                  <select id="lottery" formControlName="lottery" class="form-control select-field" (ngModelChange)="onLotteryUploadTypeChange()" [ngModel]="uploadForm.get('lottery')?.value" required>
                     <option value="" disabled>Select lottery type</option>
                     <option value="Monday Lotto">Monday Lotto</option>
                     <option value="Wednesday Lotto">Wednesday Lotto</option>
@@ -830,6 +830,79 @@
         <!-- Voting Management Section -->
         @if (activeSection === 'voting') {
           <app-voting-management></app-voting-management>
+        }
+
+        <!-- Leading Numbers Section -->
+        @if (activeSection === 'leading-numbers') {
+          <section class="leading-numbers-section">
+            <div class="card">
+              <div class="card-header">
+                <h3><i class="fas fa-chart-line"></i> Leading Numbers Analysis</h3>
+                <div class="header-actions">
+                  <select class="form-control form-control-sm" [(ngModel)]="selectedLotteryType" (change)="onLotteryTypeChange()">
+                    <option value="Monday Lotto">Monday Lotto</option>
+                    <option value="Wednesday Lotto">Wednesday Lotto</option>
+                    <option value="Friday Lotto">Friday Lotto</option>
+                  </select>
+                  <button class="btn btn-sm btn-primary" (click)="refreshLeadingNumbers()">
+                    <i class="fas fa-sync-alt" [class.spin]="isRefreshing"></i> Refresh
+                  </button>
+                </div>
+              </div>
+              @if (leadingNumbers.length > 0) {
+                <div class="table-responsive">
+                  <table class="data-table">
+                    <thead>
+                      <tr>
+                        <th>Number</th>
+                        <th>Type</th>
+                        <th>Frequency</th>
+                        <th>Last Drawn</th>
+                        <th>Percentage</th>
+                        <th>Trend</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      @for (leadingNumber of leadingNumbers; track leadingNumber.number) {
+                        <tr>
+                          <td>
+                            <span class="number-badge large" [class.bonus]="leadingNumber.type === 'bonus'">{{ leadingNumber.number }}</span>
+                          </td>
+                          <td>
+                            <span class="type-badge" [class]="leadingNumber.type">
+                              {{ leadingNumber.type === 'main' ? 'Main' : 'Bonus' }}
+                            </span>
+                          </td>
+                          <td>{{ leadingNumber.frequency }}</td>
+                          <td>{{ leadingNumber.last_drawn ? (leadingNumber.last_drawn | date:'short') : 'Never drawn' }}</td>
+                          <td>
+                            <div class="percentage-bar">
+                              <div class="percentage-fill" [style.width.%]="leadingNumber.percentage"></div>
+                              <span class="percentage-text">{{ leadingNumber.percentage }}%</span>
+                            </div>
+                          </td>
+                          <td>
+                            <span class="trend-indicator" [class]="leadingNumber.trend">
+                              <i class="fas" [class.fa-arrow-up]="leadingNumber.trend === 'up'" [class.fa-arrow-down]="leadingNumber.trend === 'down'" [class.fa-minus]="leadingNumber.trend === 'stable'"></i>
+                              {{ leadingNumber.trend }}
+                            </span>
+                          </td>
+                        </tr>
+                      }
+                    </tbody>
+                  </table>
+                </div>
+              } @else {
+                <div class="card-body text-center">
+                  <div class="empty-state">
+                    <i class="fas fa-chart-line" style="font-size: 3rem; color: #a0aec0; margin-bottom: 1rem;"></i>
+                    <h4>No Leading Numbers Data</h4>
+                    <p>No voting data available for {{ selectedLotteryType }}. Leading numbers will appear once users start voting.</p>
+                  </div>
+                </div>
+              }
+            </div>
+          </section>
         }
 
         <!-- Edit Result Modal -->

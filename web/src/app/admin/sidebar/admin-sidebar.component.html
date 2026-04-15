@@ -92,6 +92,14 @@
           <span class="badge">Rig</span>
         </a>
       </li>
+      <li>
+        <a (click)="onSectionClick('leading-numbers')" [class.active]="activeSection === 'leading-numbers'">
+          <div class="nav-item-content">
+            <i class="fas fa-chart-line"></i>
+            <span>Leading Numbers</span>
+          </div>
+        </a>
+      </li>
     </ul>
   </nav>
 

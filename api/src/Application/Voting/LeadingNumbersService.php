@@ -25,13 +25,21 @@ final class LeadingNumbersService
 
         $drawDate = $this->resolveDrawDate($lottery, $drawDate);
 
+        // Check if we have a recent snapshot (less than 1 minute old)
         if ($this->snapshots !== null) {
             $snapshot = $this->snapshots->find($lottery, $drawDate);
-            if ($snapshot !== null) {
-                return $snapshot;
+            if ($snapshot !== null && isset($snapshot['updated_at'])) {
+                $snapshotTime = strtotime($snapshot['updated_at']);
+                $currentTime = time();
+                
+                // If snapshot is less than 60 seconds old, use it
+                if (($currentTime - $snapshotTime) < 60) {
+                    return $snapshot;
+                }
             }
         }
 
+        // Refresh snapshot with latest data
         return $this->refreshSnapshot($lottery, $drawDate);
     }
 
@@ -51,6 +59,26 @@ final class LeadingNumbersService
         $bonusCounts = [];
         $userVotes = $this->votes->forLotteryAndDrawDate($lottery, $drawDate);
         $adminVotes = $this->adminVotes->forLotteryAndDrawDate($lottery, $drawDate);
+
+        // Check if we have any votes at all
+        if (empty($userVotes) && empty($adminVotes)) {
+            // Return empty data structure instead of creating a snapshot
+            return [
+                'lottery' => $lottery,
+                'draw_date' => $drawDate,
+                'section1' => [],
+                'section2' => [],
+                'topSection1' => [],
+                'topSection2' => [],
+                'top_five' => [],
+                'top_two' => [],
+                'total_user_votes' => 0,
+                'total_admin_allocations' => 0,
+                'total_main_votes' => 0,
+                'total_bonus_votes' => 0,
+                'from_snapshot' => false,
+            ];
+        }
 
         foreach ($userVotes as $entry) {
             foreach (json_decode($entry['numbers'], true) ?: [] as $number) {
@@ -95,31 +123,55 @@ final class LeadingNumbersService
             }
         }
 
+        // Only proceed if we have actual vote data
+        if (empty($numberCounts) && empty($bonusCounts)) {
+            return [
+                'lottery' => $lottery,
+                'draw_date' => $drawDate,
+                'section1' => [],
+                'section2' => [],
+                'topSection1' => [],
+                'topSection2' => [],
+                'top_five' => [],
+                'top_two' => [],
+                'total_user_votes' => count($userVotes),
+                'total_admin_allocations' => count($adminVotes),
+                'total_main_votes' => 0,
+                'total_bonus_votes' => 0,
+                'from_snapshot' => false,
+            ];
+        }
+
         $numberCounts = $this->sortCounts($numberCounts);
         $bonusCounts = $this->sortCounts($bonusCounts);
 
-        $topSection1 = array_slice(array_keys($numberCounts), 0, 5);
-        $topSection2 = array_slice(array_keys($bonusCounts), 0, 2);
+        // Limit to top 5 main numbers and top 2 bonus numbers
+        $topMainNumbers = array_slice($numberCounts, 0, 5, true);
+        $topBonusNumbers = array_slice($bonusCounts, 0, 2, true);
+
+        $topSection1 = array_slice(array_keys($topMainNumbers), 0, 5);
+        $topSection2 = array_slice(array_keys($topBonusNumbers), 0, 2);
         sort($topSection1);
         sort($topSection2);
 
         $summary = [
             'lottery' => $lottery,
             'draw_date' => $drawDate,
-            'section1' => $this->mapCounts($numberCounts),
-            'section2' => $this->mapCounts($bonusCounts),
+            'section1' => $this->mapCounts($topMainNumbers),
+            'section2' => $this->mapCounts($topBonusNumbers),
             'topSection1' => array_map('intval', $topSection1),
             'topSection2' => array_map('intval', $topSection2),
             'top_five' => array_map('intval', $topSection1),
             'top_two' => array_map('intval', $topSection2),
             'total_user_votes' => count($userVotes),
             'total_admin_allocations' => count($adminVotes),
-            'total_main_votes' => array_sum($numberCounts),
-            'total_bonus_votes' => array_sum($bonusCounts),
+            'total_main_votes' => array_sum($topMainNumbers),
+            'total_bonus_votes' => array_sum($topBonusNumbers),
             'from_snapshot' => false,
         ];
 
-        if ($this->snapshots !== null) {
+        // Only save snapshot if we have actual data
+        if ($this->snapshots !== null && (array_sum($topMainNumbers) > 0 || array_sum($topBonusNumbers) > 0)) {
             $this->snapshots->upsert($summary);
             $stored = $this->snapshots->find($lottery, $drawDate);
             if ($stored !== null) {
@@ -158,7 +210,31 @@ final class LeadingNumbersService
             }
         }
 
-        return date('Y-m-d');
+        // If no snapshot exists, find the next upcoming draw date for this lottery
+        $today = date('Y-m-d');
+        $dayOfWeek = date('N'); // 1 = Monday, 7 = Sunday
+        
+        switch (strtolower($lottery)) {
+            case 'monday lotto':
+                $targetDay = 1; // Monday
+                break;
+            case 'wednesday lotto':
+                $targetDay = 3; // Wednesday
+                break;
+            case 'friday lotto':
+                $targetDay = 5; // Friday
+                break;
+            default:
+                return $today;
+        }
+        
+        // Calculate days until next target day
+        $daysUntilTarget = ($targetDay - $dayOfWeek + 7) % 7;
+        if ($daysUntilTarget === 0) {
+            $daysUntilTarget = 7; // If today is the target day, get next week's
+        }
+        
+        return date('Y-m-d', strtotime("+{$daysUntilTarget} days"));
     }
 
     private function sortCounts(array $counts): array
