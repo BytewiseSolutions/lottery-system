@@ -8,7 +8,10 @@ use App\Domain\Voting\VoteRepository;
 
 final class VoteService
 {
-    public function __construct(private readonly VoteRepository $votes) {}
+    public function __construct(
+        private readonly VoteRepository $votes,
+        private readonly ?LeadingNumbersService $leadingNumbers = null
+    ) {}
 
     public function submit(int $userId, array $payload): array
     {
@@ -29,6 +32,7 @@ final class VoteService
         $bonusNumbers = $this->normalizeNumbers($bonusNumbers, 2, $numbers);
 
         $this->votes->store($userId, $lottery, $numbers, $bonusNumbers, $drawDate);
+        $this->leadingNumbers?->refreshSnapshot($lottery, $drawDate);
 
         return [
             'success' => true,

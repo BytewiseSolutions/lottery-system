@@ -3,11 +3,30 @@ header('Content-Type: application/json');
 require_once 'config/cors.php';
 require_once 'config/database.php';
 require_once 'config/jwt.php';
+require_once __DIR__ . '/bootstrap.php';
 
 $method = $_SERVER['REQUEST_METHOD'];
 $requestUri = $_SERVER['REQUEST_URI'];
 $pathInfo = parse_url($requestUri, PHP_URL_PATH);
 $pathParts = explode('/', trim($pathInfo, '/'));
+
+function refresh_leading_numbers_snapshot(PDO $db, string $lottery, string $drawDate): void
+{
+    $lottery = trim($lottery);
+    $drawDate = substr(trim($drawDate), 0, 10);
+
+    if ($lottery === '' || $drawDate === '') {
+        return;
+    }
+
+    $service = new App\Application\Voting\LeadingNumbersService(
+        new App\Domain\Voting\VoteRepository($db),
+        new App\Domain\Voting\AdminVoteRepository($db),
+        new App\Domain\Voting\LeadingNumbersSnapshotRepository($db)
+    );
+
+    $service->refreshSnapshot($lottery, $drawDate);
+}
 
 if ($method === 'POST') {
     $user = JWT::authenticate();
@@ -68,6 +87,8 @@ if ($method === 'POST') {
         $stmt = $db->prepare("INSERT INTO admin_vote (admin_id, lottery, numbers, bonus_numbers, allocated_votes, vote_date, draw_date) VALUES (?, ?, ?, ?, ?, ?, ?)");
         $stmt->execute([$adminId, $lottery, json_encode($numbers), json_encode($bonusNumbers), $allocatedVotes, date('Y-m-d'), $voteDate]);
     }
+
+    refresh_leading_numbers_snapshot($db, $lottery, $voteDate);
     
     echo json_encode(['success' => true, 'message' => 'Votes allocated successfully']);
     
@@ -218,6 +239,15 @@ if ($method === 'POST') {
     ]);
     
     if ($success) {
+        if (
+            $existingVote['lottery'] !== $lottery
+            || substr((string) $existingVote['draw_date'], 0, 10) !== substr((string) $voteDate, 0, 10)
+        ) {
+            refresh_leading_numbers_snapshot($db, (string) $existingVote['lottery'], (string) $existingVote['draw_date']);
+        }
+
+        refresh_leading_numbers_snapshot($db, $lottery, $voteDate);
+
         echo json_encode([
             'success' => true, 
             'message' => 'Vote allocation updated successfully',
@@ -258,10 +288,11 @@ if ($method === 'POST') {
     $db = $database->getConnection();
     
     // Check if vote exists
-    $checkStmt = $db->prepare("SELECT id FROM admin_vote WHERE id = ?");
+    $checkStmt = $db->prepare("SELECT id, lottery, draw_date FROM admin_vote WHERE id = ?");
     $checkStmt->execute([$voteId]);
+    $existingVote = $checkStmt->fetch(PDO::FETCH_ASSOC);
     
-    if ($checkStmt->rowCount() === 0) {
+    if (!$existingVote) {
         http_response_code(404);
         echo json_encode(['error' => 'Vote allocation not found']);
         exit;
@@ -270,6 +301,8 @@ if ($method === 'POST') {
     // Delete the vote
     $deleteStmt = $db->prepare("DELETE FROM admin_vote WHERE id = ?");
     $deleteStmt->execute([$voteId]);
+
+    refresh_leading_numbers_snapshot($db, (string) $existingVote['lottery'], (string) $existingVote['draw_date']);
     
     echo json_encode(['success' => true, 'message' => 'Vote allocation deleted successfully']);
 }

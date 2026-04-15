@@ -4,15 +4,25 @@ declare(strict_types=1);
 namespace App\Application\Voting;
 
 use App\Core\Request;
+use App\Domain\Voting\AdminVoteRepository;
+use App\Domain\Voting\LeadingNumbersSnapshotRepository;
+use App\Domain\Voting\VoteRepository;
 use App\Infrastructure\Auth\JwtAuthenticator;
 use App\Infrastructure\Database\DatabaseConnection;
-use App\Domain\Voting\VoteRepository;
 
 final class VoteController
 {
     public function __invoke(Request $request): array
     {
-        $service = new VoteService(new VoteRepository((new DatabaseConnection())->pdo()));
+        $db = (new DatabaseConnection())->pdo();
+        $service = new VoteService(
+            new VoteRepository($db),
+            new LeadingNumbersService(
+                new VoteRepository($db),
+                new AdminVoteRepository($db),
+                new LeadingNumbersSnapshotRepository($db)
+            )
+        );
         $user = (new JwtAuthenticator())->authenticate();
 
         if ($request->method() === 'POST') {

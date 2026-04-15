@@ -5,6 +5,7 @@ namespace App\Application\Voting;
 
 use App\Core\Request;
 use App\Domain\Voting\AdminVoteRepository;
+use App\Domain\Voting\LeadingNumbersSnapshotRepository;
 use App\Domain\Voting\VoteRepository;
 use App\Infrastructure\Database\DatabaseConnection;
 
@@ -17,12 +18,13 @@ final class LeadingNumbersController
         $db = (new DatabaseConnection())->pdo();
         $service = new LeadingNumbersService(
             new VoteRepository($db),
-            new AdminVoteRepository($db)
+            new AdminVoteRepository($db),
+            new LeadingNumbersSnapshotRepository($db)
         );
 
         return $service->summary(
             (string) $request->query('lottery', ''),
-            (string) $request->query('voteDate', date('Y-m-d'))
+            $request->query('voteDate')
         );
     }
 }
