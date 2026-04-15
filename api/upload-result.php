@@ -4,6 +4,7 @@ ini_set('display_errors', 1);
 require_once 'config/cors.php';
 require_once 'config/database.php';
 require_once 'config/jwt.php';
+require_once __DIR__ . '/bootstrap.php';
 
 try {
     $user = JWT::authenticate();
@@ -31,22 +32,52 @@ if (!$data->lottery || !$data->drawDate || !$data->jackpot || !$data->numbers ||
 }
 
 try {
+    $db->beginTransaction();
+
     $status = isset($data->publishNow) && $data->publishNow ? 'published' : 'draft';
+
+    $existingResultQuery = "SELECT id FROM result WHERE lottery = ? AND DATE(draw_date) = DATE(?) ORDER BY id DESC LIMIT 1";
+    $existingResultStmt = $db->prepare($existingResultQuery);
+    $existingResultStmt->execute([$data->lottery, $data->drawDate]);
+    $existingResult = $existingResultStmt->fetch(PDO::FETCH_ASSOC);
     
-    $query = "INSERT INTO result (lottery, draw_date, winning_numbers, bonus_numbers, jackpot, winners, status, notes) 
-              VALUES (?, ?, ?, ?, ?, 0, ?, ?)";
-    $stmt = $db->prepare($query);
-    $stmt->execute([
-        $data->lottery,
-        $data->drawDate,
-        json_encode($data->numbers),
-        json_encode($data->bonusNumbers),
-        $data->jackpot,
-        $status,
-        $data->notes ?? ''
-    ]);
-    
-    $resultId = $db->lastInsertId();
+    $resultNotes = $data->notes ?? '';
+
+    if ($existingResult) {
+        $resultId = (int) $existingResult['id'];
+        $query = "UPDATE result
+                  SET lottery = ?, draw_date = ?, winning_numbers = ?, bonus_numbers = ?, jackpot = ?, winners = 0, status = ?, notes = ?
+                  WHERE id = ?";
+        $stmt = $db->prepare($query);
+        $stmt->execute([
+            $data->lottery,
+            $data->drawDate,
+            json_encode($data->numbers),
+            json_encode($data->bonusNumbers),
+            $data->jackpot,
+            $status,
+            $resultNotes,
+            $resultId
+        ]);
+
+        $deleteExistingWinners = $db->prepare("DELETE FROM winner WHERE result_id = ?");
+        $deleteExistingWinners->execute([$resultId]);
+    } else {
+        $query = "INSERT INTO result (lottery, draw_date, winning_numbers, bonus_numbers, jackpot, winners, status, notes) 
+                  VALUES (?, ?, ?, ?, ?, 0, ?, ?)";
+        $stmt = $db->prepare($query);
+        $stmt->execute([
+            $data->lottery,
+            $data->drawDate,
+            json_encode($data->numbers),
+            json_encode($data->bonusNumbers),
+            $data->jackpot,
+            $status,
+            $resultNotes
+        ]);
+
+        $resultId = (int) $db->lastInsertId();
+    }
     
     $entriesQuery = "SELECT * FROM entry WHERE lottery = ? AND DATE(draw_date) = DATE(?)";
     $stmt = $db->prepare($entriesQuery);
@@ -139,6 +170,8 @@ try {
         }
     }
     
+    $db->commit();
+    
     echo json_encode([
         'success' => true,
         'message' => 'Result uploaded successfully',
@@ -146,6 +179,9 @@ try {
     ]);
     
 } catch(PDOException $exception) {
+    if ($db->inTransaction()) {
+        $db->rollBack();
+    }
     error_log("Upload result error: " . $exception->getMessage());
     http_response_code(500);
     echo json_encode([
@@ -154,6 +190,9 @@ try {
         'trace' => $exception->getTraceAsString()
     ]);
 } catch(Exception $exception) {
+    if ($db->inTransaction()) {
+        $db->rollBack();
+    }
     error_log("Upload result error: " . $exception->getMessage());
     http_response_code(500);
     echo json_encode([
