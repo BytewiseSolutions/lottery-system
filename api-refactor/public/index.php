@@ -1,1 +1,343 @@
 <?php
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
+
+ob_start();
+
+try {
+    require_once __DIR__ . '/../config/bootstrap.php';
+    
+    CorsMiddleware::handle();
+    
+    $method = $_SERVER['REQUEST_METHOD'];
+    $uri = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
+    
+    $uri = str_replace('/api-refactor/public', '', $uri);
+    $uri = trim($uri, '/');
+    
+    $routes = explode('/', $uri);
+    $module = $routes[0] ?? '';
+    $action = $routes[1] ?? '';
+    
+    if (empty($module)) {
+        Response::json(true, 'Lottery System API v1.0', [
+            'version' => '1.0.0',
+            'status' => 'running',
+            'timestamp' => date('Y-m-d H:i:s')
+        ]);
+    }
+    
+    switch ($module) {
+        case 'auth':
+            handleAuthRoutes($method, $action);
+            break;
+            
+        case 'user':
+            handleUserRoutes($method, $action);
+            break;
+            
+        case 'vote':
+            handleVoteRoutes($method, $action);
+            break;
+            
+        case 'draw':
+            handleDrawRoutes($method, $action);
+            break;
+            
+        case 'result':
+            handleResultRoutes($method, $action);
+            break;
+            
+        case 'winner':
+            handleWinnerRoutes($method, $action);
+            break;
+            
+        case 'payment':
+            handlePaymentRoutes($method, $action);
+            break;
+            
+        case 'notification':
+            handleNotificationRoutes($method, $action);
+            break;
+            
+        case 'file':
+            handleFileRoutes($method, $action);
+            break;
+            
+        case 'analytics':
+            handleAnalyticsRoutes($method, $action);
+            break;
+            
+        case 'audit':
+            handleAuditRoutes($method, $action);
+            break;
+            
+        case 'settings':
+            handleSettingsRoutes($method, $action);
+            break;
+            
+        default:
+            Response::json(false, 'Route not found', null, 404);
+    }
+    
+} catch (Exception $e) {
+    error_log("API Error: " . $e->getMessage());
+    
+    $statusCode = $e->getCode() ?: 500;
+    Response::json(false, 'Internal server error', null, $statusCode);
+}
+
+function handleAuthRoutes($method, $action) {
+    $controller = new AuthController();
+    
+    switch ($action) {
+        case 'login':
+            if ($method === 'POST') {
+                $controller->login();
+            } else {
+                Response::json(false, 'Method not allowed', null, 405);
+            }
+            break;
+            
+        case 'register':
+            if ($method === 'POST') {
+                $controller->register();
+            } else {
+                Response::json(false, 'Method not allowed', null, 405);
+            }
+            break;
+            
+        case 'logout':
+            if ($method === 'POST') {
+                $controller->logout();
+            } else {
+                Response::json(false, 'Method not allowed', null, 405);
+            }
+            break;
+            
+        default:
+            Response::json(false, 'Auth endpoint not found', null, 404);
+    }
+}
+
+function handleUserRoutes($method, $action) {
+    $controller = new UserController();
+    
+    switch ($action) {
+        case 'profile':
+            if ($method === 'GET') {
+                $controller->getProfile();
+            } elseif ($method === 'PUT') {
+                $controller->updateProfile();
+            } else {
+                Response::json(false, 'Method not allowed', null, 405);
+            }
+            break;
+            
+        case '':
+        case 'list':
+            if ($method === 'GET') {
+                $controller->getUsers();
+            } else {
+                Response::json(false, 'Method not allowed', null, 405);
+            }
+            break;
+            
+        default:
+            Response::json(false, 'User endpoint not found', null, 404);
+    }
+}
+
+function handleVoteRoutes($method, $action) {
+    $controller = new VoteController();
+    
+    switch ($action) {
+        case 'submit':
+            if ($method === 'POST') {
+                $controller->submitVote();
+            } else {
+                Response::json(false, 'Method not allowed', null, 405);
+            }
+            break;
+            
+        case 'history':
+            if ($method === 'GET') {
+                $controller->getVoteHistory();
+            } else {
+                Response::json(false, 'Method not allowed', null, 405);
+            }
+            break;
+            
+        default:
+            Response::json(false, 'Vote endpoint not found', null, 404);
+    }
+}
+
+function handleDrawRoutes($method, $action) {
+    $controller = new DrawController();
+    
+    switch ($action) {
+        case 'current':
+            if ($method === 'GET') {
+                $controller->getCurrentDraw();
+            } else {
+                Response::json(false, 'Method not allowed', null, 405);
+            }
+            break;
+            
+        case 'upcoming':
+            if ($method === 'GET') {
+                $controller->getUpcomingDraws();
+            } else {
+                Response::json(false, 'Method not allowed', null, 405);
+            }
+            break;
+            
+        default:
+            Response::json(false, 'Draw endpoint not found', null, 404);
+    }
+}
+
+function handleResultRoutes($method, $action) {
+    $controller = new ResultController();
+    
+    switch ($action) {
+        case 'latest':
+            if ($method === 'GET') {
+                $controller->getLatestResults();
+            } else {
+                Response::json(false, 'Method not allowed', null, 405);
+            }
+            break;
+            
+        default:
+            Response::json(false, 'Result endpoint not found', null, 404);
+    }
+}
+
+function handleWinnerRoutes($method, $action) {
+    $controller = new WinnerController();
+    
+    switch ($action) {
+        case 'list':
+            if ($method === 'GET') {
+                $controller->getWinners();
+            } else {
+                Response::json(false, 'Method not allowed', null, 405);
+            }
+            break;
+            
+        default:
+            Response::json(false, 'Winner endpoint not found', null, 404);
+    }
+}
+
+function handlePaymentRoutes($method, $action) {
+    $controller = new PaymentController();
+    
+    switch ($action) {
+        case 'process':
+            if ($method === 'POST') {
+                $controller->processPayment();
+            } else {
+                Response::json(false, 'Method not allowed', null, 405);
+            }
+            break;
+            
+        default:
+            Response::json(false, 'Payment endpoint not found', null, 404);
+    }
+}
+
+function handleNotificationRoutes($method, $action) {
+    $controller = new NotificationController();
+    
+    switch ($action) {
+        case 'list':
+            if ($method === 'GET') {
+                $controller->getNotifications();
+            } else {
+                Response::json(false, 'Method not allowed', null, 405);
+            }
+            break;
+            
+        default:
+            Response::json(false, 'Notification endpoint not found', null, 404);
+    }
+}
+
+function handleFileRoutes($method, $action) {
+    $controller = new FileController();
+    
+    switch ($action) {
+        case 'upload':
+            if ($method === 'POST') {
+                $controller->uploadFile();
+            } else {
+                Response::json(false, 'Method not allowed', null, 405);
+            }
+            break;
+            
+        default:
+            Response::json(false, 'File endpoint not found', null, 404);
+    }
+}
+
+function handleAnalyticsRoutes($method, $action) {
+    $controller = new AnalyticsController();
+    
+    switch ($action) {
+        case 'stats':
+            if ($method === 'GET') {
+                $controller->getStatistics();
+            } else {
+                Response::json(false, 'Method not allowed', null, 405);
+            }
+            break;
+            
+        default:
+            Response::json(false, 'Analytics endpoint not found', null, 404);
+    }
+}
+
+function handleAuditRoutes($method, $action) {
+    $controller = new ActivityLogController();
+    
+    switch ($action) {
+        case 'logs':
+            if ($method === 'GET') {
+                $controller->getLogs();
+            } else {
+                Response::json(false, 'Method not allowed', null, 405);
+            }
+            break;
+            
+        default:
+            Response::json(false, 'Audit endpoint not found', null, 404);
+    }
+}
+
+function handleSettingsRoutes($method, $action) {
+    $controller = new SettingsController();
+    
+    switch ($action) {
+        case 'get':
+            if ($method === 'GET') {
+                $controller->getSettings();
+            } else {
+                Response::json(false, 'Method not allowed', null, 405);
+            }
+            break;
+            
+        case 'update':
+            if ($method === 'PUT') {
+                $controller->updateSettings();
+            } else {
+                Response::json(false, 'Method not allowed', null, 405);
+            }
+            break;
+            
+        default:
+            Response::json(false, 'Settings endpoint not found', null, 404);
+    }
+}
