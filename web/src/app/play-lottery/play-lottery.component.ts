@@ -30,7 +30,12 @@ export class PlayLotteryComponent implements OnInit {
   showSuccessPopup = false;
   isLoading = false;
 
-  constructor(private route: ActivatedRoute, private router: Router, private lotteryService: LotteryService, private toastService: ToastService) {}
+  constructor(
+    private route: ActivatedRoute, 
+    private router: Router,
+     private lotteryService: LotteryService,
+      private toastService: ToastService
+    ) {}
 
   ngOnInit() {
     this.route.queryParams.subscribe(params => {
