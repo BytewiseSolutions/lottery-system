@@ -1,11 +1,11 @@
 import { Component, OnInit, ChangeDetectorRef, NgZone, OnDestroy, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
+import { firstValueFrom } from 'rxjs';
 import { Draw } from '../lotteries/draw';
 import { BackendService } from '../util/backend.service';
 import { ApiResponse } from '../util/api-response';
 import { LayoutComponent } from '../layout/layout.component';
-import { environment } from '../../environments/environment';
 
 @Component({
   selector: 'app-home',
@@ -85,34 +85,19 @@ export class HomeComponent implements OnInit, OnDestroy {
 
   private async loadResults() {
     try {
-      const response = await fetch(`${environment.apiUrl}/results`);
-      const data = await response.json();
-      
-      console.log('Raw results data:', data);
-      
-      if (Array.isArray(data)) {
-        this.results = data.slice(0, 1).map((result: any) => {
-          console.log('Processing result:', result);
-          console.log('Raw winning_numbers:', result.winning_numbers);
-          console.log('Raw bonus_numbers:', result.bonus_numbers);
-          
-          const processed = {
-            id: result.id,
-            name: result.lottery || 'Unknown Lottery',
-            drawDate: result.draw_date || result.drawDate,
-            winningNumbers: this.parseNumbers(result.winning_numbers || result.numbers),
-            bonusNumbers: this.parseNumbers(result.bonus_numbers || result.bonusNumbers),
-            poolMoney: result.jackpot || '$0.00',
-            nextDraw: this.getNextDrawDate(result.lottery),
-            currentPool: this.getCurrentPoolFromDraws(result.lottery)
-          };
-          
-          console.log('Processed result:', processed);
-          return processed;
-        });
-      } else {
-        this.results = [];
-      }
+      const response = await firstValueFrom(this.backendService.getResults()) as ApiResponse<any[]>;
+      const results = Array.isArray(response?.data) ? response.data : [];
+
+      this.results = results.slice(0, 1).map((result: any) => ({
+        id: result.id,
+        name: result.lottery || 'Unknown Lottery',
+        drawDate: result.draw_date || result.drawDate,
+        winningNumbers: this.parseNumbers(result.winning_numbers || result.numbers),
+        bonusNumbers: this.parseNumbers(result.bonus_numbers || result.bonusNumbers),
+        poolMoney: result.jackpot || '$0.00',
+        nextDraw: this.getNextDrawDate(result.lottery),
+        currentPool: this.getCurrentPoolFromDraws(result.lottery)
+      }));
     } catch (error) {
       console.error('Error loading results:', error);
       this.results = [];

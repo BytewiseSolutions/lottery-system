@@ -98,4 +98,25 @@ class EntryRepository
             ':id' => $drawId
         ]);
     }
+
+    public function getEntryHistory($userId)
+    {
+        $sql = "SELECT e.*
+                FROM entry e
+                WHERE e.user_id = :user_id
+                ORDER BY e.created_at DESC";
+
+        $stmt = $this->pdo->prepare($sql);
+        $stmt->execute([
+            ':user_id' => $userId
+        ]);
+
+        $entries = [];
+
+        while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+            $entries[] = new Entry($row);
+        }
+
+        return $entries;
+    }
 }

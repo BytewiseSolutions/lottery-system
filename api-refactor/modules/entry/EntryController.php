@@ -38,6 +38,32 @@ class EntryController
         }
     }
 
+    public function getEntryHistory()
+    {
+        try {
+            $user = $this->getAuthenticatedUser();
+
+            if (!$user) {
+                Response::json(false, 'Unauthorized', null, HTTP_UNAUTHORIZED);
+            }
+
+            $result = $this->entryService->getEntryHistory($user->id);
+
+            if ($result['success']) {
+                Response::json(true, 'Entry history fetched successfully', $result['data'], HTTP_OK);
+            }
+
+            Response::json(false, $result['message'], null, HTTP_BAD_REQUEST);
+
+        } catch (Exception $e) {
+            Logger::error('EntryController entry history error', [
+                'error' => $e->getMessage()
+            ]);
+
+            Response::json(false, 'Failed to fetch entry history', null, HTTP_INTERNAL_ERROR);
+        }
+    }
+
     private function getAuthenticatedUser()
     {
         $header = $_SERVER['HTTP_AUTHORIZATION'] ?? $_SERVER['Authorization'] ?? '';

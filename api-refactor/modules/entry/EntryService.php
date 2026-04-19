@@ -3,10 +3,12 @@
 class EntryService
 {
     private $entryRepository;
+    private $activityLogService;
 
     public function __construct()
     {
         $this->entryRepository = new EntryRepository();
+        $this->activityLogService = new ActivityLogService();
     }
 
     public function submitEntry(User $user, EntryDto $entryDto)
@@ -67,6 +69,19 @@ class EntryService
                 'draw_id' => $draw->id
             ]);
 
+            $this->activityLogService->log(
+                $user->id,
+                ACTION_ENTRY_SUBMIT,
+                json_encode([
+                    'entry_id' => (int)$createdEntry->id,
+                    'draw_id' => (int)$draw->id,
+                    'lottery' => $draw->getLotteryName(),
+                    'draw_date' => $drawDate,
+                    'numbers' => $mainNumbers,
+                    'bonus_numbers' => $bonusNumbers
+                ])
+            );
+
             return [
                 'success' => true,
                 'message' => 'Entry submitted successfully!',
@@ -99,6 +114,31 @@ class EntryService
             return [
                 'success' => false,
                 'message' => 'Failed to submit entry'
+            ];
+        }
+    }
+
+    public function getEntryHistory($userId)
+    {
+        try {
+            $entries = $this->entryRepository->getEntryHistory($userId);
+
+            return [
+                'success' => true,
+                'data' => array_map(function ($entry) {
+                    return $entry->toArray();
+                }, $entries)
+            ];
+
+        } catch (Exception $e) {
+            Logger::error('Get entry history failed', [
+                'error' => $e->getMessage(),
+                'user_id' => $userId
+            ]);
+
+            return [
+                'success' => false,
+                'message' => 'Failed to load entry history'
             ];
         }
     }

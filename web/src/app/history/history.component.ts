@@ -1,30 +1,10 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { firstValueFrom } from 'rxjs';
 import { LayoutComponent } from '../layout/layout.component';
-import { environment } from '../../environments/environment';
-
-interface HistoryEntry {
-  id: number;
-  lottery: string;
-  numbers: number[];
-  bonus_numbers: number[];
-  created_at: string;
-  draw_date: string;
-  date: string;
-  matchedNumbers?: number[];
-  matchedBonus?: number[];
-  unmatchedNumbers?: number[];
-  unmatchedBonus?: number[];
-  status?: 'Won' | 'Lost' | 'Pending';
-}
-
-interface GroupedEntry {
-  date: string;
-  entries: HistoryEntry[];
-  hasMoreEntries: boolean;
-  showAllEntries: boolean;
-}
+import { BackendService } from '../util/backend.service';
+import { ApiResponse } from '../util/api-response';
 
 @Component({
   selector: 'app-history',
@@ -45,8 +25,10 @@ export class HistoryComponent implements OnInit {
   itemsPerPage = 5;
   totalPages = 0;
 
+  constructor(private backendService: BackendService) {}
+
   ngOnInit() {
-    this.isLoggedIn = !!localStorage.getItem('token');
+    this.isLoggedIn = !!(localStorage.getItem('auth_token') || localStorage.getItem('token'));
     this.setRandomQuote();
     this.startQuoteRotation();
     if (this.isLoggedIn) {
@@ -63,30 +45,29 @@ export class HistoryComponent implements OnInit {
 
   async loadResults() {
     try {
-      const response = await fetch(`${environment.apiUrl}/results`);
-      this.results = await response.json();
+      const response = await firstValueFrom(this.backendService.getResults()) as ApiResponse<any[]>;
+      this.results = response?.data ?? [];
     } catch (error) {
       console.error('Error loading results:', error);
+      this.results = [];
     }
   }
 
   async loadHistory() {
     try {
-      const token = localStorage.getItem('token');
-      const response = await fetch(`${environment.apiUrl}/entries`, {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      });
-      const entries = await response.json();
+      const response = await firstValueFrom(this.backendService.getEntryHistory()) as ApiResponse<any[]>;
+      const entries = response?.data ?? [];
       this.processEntries(entries);
     } catch (error) {
       console.error('Error loading history:', error);
+      this.processEntries([]);
     }
   }
 
   processEntries(entries: any[]) {
-    this.historyEntries = entries.map(entry => {
+    const safeEntries = Array.isArray(entries) ? entries : [];
+
+    this.historyEntries = safeEntries.map(entry => {
       const numbers = typeof entry.numbers === 'string' ? JSON.parse(entry.numbers) : entry.numbers;
       const bonus_numbers = typeof entry.bonus_numbers === 'string' ? JSON.parse(entry.bonus_numbers) : entry.bonus_numbers;
       

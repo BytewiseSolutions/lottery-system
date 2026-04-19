@@ -36,12 +36,10 @@ export class LotteriesComponent implements OnInit, OnDestroy {
   private loadDraws() {
     this.backendService.getUpcomingDraws().subscribe({
       next: (response: ApiResponse<Draw[]>) => {
-        console.log('Loaded draws:', response);
         this.draws = response?.data ?? [];
         this.cdr.markForCheck();
       },
       error: (error) => {
-        console.error('Error loading draws:', error);
         this.draws = [];
         this.cdr.markForCheck();
       }
@@ -60,7 +58,6 @@ export class LotteriesComponent implements OnInit, OnDestroy {
     const date = new Date(dateString);
     
     if (isNaN(date.getTime())) {
-      console.warn('Invalid date string:', dateString);
       return 'TBA';
     }
     
@@ -93,7 +90,6 @@ export class LotteriesComponent implements OnInit, OnDestroy {
     try {
       return dateString.split('T')[0];
     } catch (error) {
-      console.warn('Error splitting date:', dateString);
       return '';
     }
   }
@@ -104,7 +100,6 @@ export class LotteriesComponent implements OnInit, OnDestroy {
     const target = new Date(targetDate);
     
     if (isNaN(target.getTime())) {
-      console.warn('Invalid target date:', targetDate);
       return '00 Days 00:00:00';
     }
     

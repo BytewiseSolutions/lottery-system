@@ -45,6 +45,7 @@ class Vote
             'drawDate' => $this->draw_date,
             'allocated_votes' => $this->allocated_votes,
             'total_votes' => $this->total_votes,
+            'createdAt' => $this->created_at,
             'created_at' => $this->created_at
         ];
     }

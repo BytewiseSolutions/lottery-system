@@ -87,6 +87,28 @@ class VoteController
         }
     }
 
+    public function getLeadingNumbers()
+    {
+        try {
+            $lottery = $_GET['lottery'] ?? null;
+            $drawDate = $_GET['voteDate'] ?? $_GET['drawDate'] ?? null;
+            $result = $this->voteService->getLeadingNumbers($lottery, $drawDate);
+
+            if ($result['success']) {
+                Response::json(true, 'Leading numbers fetched successfully', $result['data'], HTTP_OK);
+            }
+
+            Response::json(false, $result['message'], null, HTTP_BAD_REQUEST);
+
+        } catch (Exception $e) {
+            Logger::error('VoteController leading numbers error', [
+                'error' => $e->getMessage()
+            ]);
+
+            Response::json(false, 'Failed to fetch leading numbers', null, HTTP_INTERNAL_ERROR);
+        }
+    }
+
     private function getAuthenticatedUser()
     {
         $header = $_SERVER['HTTP_AUTHORIZATION'] ?? $_SERVER['Authorization'] ?? '';

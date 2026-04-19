@@ -52,6 +52,26 @@ class VoteRepository
         return $row ? new Draw($row) : null;
     }
 
+    public function findDrawByDate($lotteryId, $drawDate)
+    {
+        $sql = "SELECT d.*, l.name AS lottery
+                FROM draw d
+                INNER JOIN lottery l ON l.id = d.lottery_id
+                WHERE d.lottery_id = :lottery_id
+                AND DATE(d.draw_date) = :draw_date
+                LIMIT 1";
+
+        $stmt = $this->pdo->prepare($sql);
+        $stmt->execute([
+            ':lottery_id' => $lotteryId,
+            ':draw_date' => $drawDate
+        ]);
+
+        $row = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        return $row ? new Draw($row) : null;
+    }
+
     public function create(Vote $vote)
     {
         $sql = "INSERT INTO vote (
@@ -142,5 +162,92 @@ class VoteRepository
         }
 
         return $votes;
+    }
+
+    public function getVotesForDraw($lotteryId, $drawDate)
+    {
+        $sql = "SELECT v.numbers, v.bonus_numbers
+                FROM vote v
+                INNER JOIN draw d ON d.id = v.draw_id
+                WHERE d.lottery_id = :lottery_id
+                AND DATE(d.draw_date) = :draw_date";
+
+        $stmt = $this->pdo->prepare($sql);
+        $stmt->execute([
+            ':lottery_id' => $lotteryId,
+            ':draw_date' => $drawDate
+        ]);
+
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    public function upsertHighestVote($lottery, $drawId, array $mainNumbers, array $bonusNumbers, $totalMainVotes, $totalBonusVotes)
+    {
+        $mainNumbers = $this->padNumbers($mainNumbers, REQUIRED_MAIN_NUMBERS);
+        $bonusNumbers = $this->padNumbers($bonusNumbers, REQUIRED_BONUS_NUMBERS);
+
+        $sql = "INSERT INTO highest_vote (
+                    lottery,
+                    draw_id,
+                    main_1,
+                    main_2,
+                    main_3,
+                    main_4,
+                    main_5,
+                    bonus_1,
+                    bonus_2,
+                    total_main_votes,
+                    total_bonus_votes
+                ) VALUES (
+                    :lottery,
+                    :draw_id,
+                    :main_1,
+                    :main_2,
+                    :main_3,
+                    :main_4,
+                    :main_5,
+                    :bonus_1,
+                    :bonus_2,
+                    :total_main_votes,
+                    :total_bonus_votes
+                )
+                ON DUPLICATE KEY UPDATE
+                    lottery = VALUES(lottery),
+                    main_1 = VALUES(main_1),
+                    main_2 = VALUES(main_2),
+                    main_3 = VALUES(main_3),
+                    main_4 = VALUES(main_4),
+                    main_5 = VALUES(main_5),
+                    bonus_1 = VALUES(bonus_1),
+                    bonus_2 = VALUES(bonus_2),
+                    total_main_votes = VALUES(total_main_votes),
+                    total_bonus_votes = VALUES(total_bonus_votes)";
+
+        $stmt = $this->pdo->prepare($sql);
+
+        return $stmt->execute([
+            ':lottery' => $lottery,
+            ':draw_id' => $drawId,
+            ':main_1' => $mainNumbers[0],
+            ':main_2' => $mainNumbers[1],
+            ':main_3' => $mainNumbers[2],
+            ':main_4' => $mainNumbers[3],
+            ':main_5' => $mainNumbers[4],
+            ':bonus_1' => $bonusNumbers[0],
+            ':bonus_2' => $bonusNumbers[1],
+            ':total_main_votes' => (int)$totalMainVotes,
+            ':total_bonus_votes' => (int)$totalBonusVotes
+        ]);
+    }
+
+    private function padNumbers(array $numbers, $requiredCount)
+    {
+        $numbers = array_values(array_map('intval', $numbers));
+
+        while (count($numbers) < $requiredCount) {
+            $numbers[] = 0;
+        }
+
+        return array_slice($numbers, 0, $requiredCount);
     }
 }

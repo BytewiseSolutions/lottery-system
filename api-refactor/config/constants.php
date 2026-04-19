@@ -87,6 +87,7 @@ define('REFRESH_TOKEN_EXPIRY', 604800);
 define('ACTION_USER_LOGIN', 'user_login');
 define('ACTION_USER_LOGOUT', 'user_logout');
 define('ACTION_USER_REGISTER', 'user_register');
+define('ACTION_ENTRY_SUBMIT', 'entry_submit');
 define('ACTION_VOTE_SUBMIT', 'vote_submit');
 define('ACTION_DRAW_CREATE', 'draw_create');
 define('ACTION_DRAW_CLOSE', 'draw_close');

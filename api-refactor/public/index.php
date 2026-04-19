@@ -199,6 +199,14 @@ function handleVoteRoutes($method, $action) {
                 Response::json(false, 'Method not allowed', null, 405);
             }
             break;
+
+        case 'leading':
+            if ($method === 'GET') {
+                $controller->getLeadingNumbers();
+            } else {
+                Response::json(false, 'Method not allowed', null, 405);
+            }
+            break;
             
         default:
             Response::json(false, 'Vote endpoint not found', null, 404);
@@ -212,6 +220,14 @@ function handleEntryRoutes($method, $action) {
         case 'submit':
             if ($method === 'POST') {
                 $controller->submitEntry();
+            } else {
+                Response::json(false, 'Method not allowed', null, 405);
+            }
+            break;
+
+        case 'history':
+            if ($method === 'GET') {
+                $controller->getEntryHistory();
             } else {
                 Response::json(false, 'Method not allowed', null, 405);
             }
@@ -254,6 +270,14 @@ function handleResultRoutes($method, $action) {
         case 'latest':
             if ($method === 'GET') {
                 $controller->getLatestResults();
+            } else {
+                Response::json(false, 'Method not allowed', null, 405);
+            }
+            break;
+
+        case 'list':
+            if ($method === 'GET') {
+                $controller->getResults();
             } else {
                 Response::json(false, 'Method not allowed', null, 405);
             }

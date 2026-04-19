@@ -95,6 +95,13 @@ export class BackendService {
     });
   }
 
+  getLeadingNumbers(lottery: string, voteDate: string): Observable<any> {
+    return this.get('vote/leading', {
+      lottery,
+      voteDate
+    });
+  }
+
   getVoteHistory(): Observable<any> {
     return this.get('vote/history');
   }
@@ -109,6 +116,14 @@ export class BackendService {
 
   getLatestResults(): Observable<any> {
     return this.get('result/latest');
+  }
+
+  getResults(): Observable<any> {
+    return this.get('result/list');
+  }
+
+  getEntryHistory(): Observable<any> {
+    return this.get('entry/history');
   }
 
   getWinners(): Observable<any> {
