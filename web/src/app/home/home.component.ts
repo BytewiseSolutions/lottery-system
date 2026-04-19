@@ -1,7 +1,9 @@
 import { Component, OnInit, ChangeDetectorRef, NgZone, OnDestroy, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
-import { LotteryService, Draw } from '../services/lottery.service';
+import { Draw } from '../lotteries/draw';
+import { BackendService } from '../util/backend.service';
+import { ApiResponse } from '../util/api-response';
 import { LayoutComponent } from '../layout/layout.component';
 import { environment } from '../../environments/environment';
 
@@ -21,7 +23,11 @@ export class HomeComponent implements OnInit, OnDestroy {
   totalPages = 0;
   private countdownInterval: any;
 
-  constructor(private lotteryService: LotteryService, private cdr: ChangeDetectorRef, private ngZone: NgZone) {}
+  constructor(
+    private backendService: BackendService,
+    private cdr: ChangeDetectorRef, 
+    private ngZone: NgZone
+  ) {}
 
   ngOnInit() {
     this.loadData();
@@ -45,15 +51,19 @@ export class HomeComponent implements OnInit, OnDestroy {
   }
 
   private loadData() {
-    this.lotteryService.getDraws().subscribe({
-      next: (draws) => {
-        this.draws = draws;
+    this.backendService.getUpcomingDraws().subscribe({
+      next: (response: ApiResponse<Draw[]>) => {
+        this.draws = response?.data ?? [];
         this.totalPages = Math.ceil(this.draws.length / this.itemsPerPage);
         this.updatePagination();
+        this.cdr.markForCheck();
       },
       error: (error) => {
         console.error('Error loading draws:', error);
         this.draws = [];
+        this.totalPages = 0;
+        this.paginatedDraws = [];
+        this.cdr.markForCheck();
       }
     });
     
@@ -114,16 +124,13 @@ export class HomeComponent implements OnInit, OnDestroy {
     
     if (!numbers) return [];
     
-    // If it's already an array, return it
     if (Array.isArray(numbers)) {
       console.log('Already array:', numbers);
       return numbers;
     }
     
-    // If it's a string, try to parse it as JSON
     if (typeof numbers === 'string') {
       try {
-        // Remove any extra quotes or whitespace
         const cleaned = numbers.trim();
         console.log('Cleaned string:', cleaned);
         
@@ -134,9 +141,7 @@ export class HomeComponent implements OnInit, OnDestroy {
       } catch (error) {
         console.warn('Failed to parse numbers as JSON:', numbers, error);
         
-        // Try to extract numbers from concatenated string like "1345645127570"
         if (/^\d+$/.test(numbers)) {
-          // Split into groups of 2 digits (assuming lottery numbers are 1-75)
           const nums = [];
           for (let i = 0; i < numbers.length; i += 2) {
             const num = parseInt(numbers.substr(i, 2));
@@ -174,8 +179,8 @@ export class HomeComponent implements OnInit, OnDestroy {
   }
 
   private getCurrentPoolFromDraws(lottery: string): string {
-    const draw = this.draws.find(d => d.name === lottery);
-    return draw?.jackpot || '$10.00';
+    const draw = this.draws.find(d => (d.name || d.lottery) === lottery);
+    return String(draw?.jackpot || '$10.00');
   }
 
   formatDate(dateString: string | undefined): string {
@@ -183,7 +188,6 @@ export class HomeComponent implements OnInit, OnDestroy {
     
     const date = new Date(dateString);
     
-    // Check if date is valid
     if (isNaN(date.getTime())) {
       console.warn('Invalid date string:', dateString);
       return 'TBA';
@@ -228,7 +232,6 @@ export class HomeComponent implements OnInit, OnDestroy {
     
     const target = new Date(targetDate);
     
-    // Check if date is valid
     if (isNaN(target.getTime())) {
       console.warn('Invalid target date:', targetDate);
       return '00 Days 00:00:00';
