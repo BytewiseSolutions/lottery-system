@@ -1,7 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { catchError } from 'rxjs/operators';
 import { environment } from '../../environments/environment';
 
 export interface Stats {
@@ -33,18 +32,18 @@ export class LotteryService {
     return token ? { headers: { Authorization: `Bearer ${token}` } } : {};
   }
 
-  getResults(): Observable<any[]> {
+  getResults(): Observable<any> {
     const token = localStorage.getItem('token');
     if (token) {
-      return this.http.get<any[]>(`${this.apiUrl}/results`, {
+      return this.http.get<any>(`${this.apiUrl}/result/list`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
     }
-    return this.http.get<any[]>(`${this.apiUrl}/results`);
+    return this.http.get<any>(`${this.apiUrl}/result/list`);
   }
 
-  getUpcomingDraws(): Observable<any[]> {
-    return this.http.get<any[]>(`${this.apiUrl}/upcoming-draws`);
+  getUpcomingDraws(): Observable<any> {
+    return this.http.get<any>(`${this.apiUrl}/draw/upcoming`);
   }
 
   getCurrentVotingDraw(): Observable<any> {
@@ -63,12 +62,12 @@ export class LotteryService {
   }
 
   getDashboardStats(): Observable<any> {
-    return this.http.get<any>(`${this.apiUrl}/dashboard-stats`);
+    return this.http.get<any>(`${this.apiUrl}/analytics/stats`);
   }
 
   getUsers(page: number = 1, limit: number = 10, search: string = ''): Observable<any> {
     return this.http.get<any>(
-      `${this.apiUrl}/users?page=${page}&limit=${limit}&search=${search}`,
+      `${this.apiUrl}/user/list?page=${page}&limit=${limit}&search=${search}`,
       this.getAuthOptions()
     );
   }
@@ -89,7 +88,7 @@ export class LotteryService {
   }
 
   getAnalytics(range: string, dateFrom?: string, dateTo?: string): Observable<any> {
-    let url = `${this.apiUrl}/analytics?range=${range}`;
+    let url = `${this.apiUrl}/analytics/stats?range=${range}`;
     if (range === 'custom' && dateFrom && dateTo) {
       url += `&dateFrom=${dateFrom}&dateTo=${dateTo}`;
     }

@@ -12,6 +12,7 @@ import { ActivityLogsComponent } from './components/activity-logs/activity-logs.
 import { SettingsComponent } from './components/settings/settings.component';
 import { VotingManagementComponent } from './components/voting-management/voting-management.component';
 import { LotteryService } from '../services/lottery.service';
+import { BackendService } from '../util/backend.service';
 import { environment } from '../../environments/environment';
 
 @Component({
@@ -147,7 +148,8 @@ export class AdminComponent implements OnInit, OnDestroy {
     private router: Router,
     private route: ActivatedRoute,
     private fb: FormBuilder,
-    private lotteryService: LotteryService
+    private lotteryService: LotteryService,
+    private backendService: BackendService
   ) {
     this.loginForm = this.fb.group({
       email: ['', [Validators.required, Validators.email]],
@@ -185,17 +187,6 @@ export class AdminComponent implements OnInit, OnDestroy {
       this.startSystemUpdates();
     }
     this.loadSampleData();
-    // Initialize analytics data with test values
-    this.analyticsData = {
-      totalPlays: 1250,
-      totalRevenue: 0,
-      averagePlayersPerDraw: 85,
-      winnerRate: 12.5,
-      popularNumbers: [],
-      lotteryPerformance: [],
-      userEngagement: [],
-      revenueByMonth: []
-    };
     this.loadAnalytics();
   }
 
@@ -520,24 +511,26 @@ export class AdminComponent implements OnInit, OnDestroy {
   }
 
   loadUpcomingDraws() {
-    this.lotteryService.getUpcomingDraws()
+    this.backendService.getUpcomingDraws()
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (response: any) => {
-          const draws = response.draws || response;
+          const draws = Array.isArray(response?.data) ? response.data : [];
           this.upcomingDraws = draws.map((draw: any) => ({
             id: draw.id || Math.random(),
-            lottery: this.formatLotteryName(draw.lottery_type || draw.lottery),
+            lottery: this.formatLotteryName(draw.lottery_type || draw.lottery || draw.name),
             drawDate: draw.draw_date || draw.drawDate,
             jackpot: '$' + (draw.jackpot || '10.00') + 'M',
-            jackpotValue: draw.jackpot || '10.00', // Store raw value for auto-fill
-            status: 'scheduled'
+            jackpotValue: draw.jackpot || '10.00',
+            status: draw.status || 'scheduled'
           }));
+          this.activeLotteries = this.upcomingDraws.length;
           console.log('Loaded upcoming draws:', this.upcomingDraws);
         },
         error: (error) => {
           console.error('Error loading upcoming draws:', error);
           this.upcomingDraws = [];
+          this.activeLotteries = 0;
         }
       });
   }
@@ -553,59 +546,41 @@ export class AdminComponent implements OnInit, OnDestroy {
   }
 
   loadDashboardStats() {
-    this.lotteryService.getDashboardStats()
+    this.backendService.getAnalytics()
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (response: any) => {
-          const stats = response.stats || response;
+          const stats = response?.data ?? {};
           this.totalUsers = stats.totalUsers || 0;
-          this.activeLotteries = 3;
+          this.totalEntries = stats.totalEntries || 0;
+          this.totalWinners = stats.winnersLastMonth || 0;
           this.pendingActions = 0;
-          this.resultsGrowth = 12;
-          this.usersGrowth = -5;
+          this.resultsGrowth = 0;
+          this.usersGrowth = 0;
         },
         error: (error) => {
           console.error('Error loading dashboard stats:', error);
-        }
-      });
-    
-    // Load total entries
-    this.lotteryService.getEntries()
-      .pipe(takeUntil(this.destroy$))
-      .subscribe({
-        next: (entries) => {
-          this.totalEntries = entries.length;
-        },
-        error: () => {
+          this.totalUsers = 0;
           this.totalEntries = 0;
-        }
-      });
-    
-    // Load total winners
-    this.lotteryService.getWinners()
-      .pipe(takeUntil(this.destroy$))
-      .subscribe({
-        next: (winners) => {
-          this.totalWinners = winners.length;
-        },
-        error: () => {
           this.totalWinners = 0;
         }
       });
   }
 
   loadResults() {
-    this.lotteryService.getResults()
+    this.backendService.getResults()
       .pipe(takeUntil(this.destroy$))
       .subscribe({
-        next: (results) => {
+        next: (response: any) => {
+          const results = Array.isArray(response?.data) ? response.data : [];
           console.log('Raw results from API:', results);
-          this.results = results.map(result => ({
+          this.results = results.map((result: any) => ({
             ...result,
             drawDate: result.draw_date || result.drawDate,
             updatedAt: result.created_at || result.updated_at || result.updatedAt,
             numbers: result.winning_numbers || result.numbers,
-            bonusNumbers: result.bonus_numbers || result.bonusNumbers
+            bonusNumbers: result.bonus_numbers || result.bonusNumbers,
+            winners: result.winners_count || result.winners || 0
           }));
           console.log('Processed results:', this.results);
           this.filteredResults = this.results;
@@ -622,17 +597,23 @@ export class AdminComponent implements OnInit, OnDestroy {
   }
 
   loadUsers() {
-    this.lotteryService.getUsers(this.usersCurrentPage, this.itemsPerPage, this.usersSearchQuery)
+    this.backendService.getUsers({
+      page: this.usersCurrentPage,
+      limit: this.itemsPerPage,
+      search: this.usersSearchQuery
+    })
       .pipe(takeUntil(this.destroy$))
       .subscribe({
-        next: (response) => {
-          this.users = response.users || [];
-          this.totalUsersCount = response.total || 0;
-          this.usersTotalPages = response.totalPages || 1;
+        next: (response: any) => {
+          this.users = Array.isArray(response?.data) ? response.data : [];
+          this.totalUsersCount = response?.meta?.total_items || this.users.length;
+          this.usersTotalPages = response?.meta?.total_pages || 1;
         },
         error: (error) => {
           console.error('Error loading users:', error);
           this.users = [];
+          this.totalUsersCount = 0;
+          this.usersTotalPages = 1;
         }
       });
   }
@@ -642,16 +623,31 @@ export class AdminComponent implements OnInit, OnDestroy {
     const dateFrom = this.analyticsRange === 'custom' ? this.customDateFrom : undefined;
     const dateTo = this.analyticsRange === 'custom' ? this.customDateTo : undefined;
     
-    this.lotteryService.getAnalytics(this.analyticsRange, dateFrom, dateTo)
+    this.backendService.getAnalytics({
+      range: this.analyticsRange,
+      dateFrom,
+      dateTo
+    })
       .pipe(takeUntil(this.destroy$))
       .subscribe({
-        next: (data) => {
+        next: (response: any) => {
+          const data = response?.data ?? {};
+          const totalEntries = data.totalEntries || 0;
+          const winnersLastMonth = data.winnersLastMonth || 0;
+          const activeLotteryCount = this.activeLotteries || 0;
+          const averagePlayersPerDraw = activeLotteryCount > 0
+            ? Math.round(totalEntries / activeLotteryCount)
+            : 0;
+          const winnerRate = totalEntries > 0
+            ? Number(((winnersLastMonth / totalEntries) * 100).toFixed(2))
+            : 0;
+
           console.log('Analytics data received:', data);
           this.analyticsData = {
-            totalPlays: data.totalPlays || 0,
-            totalRevenue: data.totalRevenue || 0,
-            averagePlayersPerDraw: data.averagePlayersPerDraw || 0,
-            winnerRate: data.winnerRate || 0,
+            totalPlays: totalEntries,
+            totalRevenue: data.totalPayouts || 0,
+            averagePlayersPerDraw,
+            winnerRate,
             popularNumbers: data.popularNumbers || [],
             lotteryPerformance: data.lotteryPerformance || [],
             userEngagement: data.userEngagement || [],
@@ -661,7 +657,6 @@ export class AdminComponent implements OnInit, OnDestroy {
         },
         error: (error) => {
           console.error('Error loading analytics:', error);
-          // Set default values on error
           this.analyticsData = {
             totalPlays: 0,
             totalRevenue: 0,

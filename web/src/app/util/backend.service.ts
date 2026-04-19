@@ -142,8 +142,12 @@ uploadFile(fileData: FormData): Observable<any> {
   });
 }
 
-  getAnalytics(): Observable<any> {
-    return this.get('analytics/stats');
+  getUsers(params?: any): Observable<any> {
+    return this.get('user/list', params);
+  }
+
+  getAnalytics(params?: any): Observable<any> {
+    return this.get('analytics/stats', params);
   }
 
   getSettings(): Observable<any> {
