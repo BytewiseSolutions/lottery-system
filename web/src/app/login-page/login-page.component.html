@@ -1,0 +1,15 @@
+<app-layout>
+  <app-login
+    [isVisible]="showLoginModal"
+    (loginSuccess)="onLoginSuccess()"
+    (closeModal)="onCloseLogin()"
+    (switchToSignupEvent)="onSwitchToSignup()">
+  </app-login>
+
+  <app-signup
+    [isVisible]="showSignupModal"
+    (signupSuccess)="onSignupSuccess()"
+    (closeModal)="onCloseSignup()"
+    (switchToLoginEvent)="onSwitchToLogin()">
+  </app-signup>
+</app-layout>

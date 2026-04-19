@@ -1,6 +1,6 @@
 <?php
 
-class VoteDto
+class EntryDto
 {
     public $lottery;
     public $numbers;
@@ -22,16 +22,5 @@ class VoteDto
         $data = json_decode(file_get_contents('php://input'), true);
 
         return new self($data ?? []);
-    }
-
-    public function toArray()
-    {
-        return [
-            'lottery' => $this->lottery,
-            'numbers' => $this->numbers,
-            'bonusNumbers' => $this->bonusNumbers,
-            'drawDate' => $this->drawDate,
-            'humanVerified' => $this->humanVerified
-        ];
     }
 }

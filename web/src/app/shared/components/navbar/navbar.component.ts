@@ -1,12 +1,15 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink, RouterLinkActive, Router, NavigationEnd } from '@angular/router';
-import { LotteryService } from '../../../services/lottery.service';
+import { of } from 'rxjs';
 import { LoginComponent } from '../login/login.component';
 import { SignupComponent } from '../signup/signup.component';
 import { PasswordResetComponent } from '../password-reset/password-reset.component';
 import { filter } from 'rxjs/operators';
 import { timeout, catchError } from 'rxjs/operators';
+import { BackendService } from '../../../util/backend.service';
+import { ApiResponse } from '../../../util/api-response';
+import { Draw } from '../../../lotteries/draw';
 
 @Component({
   selector: 'app-navbar',
@@ -34,7 +37,7 @@ export class NavbarComponent implements OnInit {
 
   isPlayLotteryPage = false;
 
-  constructor(private lotteryService: LotteryService, private router: Router) {}
+  constructor(private backendService: BackendService, private router: Router) {}
 
   ngOnInit() {
     this.checkAuthStatus();
@@ -85,7 +88,7 @@ export class NavbarComponent implements OnInit {
   }
 
   private checkAuthStatus() {
-    const token = localStorage.getItem('token');
+    const token = localStorage.getItem('auth_token') || localStorage.getItem('token');
     const user = localStorage.getItem('user');
     console.log('Auth check - token:', token, 'user:', user);
     if (token && user) {
@@ -110,8 +113,8 @@ export class NavbarComponent implements OnInit {
 
   onLoginSuccess(user: any) {
     this.isLoggedIn = true;
-    this.currentUser = user;
-    this.userEmail = user.email;
+    this.currentUser = user ?? this.currentUser;
+    this.userEmail = user?.email || user?.phone || 'User';
     this.showLoginModal = false;
     this.loadNotifications();
   }
@@ -164,6 +167,7 @@ onClosePasswordReset() {
   }
 
   logout() {
+    localStorage.removeItem('auth_token');
     localStorage.removeItem('token');
     localStorage.removeItem('user');
     this.isLoggedIn = false;
@@ -184,7 +188,7 @@ onClosePasswordReset() {
   private loadNotifications() {
     if (!this.isLoggedIn) return;
     
-    const token = localStorage.getItem('token');
+    const token = localStorage.getItem('auth_token') || localStorage.getItem('token');
     if (!token) return;
     
     this.checkUserCountry();
@@ -219,8 +223,26 @@ onClosePasswordReset() {
     this.router.navigate(['/profile']);
   }
 
+  getUserDisplayName(): string {
+    const user = this.currentUser;
+
+    if (!user) {
+      return 'User';
+    }
+
+    if (user.fullName) {
+      return user.fullName;
+    }
+
+    const firstName = user.first_name || user.firstName || '';
+    const lastName = user.last_name || user.lastName || '';
+    const fullName = `${firstName} ${lastName}`.trim();
+
+    return fullName || user.email || user.phone || 'User';
+  }
+
   private updatePoolMoney() {
-    this.lotteryService.getDraws().pipe(
+    this.backendService.getUpcomingDraws().pipe(
       timeout(5000),
       catchError(error => {
         console.error('Error fetching jackpot:', error);
@@ -230,13 +252,17 @@ onClosePasswordReset() {
         if (cached) {
           this.totalPoolMoney = parseFloat(cached);
         }
-        return [];
+        return of({ success: false, message: 'Failed to fetch draws', data: [] } as ApiResponse<Draw[]>);
       })
     ).subscribe({
-      next: (draws) => {
+      next: (response: ApiResponse<Draw[]>) => {
         this.isLoading = false;
+        const draws = response?.data ?? [];
+
         if (draws.length > 0) {
-          const jackpot = parseFloat(draws[0].jackpot.replace('$', ''));
+          const jackpotValue = String(draws[0].jackpot ?? '0');
+          const jackpot = parseFloat(jackpotValue.replace('$', ''));
+
           this.totalPoolMoney = jackpot;
           // Cache the value
           localStorage.setItem('cachedJackpot', jackpot.toString());

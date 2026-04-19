@@ -40,6 +40,10 @@ try {
         case 'vote':
             handleVoteRoutes($method, $action);
             break;
+
+        case 'entry':
+            handleEntryRoutes($method, $action);
+            break;
             
         case 'draw':
             handleDrawRoutes($method, $action);
@@ -187,9 +191,34 @@ function handleVoteRoutes($method, $action) {
                 Response::json(false, 'Method not allowed', null, 405);
             }
             break;
+
+        case 'quick-pick':
+            if ($method === 'POST') {
+                $controller->getQuickPick();
+            } else {
+                Response::json(false, 'Method not allowed', null, 405);
+            }
+            break;
             
         default:
             Response::json(false, 'Vote endpoint not found', null, 404);
+    }
+}
+
+function handleEntryRoutes($method, $action) {
+    $controller = new EntryController();
+
+    switch ($action) {
+        case 'submit':
+            if ($method === 'POST') {
+                $controller->submitEntry();
+            } else {
+                Response::json(false, 'Method not allowed', null, 405);
+            }
+            break;
+
+        default:
+            Response::json(false, 'Entry endpoint not found', null, 404);
     }
 }
 

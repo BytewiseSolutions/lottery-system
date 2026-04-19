@@ -14,7 +14,7 @@
               </div>
               <div class="log-reg-area" *ngIf="isLoggedIn" style="position: relative;">
                 <div class="user-dropdown">
-                  <span class="user-name">{{ currentUser?.fullName || 'User' }}</span>
+                  <span class="user-name">{{ getUserDisplayName() }}</span>
                   <div class="dropdown-menu">
                     <a routerLink="/profile">Profile</a>
                     <a routerLink="/winnings">My Winnings</a>

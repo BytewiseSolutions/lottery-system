@@ -84,6 +84,17 @@ export class BackendService {
     return this.post('vote/submit', voteData);
   }
 
+  playLottery(voteData: any): Observable<any> {
+    return this.post('entry/submit', voteData);
+  }
+
+  getQuickPickNumbers(type: 'main' | 'bonus', excludeNumbers: number[] = []): Observable<any> {
+    return this.post('vote/quick-pick', {
+      type,
+      excludeNumbers
+    });
+  }
+
   getVoteHistory(): Observable<any> {
     return this.get('vote/history');
   }

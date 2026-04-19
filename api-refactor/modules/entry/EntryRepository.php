@@ -1,6 +1,6 @@
 <?php
 
-class VoteRepository
+class EntryRepository
 {
     private $pdo;
 
@@ -52,60 +52,37 @@ class VoteRepository
         return $row ? new Draw($row) : null;
     }
 
-    public function create(Vote $vote)
+    public function create(Entry $entry)
     {
-        $sql = "INSERT INTO vote (
+        $sql = "INSERT INTO entry (
                     user_id,
-                    lottery,
                     draw_id,
+                    lottery,
                     numbers,
                     bonus_numbers,
-                    source,
-                    vote_date,
-                    allocated_votes,
-                    total_votes
+                    draw_date
                 ) VALUES (
                     :user_id,
-                    :lottery,
                     :draw_id,
+                    :lottery,
                     :numbers,
                     :bonus_numbers,
-                    :source,
-                    :vote_date,
-                    :allocated_votes,
-                    :total_votes
+                    :draw_date
                 )";
 
         $stmt = $this->pdo->prepare($sql);
         $stmt->execute([
-            ':user_id' => $vote->user_id,
-            ':lottery' => $vote->lottery,
-            ':draw_id' => $vote->draw_id,
-            ':numbers' => json_encode($vote->numbers),
-            ':bonus_numbers' => json_encode($vote->bonus_numbers),
-            ':source' => $vote->source,
-            ':vote_date' => $vote->vote_date,
-            ':allocated_votes' => $vote->allocated_votes,
-            ':total_votes' => $vote->total_votes
+            ':user_id' => $entry->user_id,
+            ':draw_id' => $entry->draw_id,
+            ':lottery' => $entry->lottery,
+            ':numbers' => json_encode($entry->numbers),
+            ':bonus_numbers' => json_encode($entry->bonus_numbers),
+            ':draw_date' => $entry->draw_date
         ]);
 
-        $vote->id = $this->pdo->lastInsertId();
+        $entry->id = $this->pdo->lastInsertId();
 
-        return $vote;
-    }
-
-    public function createEntry($userId, $drawId)
-    {
-        $sql = "INSERT INTO entry (user_id, draw_id)
-                VALUES (:user_id, :draw_id)";
-
-        $stmt = $this->pdo->prepare($sql);
-        $stmt->execute([
-            ':user_id' => $userId,
-            ':draw_id' => $drawId
-        ]);
-
-        return (int)$this->pdo->lastInsertId();
+        return $entry;
     }
 
     public function updateDrawJackpot($drawId, $jackpot)
@@ -120,27 +97,5 @@ class VoteRepository
             ':jackpot' => $jackpot,
             ':id' => $drawId
         ]);
-    }
-
-    public function getVoteHistory($userId)
-    {
-        $sql = "SELECT v.*, d.draw_date
-                FROM vote v
-                LEFT JOIN draw d ON d.id = v.draw_id
-                WHERE v.user_id = :user_id
-                ORDER BY v.created_at DESC";
-
-        $stmt = $this->pdo->prepare($sql);
-        $stmt->execute([
-            ':user_id' => $userId
-        ]);
-
-        $votes = [];
-
-        while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
-            $votes[] = new Vote($row);
-        }
-
-        return $votes;
     }
 }

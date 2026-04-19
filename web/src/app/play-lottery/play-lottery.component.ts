@@ -4,9 +4,8 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { LayoutComponent } from '../layout/layout.component';
 import { LoginComponent } from '../shared/components/login/login.component';
 import { SignupComponent } from '../shared/components/signup/signup.component';
-import { LotteryService } from '../services/lottery.service';
+import { BackendService } from '../util/backend.service';
 import { ToastService } from '../services/toast.service';
-import { environment } from '../../environments/environment';
 
 @Component({
   selector: 'app-play-lottery',
@@ -24,18 +23,15 @@ export class PlayLotteryComponent implements OnInit {
   isLoggedIn = false;
   showLoginModal = false;
   showSignupModal = false;
-  showHumanVerification = false;
-  humanVerified = false;
-  captchaVerified = false;
   showSuccessPopup = false;
   isLoading = false;
 
   constructor(
     private route: ActivatedRoute, 
     private router: Router,
-     private lotteryService: LotteryService,
-      private toastService: ToastService
-    ) {}
+    private backendService: BackendService,
+    private toastService: ToastService
+  ) {}
 
   ngOnInit() {
     this.route.queryParams.subscribe(params => {
@@ -43,29 +39,12 @@ export class PlayLotteryComponent implements OnInit {
       this.drawDate = params['drawDate'] || new Date().toISOString().split('T')[0];
     });
     
-    // Check login status
-    this.isLoggedIn = !!localStorage.getItem('token');
+    this.refreshAuthState();
     
-    // Generate numbers 1-75
     for (let i = 1; i <= 75; i++) {
       this.numbers.push(i);
     }
-    
-    // Load reCAPTCHA script if not loaded
-    if (!(window as any).grecaptcha) {
-      const script = document.createElement('script');
-      script.src = 'https://www.google.com/recaptcha/api.js';
-      script.async = true;
-      script.defer = true;
-      document.head.appendChild(script);
-    }
-    
-    // Setup CAPTCHA callback
-    (window as any).onCaptchaSuccess = () => {
-      this.captchaVerified = true;
-    };
-    
-    // Scroll to banner section on play-lottery page
+
     setTimeout(() => {
       const bannerSection = document.querySelector('.banner-section');
       if (bannerSection) {
@@ -80,12 +59,10 @@ export class PlayLotteryComponent implements OnInit {
       this.selectedNumbers.splice(index, 1);
     } else if (this.selectedNumbers.length < 5) {
       this.selectedNumbers.push(num);
-      // Let backend handle sorting when needed
     }
   }
 
   toggleBonusNumber(num: number) {
-    // Check if number is already selected in main numbers
     if (this.selectedNumbers.includes(num)) {
       this.toastService.showError(`Number ${num} is already selected in main numbers. Please choose a different number.`);
       return;
@@ -96,7 +73,6 @@ export class PlayLotteryComponent implements OnInit {
       this.selectedBonusNumbers.splice(index, 1);
     } else if (this.selectedBonusNumbers.length < 2) {
       this.selectedBonusNumbers.push(num);
-      // Let backend handle sorting when needed
     }
   }
 
@@ -111,7 +87,6 @@ export class PlayLotteryComponent implements OnInit {
   }
 
   private scrollToSectionTop() {
-    // Wait for DOM to update, then scroll to section header
     setTimeout(() => {
       const sectionHeader = document.querySelector('.section-header');
       if (sectionHeader) {
@@ -127,7 +102,11 @@ export class PlayLotteryComponent implements OnInit {
   }
 
   showLogin() {
-    this.showLoginModal = true;
+    this.router.navigate(['/login'], {
+      queryParams: {
+        returnUrl: this.router.url
+      }
+    });
   }
 
   onLoginSuccess(user: any) {
@@ -159,6 +138,8 @@ export class PlayLotteryComponent implements OnInit {
   }
 
   async submitEntry() {
+    this.refreshAuthState();
+
     if (!this.isLoggedIn) {
       this.showLogin();
       return;
@@ -168,56 +149,23 @@ export class PlayLotteryComponent implements OnInit {
       this.isLoading = true;
       
       try {
-        const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 8000); 
-        
-        const response = await fetch(`${environment.apiUrl}/play`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${localStorage.getItem('token')}`
-          },
-          body: JSON.stringify({
+        const result = await new Promise<any>((resolve, reject) => {
+          const request = this.backendService.playLottery({
             lottery: this.lotteryType,
             numbers: this.selectedNumbers,
             bonusNumbers: this.selectedBonusNumbers,
-            drawDate: this.drawDate,
-            humanVerified: this.humanVerified
-          }),
-          signal: controller.signal
-        });
-        
-        clearTimeout(timeoutId);
-        
-        const result = await response.json();
-        
-        if (result.requireHumanVerification) {
-          this.humanVerified = false;
-          this.captchaVerified = false;
-          this.showHumanVerification = true;
-          this.isLoading = false;
-          
-          const renderCaptcha = () => {
-            const container = document.getElementById('recaptcha-container');
-            if (container && (window as any).grecaptcha && (window as any).grecaptcha.render) {
-              try {
-                container.innerHTML = '';
-                (window as any).grecaptcha.render('recaptcha-container', {
-                  'sitekey': '6LeIxAcTAAAAAJcZVRqyHh71UMIEGNQ_MXjiZKhI',
-                  'callback': (token: string) => {
-                    this.captchaVerified = true;
-                  }
-                });
-              } catch (e) {
-                console.error('reCAPTCHA render error:', e);
-              }
-            } else {
-              setTimeout(renderCaptcha, 200);
+            drawDate: this.drawDate
+          }).subscribe({
+            next: (response) => {
+              request.unsubscribe();
+              resolve(response);
+            },
+            error: (error) => {
+              request.unsubscribe();
+              reject(error);
             }
-          };
-          setTimeout(renderCaptcha, 300);
-          return;
-        }
+          });
+        });
         
         if (result.success) {
           window.dispatchEvent(new CustomEvent('jackpotUpdated'));
@@ -241,29 +189,17 @@ export class PlayLotteryComponent implements OnInit {
           this.toastService.showError(result.error || 'Failed to submit entry');
         }
       } catch (error: any) {
-        if (error.name === 'AbortError') {
-          this.toastService.showError('Request timeout. Please try again.');
-        } else {
-          this.toastService.showError('Network error. Please check your connection.');
+        if (error?.status === 401) {
+          this.clearAuthState();
+          this.showLogin();
+          return;
         }
+
+        this.toastService.showError(error?.error?.error || error?.error?.message || 'Network error. Please check your connection.');
       } finally {
         this.isLoading = false;
       }
     }
-  }
-
-  onHumanVerified() {
-    if (!this.captchaVerified) {
-      this.toastService.showError('Please complete the CAPTCHA verification');
-      return;
-    }
-    this.humanVerified = true;
-    this.showHumanVerification = false;
-    this.submitEntry();
-  }
-
-  onCloseHumanVerification() {
-    this.showHumanVerification = false;
   }
 
   getLotteryName(): string {
@@ -284,11 +220,10 @@ export class PlayLotteryComponent implements OnInit {
   }
 
   quickPick() {
-    // Get quick pick numbers from backend
-    this.lotteryService.getQuickPickNumbers('main').subscribe({
+    this.backendService.getQuickPickNumbers('main').subscribe({
       next: (response: any) => {
         if (response.success) {
-          this.selectedNumbers = response.numbers;
+          this.selectedNumbers = response.numbers || response.data?.numbers || [];
         } else {
           this.toastService.showError('Failed to generate quick pick numbers');
         }
@@ -301,11 +236,10 @@ export class PlayLotteryComponent implements OnInit {
   }
 
   quickPickBonus() {
-    // Get quick pick bonus numbers from backend, excluding main numbers
-    this.lotteryService.getQuickPickNumbers('bonus', this.selectedNumbers).subscribe({
+    this.backendService.getQuickPickNumbers('bonus', this.selectedNumbers).subscribe({
       next: (response: any) => {
         if (response.success) {
-          this.selectedBonusNumbers = response.numbers;
+          this.selectedBonusNumbers = response.numbers || response.data?.numbers || [];
         } else {
           this.toastService.showError('Failed to generate quick pick bonus numbers');
         }
@@ -326,7 +260,18 @@ export class PlayLotteryComponent implements OnInit {
   }
   
   isBonusNumberDisabled(num: number): boolean {
-    // Disable bonus numbers that are already selected in main numbers
     return this.selectedNumbers.includes(num);
+  }
+
+  private refreshAuthState() {
+    const token = localStorage.getItem('auth_token');
+    const user = localStorage.getItem('user');
+    this.isLoggedIn = !!token && !!user;
+  }
+
+  private clearAuthState() {
+    localStorage.removeItem('auth_token');
+    localStorage.removeItem('user');
+    this.isLoggedIn = false;
   }
 }

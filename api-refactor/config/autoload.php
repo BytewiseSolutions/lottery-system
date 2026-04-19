@@ -38,6 +38,12 @@ spl_autoload_register(function ($class) {
         'VoteService' => 'modules/vote/VoteService.php',
         'VoteRepository' => 'modules/vote/VoteRepository.php',
         'VoteDto' => 'modules/vote/VoteDto.php',
+
+        'Entry' => 'modules/entry/Entry.php',
+        'EntryController' => 'modules/entry/EntryController.php',
+        'EntryService' => 'modules/entry/EntryService.php',
+        'EntryRepository' => 'modules/entry/EntryRepository.php',
+        'EntryDto' => 'modules/entry/EntryDto.php',
         
         'Draw' => 'modules/draw/Draw.php',
         'DrawController' => 'modules/draw/DrawController.php',

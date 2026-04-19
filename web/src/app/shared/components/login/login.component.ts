@@ -99,17 +99,31 @@ export class LoginComponent {
         this.isLoading = false;
 
         if (response?.success) {
+          const loginData = response?.data ?? response;
+          const token = loginData?.token;
+          const user = loginData?.user;
+
+          if (!token || !user) {
+            this.errorMessage =
+              response?.message ||
+              'Login failed. Please try again.';
+            return;
+          }
+
           localStorage.setItem(
             'auth_token',
-            response.token
+            token
+          );
+
+          localStorage.setItem(
+            'token',
+            token
           );
 
           localStorage.setItem(
             'user',
-            JSON.stringify(response.user)
+            JSON.stringify(user)
           );
-
-          const user = response.user;
 
           this.clearForm();
 
