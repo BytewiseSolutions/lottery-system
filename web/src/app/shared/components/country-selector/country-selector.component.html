@@ -1,0 +1,27 @@
+<div class="country-selector">
+  <input 
+    type="text" 
+    class="my-form-control" 
+    [(ngModel)]="searchTerm"
+    (input)="onSearchInput($event)"
+    (focus)="onFocus()"
+    (blur)="onBlur()"
+    [placeholder]="selectedCountry ? selectedCountry.name : 'Type to search country'"
+    autocomplete="off">
+  
+  @if (showDropdown && filteredCountries.length > 0) {
+    <div class="country-dropdown">
+      @for (country of filteredCountries.slice(0, 8); track country.code) {
+        <div class="country-option" (click)="selectCountry(country)">
+          {{ country.name }} <span class="dial-code">({{ country.dialCode }})</span>
+        </div>
+      }
+    </div>
+  }
+  
+  @if (showDropdown && filteredCountries.length === 0 && searchTerm) {
+    <div class="country-dropdown">
+      <div class="no-results">No countries found</div>
+    </div>
+  }
+</div>

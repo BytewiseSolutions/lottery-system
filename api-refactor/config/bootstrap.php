@@ -1,6 +1,7 @@
 <?php
 
 require_once __DIR__ . '/env.php';
+require_once __DIR__ . '/constants.php';
 
 date_default_timezone_set(Env::get('TIMEZONE', 'Africa/Maseru'));
 

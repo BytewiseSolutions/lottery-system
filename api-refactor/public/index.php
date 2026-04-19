@@ -12,7 +12,8 @@ try {
     $method = $_SERVER['REQUEST_METHOD'];
     $uri = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
     
-    $uri = str_replace('/api-refactor/public', '', $uri);
+    // Clean the URI for routing
+    $uri = str_replace('/api-refactor', '', $uri);
     $uri = trim($uri, '/');
     
     $routes = explode('/', $uri);
@@ -89,32 +90,43 @@ try {
 
 function handleAuthRoutes($method, $action) {
     $controller = new AuthController();
-    
+
     switch ($action) {
+
         case 'login':
             if ($method === 'POST') {
                 $controller->login();
-            } else {
-                Response::json(false, 'Method not allowed', null, 405);
             }
             break;
-            
+
         case 'register':
             if ($method === 'POST') {
                 $controller->register();
-            } else {
-                Response::json(false, 'Method not allowed', null, 405);
             }
             break;
-            
+
         case 'logout':
             if ($method === 'POST') {
                 $controller->logout();
+            }
+            break;
+            
+        case 'forgot-password':
+            if ($method === 'POST') {
+                $controller->forgotPassword();
             } else {
                 Response::json(false, 'Method not allowed', null, 405);
             }
             break;
-            
+
+        case 'reset-password':
+            if ($method === 'POST') {
+                $controller->resetPassword();
+            } else {
+                Response::json(false, 'Method not allowed', null, 405);
+            }
+            break;
+
         default:
             Response::json(false, 'Auth endpoint not found', null, 404);
     }
@@ -124,6 +136,14 @@ function handleUserRoutes($method, $action) {
     $controller = new UserController();
     
     switch ($action) {
+        case 'register':
+            if ($method === 'POST') {
+                $controller->register();
+            } else {
+                Response::json(false, 'Method not allowed', null, 405);
+            }
+            break;
+            
         case 'profile':
             if ($method === 'GET') {
                 $controller->getProfile();
@@ -134,7 +154,7 @@ function handleUserRoutes($method, $action) {
             }
             break;
             
-        case '':
+        case '':  
         case 'list':
             if ($method === 'GET') {
                 $controller->getUsers();

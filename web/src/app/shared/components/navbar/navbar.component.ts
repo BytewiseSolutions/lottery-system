@@ -4,12 +4,13 @@ import { RouterLink, RouterLinkActive, Router, NavigationEnd } from '@angular/ro
 import { LotteryService } from '../../../services/lottery.service';
 import { LoginComponent } from '../login/login.component';
 import { SignupComponent } from '../signup/signup.component';
+import { PasswordResetComponent } from '../password-reset/password-reset.component';
 import { filter } from 'rxjs/operators';
 import { timeout, catchError } from 'rxjs/operators';
 
 @Component({
   selector: 'app-navbar',
-  imports: [CommonModule, RouterLink, RouterLinkActive, LoginComponent, SignupComponent],
+  imports: [CommonModule, RouterLink, RouterLinkActive, LoginComponent, SignupComponent,  PasswordResetComponent ],
   templateUrl: './navbar.component.html',
   styleUrl: './navbar.component.css'
 })
@@ -28,6 +29,8 @@ export class NavbarComponent implements OnInit {
   notificationCount = 0;
   showNotifications = false;
   notifications: any[] = [];
+
+  showPasswordResetModal = false;
 
   isPlayLotteryPage = false;
 
@@ -142,12 +145,14 @@ export class NavbarComponent implements OnInit {
     this.passwordRecoveryMode = false;
   }
 
-  onSwitchToPasswordRecovery() {
-    this.showLoginModal = false;
-    this.showSignupModal = true;
-    this.verificationMode = false;
-    this.passwordRecoveryMode = true;
-  }
+onSwitchToPasswordRecovery() {
+  this.showLoginModal = false;
+  this.showSignupModal = false;
+  this.showPasswordResetModal = true;
+}
+onClosePasswordReset() {
+  this.showPasswordResetModal = false;
+}
 
   onSwitchToLogin() {
     this.showSignupModal = false;

@@ -29,7 +29,6 @@
                   <span class="notification-badge" *ngIf="notificationCount > 0">{{ notificationCount }}</span>
                 </div>
                 
-                <!-- Notification Dropdown -->
                 <div class="notification-dropdown" *ngIf="showNotifications">
                   <div class="notification-header">
                     <h4>Notifications</h4>
@@ -93,9 +92,12 @@
 
 <app-signup 
   [isVisible]="showSignupModal"
-  [verificationMode]="verificationMode"
-  [passwordRecoveryMode]="passwordRecoveryMode"
   (signupSuccess)="onSignupSuccess($event)"
   (closeModal)="onCloseSignup()"
   (switchToLoginEvent)="onSwitchToLogin()">
 </app-signup>
+
+<app-password-reset
+  [isVisible]="showPasswordResetModal"
+  (closeModal)="onClosePasswordReset()">
+</app-password-reset>
