@@ -1,114 +1,96 @@
-<aside class="sidebar">
-  <div class="sidebar-header">
-    <div class="logo">
-      <i class="fas fa-crown"></i>
-      <div class="logo-text">
-        <h2>Admin</h2>
+<nav class="navbar">
+  <div class="navbar-top">
+    <div class="navbar-container">
+      <div class="navbar-brand">
+        <div class="logo">
+          <i class="fas fa-crown"></i>
+          <div class="logo-text">
+            <h2>Admin Dashboard</h2>
+          </div>
+        </div>
       </div>
-    </div>
-  </div>
 
-  <nav class="sidebar-nav">
-    <ul class="nav-menu">
-      <li>
-        <a>
-          <div class="nav-item-content">
-            <i class="fas fa-tachometer-alt"></i>
-            <span>Dashboard</span>
+      <div class="navbar-actions">
+        <div class="search-box">
+          <i class="fas fa-search"></i>
+          <input type="text" placeholder="Search...">
+        </div>
+        <div class="notifications">
+          <i class="fas fa-bell"></i>
+          <span class="notification-badge">3</span>
+        </div>
+        <div class="user-profile">
+          <div class="user-avatar">
+            <i class="fas fa-user-shield"></i>
           </div>
-        </a>
-      </li>
-      <li>
-        <a>
-          <div class="nav-item-content">
-            <i class="fas fa-list"></i>
-            <span>Manage Results</span>
+          <div class="user-info">
+            <span class="user-name">Admin</span>
+            <i class="fas fa-chevron-down"></i>
           </div>
-          <!-- <span class="badge">{{ totalResults }}</span> -->
-        </a>
-      </li>
-      <li>
-        <a>
-          <div class="nav-item-content">
-            <i class="fas fa-ticket-alt"></i>
-            <span>Entries</span>
+          <div class="user-dropdown">
+            <a class="dropdown-item">Profile</a>
+            <a class="dropdown-item">Settings</a>
+            <a class="dropdown-item logout">Logout</a>
           </div>
-        </a>
-      </li>
-      <li>
-        <a>
-          <div class="nav-item-content">
-            <i class="fas fa-trophy"></i>
-            <span>Winners</span>
-          </div>
-        </a>
-      </li>
-      <li>
-        <a>
-          <div class="nav-item-content">
-            <i class="fas fa-money-bill-wave"></i>
-            <span>Payments</span>
-          </div>
-        </a>
-      </li>
-      <li>
-        <a>
-          <div class="nav-item-content">
-            <i class="fas fa-bell"></i>
-            <span>Notifications</span>
-          </div>
-        </a>
-      </li>
-      <li>
-        <a>
-          <div class="nav-item-content">
-            <i class="fas fa-users"></i>
-            <span>User Management</span>
-          </div>
-        </a>
-      </li>
-      <li>
-        <a>
-          <div class="nav-item-content">
-            <i class="fas fa-history"></i>
-            <span>Activity Logs</span>
-          </div>
-        </a>
-      </li>
-      <li>
-        <a>
-          <div class="nav-item-content">
-            <i class="fas fa-envelope"></i>
-            <span>Contact Messages</span>
-          </div>
-        </a>
-      </li>
-      <li>
-        <a>
-          <div class="nav-item-content">
-            <i class="fas fa-check-square"></i>
-            <span>Voting Management</span>
-          </div>
-          <span class="badge">Rig</span>
-        </a>
-      </li>
-    </ul>
-  </nav>
-
-  <div class="sidebar-footer">
-    <div class="user-profile">
-      <div class="user-avatar">
-        <i class="fas fa-user-shield"></i>
-      </div>
-      <div class="user-info">
-        <!-- <strong>{{ adminName }}</strong> -->
-        <!-- <small>Last login: {{ lastLogin }}</small> -->
-      </div>
-      <div class="user-actions">
-        <button class="btn-icon" title="Logout">
-          <i class="fas fa-sign-out-alt"></i>
+        </div>
+        <button class="mobile-menu-toggle" (click)="toggleMobileMenu()">
+          <i class="fas fa-bars"></i>
         </button>
       </div>
     </div>
   </div>
-</aside>
+
+  <div class="navbar-bottom" [class.show]="isMobileMenuOpen">
+    <div class="navbar-container">
+      <div class="navbar-menu" id="navbar-menu">
+        <ul class="nav-items">
+          <li class="nav-item">
+            <a class="nav-link active">
+              <span>Dashboard</span>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link">
+              <span>Results</span>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link">
+              <span>Entries</span>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link">
+              <span>Winners</span>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link">
+              <span>Payments</span>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link">
+              <span>Users</span>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link">
+              <span>Notifications</span>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link">
+              <span>Activity Logs</span>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link">
+              <span>Voting</span>
+            </a>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</nav>
