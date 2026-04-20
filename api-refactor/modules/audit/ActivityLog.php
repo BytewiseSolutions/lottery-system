@@ -8,6 +8,7 @@ class ActivityLog
     public $details;
     public $ip_address;
     public $created_at;
+    public $user_name;
 
     public function __construct($data = [])
     {
@@ -17,6 +18,7 @@ class ActivityLog
         $this->details    = $data['details'] ?? null;
         $this->ip_address = $data['ip_address'] ?? null;
         $this->created_at = $data['created_at'] ?? null;
+        $this->user_name  = $data['user_name'] ?? null;
     }
 
     public function toArray()
@@ -27,7 +29,8 @@ class ActivityLog
             'action'     => $this->action,
             'details'    => $this->details,
             'ip_address' => $this->ip_address,
-            'created_at' => $this->created_at
+            'created_at' => $this->created_at,
+            'user_name'  => $this->user_name
         ];
     }
 }

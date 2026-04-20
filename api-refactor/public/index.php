@@ -368,6 +368,30 @@ function handleAnalyticsRoutes($method, $action) {
             }
             break;
             
+        case 'entry-trends':
+            if ($method === 'GET') {
+                $controller->getEntryTrends();
+            } else {
+                Response::json(false, 'Method not allowed', null, 405);
+            }
+            break;
+            
+        case 'revenue-distribution':
+            if ($method === 'GET') {
+                $controller->getRevenueDistribution();
+            } else {
+                Response::json(false, 'Method not allowed', null, 405);
+            }
+            break;
+            
+        case 'performance-metrics':
+            if ($method === 'GET') {
+                $controller->getPerformanceMetrics();
+            } else {
+                Response::json(false, 'Method not allowed', null, 405);
+            }
+            break;
+            
         default:
             Response::json(false, 'Analytics endpoint not found', null, 404);
     }

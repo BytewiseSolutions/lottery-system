@@ -1,10 +1,10 @@
-<div class="stats-grid">
+<div class="stats-grid" *ngIf="!loading">
   <div class="stat-card">
     <div class="stat-icon">
       <i class="fas fa-ticket-alt"></i>
     </div>
     <div class="stat-info">
-      <h3>1,234</h3>
+      <h3>{{ formatNumber(stats.totalEntries) }}</h3>
       <p>Total Entries</p>
     </div>
   </div>
@@ -14,8 +14,8 @@
       <i class="fas fa-trophy"></i>
     </div>
     <div class="stat-info">
-      <h3>56</h3>
-      <p>Winners</p>
+      <h3>{{ formatNumber(stats.winnersLastMonth) }}</h3>
+      <p>Winners This Month</p>
     </div>
   </div>
   
@@ -24,7 +24,7 @@
       <i class="fas fa-money-bill-wave"></i>
     </div>
     <div class="stat-info">
-      <h3>$12,450</h3>
+      <h3>{{ formatCurrency(stats.totalPayouts) }}</h3>
       <p>Total Payouts</p>
     </div>
   </div>
@@ -34,47 +34,55 @@
       <i class="fas fa-users"></i>
     </div>
     <div class="stat-info">
-      <h3>892</h3>
+      <h3>{{ formatNumber(stats.totalUsers) }}</h3>
       <p>Active Users</p>
     </div>
   </div>
 </div>
 
-<div class="dashboard-widgets">
+<div class="loading-state" *ngIf="loading">
+  <div class="stats-grid">
+    <div class="stat-card skeleton" *ngFor="let item of [1,2,3,4]">
+      <div class="stat-icon skeleton-icon"></div>
+      <div class="stat-info">
+        <div class="skeleton-text skeleton-title"></div>
+        <div class="skeleton-text skeleton-subtitle"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="error-state" *ngIf="error && !loading">
+  <div class="error-message">
+    <i class="fas fa-exclamation-triangle"></i>
+    <p>{{ error }}</p>
+    <button class="retry-btn" (click)="loadDashboardData()">Retry</button>
+  </div>
+</div>
+
+<div class="dashboard-widgets" *ngIf="!loading">
   <div class="widget recent-activity">
     <div class="widget-header">
       <h3>Recent Activity</h3>
       <button class="btn-link">View All</button>
     </div>
-    <div class="activity-list">
-      <div class="activity-item">
+    <div class="activity-list" *ngIf="recentActivity.length > 0; else noActivity">
+      <div class="activity-item" *ngFor="let activity of recentActivity">
         <div class="activity-icon">
-          <i class="fas fa-user-plus"></i>
+          <i [class]="getActivityIcon(activity.action)"></i>
         </div>
         <div class="activity-content">
-          <p>New user registered</p>
-          <small>2 minutes ago</small>
-        </div>
-      </div>
-      <div class="activity-item">
-        <div class="activity-icon">
-          <i class="fas fa-trophy"></i>
-        </div>
-        <div class="activity-content">
-          <p>Winner announced for Draw #123</p>
-          <small>15 minutes ago</small>
-        </div>
-      </div>
-      <div class="activity-item">
-        <div class="activity-icon">
-          <i class="fas fa-money-bill"></i>
-        </div>
-        <div class="activity-content">
-          <p>Payment processed: $500</p>
-          <small>1 hour ago</small>
+          <p>{{ getActivityDescription(activity) }}</p>
+          <small>{{ getTimeAgo(activity.created_at) }}</small>
         </div>
       </div>
     </div>
+    <ng-template #noActivity>
+      <div class="no-activity">
+        <i class="fas fa-inbox"></i>
+        <p>No recent activity</p>
+      </div>
+    </ng-template>
   </div>
 
   <div class="widget quick-actions">

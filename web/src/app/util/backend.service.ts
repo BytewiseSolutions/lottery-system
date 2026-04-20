@@ -150,12 +150,32 @@ uploadFile(fileData: FormData): Observable<any> {
     return this.get('analytics/stats', params);
   }
 
+  getAnalyticsData(period?: string): Observable<any> {
+    return this.get('analytics/detailed', { period });
+  }
+
+  getEntryTrends(period?: string): Observable<any> {
+    return this.get('analytics/entry-trends', { period });
+  }
+
+  getRevenueDistribution(period?: string): Observable<any> {
+    return this.get('analytics/revenue-distribution', { period });
+  }
+
+  getPerformanceMetrics(period?: string): Observable<any> {
+    return this.get('analytics/performance-metrics', { period });
+  }
+
   getSettings(): Observable<any> {
     return this.get('settings/get');
   }
 
   updateSettings(settingsData: any): Observable<any> {
     return this.put('settings/update', settingsData);
+  }
+
+  getActivityLogs(limit?: number): Observable<any> {
+    return this.get('audit/logs', { limit });
   }
 
   forgotPassword(data: any): Observable<any> {
