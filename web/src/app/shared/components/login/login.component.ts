@@ -131,7 +131,7 @@ export class LoginComponent {
             user?.role === 'admin' ||
             user?.email === 'admin@totalfreelotto.com'
           ) {
-            this.router.navigate(['/dashboard']);
+            this.router.navigate(['/admin-dashboard']);
             return;
           }
 

@@ -17,6 +17,7 @@ import { VotingComponent } from './voting/voting.component';
 import { WinningsComponent } from './winnings/winnings.component';
 import { adminGuard } from './guards/admin.guard';
 import { UserDetailsPageComponent } from './admin/components/user-management/user-details/user-details-page.component';
+import { AdminDashboardComponent } from './admin-dashboard/admin-dashboard.component';
 
 export const routes: Routes = [
   { path: '', component: HomeComponent },
@@ -37,7 +38,7 @@ export const routes: Routes = [
   { path: 'winnings', component: WinningsComponent },
   { path: 'admin/users/:id', component: UserDetailsPageComponent, canActivate: [adminGuard] },
   { path: 'dashboard/users/:id', component: UserDetailsPageComponent, canActivate: [adminGuard] },
-  { path: 'admin', component: AdminComponent, canActivate: [adminGuard] },
+  { path: 'admin-dashboard', component: AdminDashboardComponent, canActivate: [adminGuard] },
   { path: 'dashboard', component: AdminComponent, canActivate: [adminGuard] },
   { path: '**', redirectTo: '' }
 ];
