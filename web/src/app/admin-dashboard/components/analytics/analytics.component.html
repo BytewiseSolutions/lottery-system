@@ -51,15 +51,15 @@
       <div class="pie-legend">
         <div class="legend-item">
           <span class="legend-color" style="background: #3b82f6"></span>
-          <span>Entry Fees ({{ formatPercentage((analyticsData.revenueDistribution.entryFees / analyticsData.revenueDistribution.total) * 100) }})</span>
+          <span>Entry Fees ({{ getRevenuePercentage(analyticsData.revenueDistribution.entryFees, analyticsData.revenueDistribution.total) }})</span>
         </div>
         <div class="legend-item">
           <span class="legend-color" style="background: #10b981"></span>
-          <span>Premium ({{ formatPercentage((analyticsData.revenueDistribution.premium / analyticsData.revenueDistribution.total) * 100) }})</span>
+          <span>Premium ({{ getRevenuePercentage(analyticsData.revenueDistribution.premium, analyticsData.revenueDistribution.total) }})</span>
         </div>
         <div class="legend-item">
           <span class="legend-color" style="background: #f59e0b"></span>
-          <span>Other ({{ formatPercentage((analyticsData.revenueDistribution.other / analyticsData.revenueDistribution.total) * 100) }})</span>
+          <span>Other ({{ getRevenuePercentage(analyticsData.revenueDistribution.other, analyticsData.revenueDistribution.total) }})</span>
         </div>
       </div>
     </div>

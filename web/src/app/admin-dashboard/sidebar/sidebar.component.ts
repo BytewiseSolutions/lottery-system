@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, HostListener } from '@angular/core';
 
 @Component({
   selector: 'app-sidebar',
@@ -11,5 +11,19 @@ export class SidebarComponent {
 
   toggleMobileMenu() {
     this.isMobileMenuOpen = !this.isMobileMenuOpen;
+  }
+
+  closeMobileMenu() {
+    this.isMobileMenuOpen = false;
+  }
+
+  @HostListener('document:click', ['$event'])
+  onDocumentClick(event: Event) {
+    const target = event.target as HTMLElement;
+    const navbar = document.querySelector('.navbar');
+    
+    if (this.isMobileMenuOpen && navbar && !navbar.contains(target)) {
+      this.closeMobileMenu();
+    }
   }
 }

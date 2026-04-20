@@ -83,7 +83,18 @@ export class AnalyticsComponent implements OnInit {
   }
 
   formatPercentage(value: number): string {
+    if (isNaN(value) || !isFinite(value)) {
+      return '0.0%';
+    }
     return `${value.toFixed(1)}%`;
+  }
+
+  getRevenuePercentage(amount: number, total: number): string {
+    if (total === 0 || isNaN(total) || !isFinite(total)) {
+      return '0.0%';
+    }
+    const percentage = (amount / total) * 100;
+    return this.formatPercentage(percentage);
   }
 
   getTrendClass(trend: number): string {
