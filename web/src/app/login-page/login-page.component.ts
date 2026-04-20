@@ -7,9 +7,10 @@ import { SignupComponent } from '../shared/components/signup/signup.component';
 
 @Component({
   selector: 'app-login-page',
+  standalone: true,
   imports: [CommonModule, LayoutComponent, LoginComponent, SignupComponent],
   templateUrl: './login-page.component.html',
-  styleUrl: './login-page.component.css'
+  styleUrls: ['./login-page.component.css']
 })
 export class LoginPageComponent implements OnInit {
   showLoginModal = true;
