@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { Router } from '@angular/router';
 import { BackendService } from '../../../util/backend.service';
 import { ActivityLog } from '../../logs';
 import { DashboardStats } from '../../stats';
@@ -22,7 +23,7 @@ export class OverviewComponent implements OnInit {
   loading = true;
   error: string | null = null;
 
-  constructor(private backendService: BackendService) {}
+  constructor(private backendService: BackendService, private router: Router) {}
 
   ngOnInit() {
     this.loadDashboardData();
@@ -181,5 +182,9 @@ export class OverviewComponent implements OnInit {
         const formattedAction = activity.action.replace(/_/g, ' ');
         return details || `${userName}: ${formattedAction}`;
     }
+  }
+
+  navigateToActivityLog() {
+    this.router.navigate(['/admin-dashboard/activity-log']);
   }
 }

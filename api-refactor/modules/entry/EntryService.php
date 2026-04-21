@@ -72,14 +72,7 @@ class EntryService
             $this->activityLogService->log(
                 $user->id,
                 ACTION_ENTRY_SUBMIT,
-                json_encode([
-                    'entry_id' => (int)$createdEntry->id,
-                    'draw_id' => (int)$draw->id,
-                    'lottery' => $draw->getLotteryName(),
-                    'draw_date' => $drawDate,
-                    'numbers' => $mainNumbers,
-                    'bonus_numbers' => $bonusNumbers
-                ])
+                "Entry submitted for {$draw->getLotteryName()} of {$drawDate}"
             );
 
             return [

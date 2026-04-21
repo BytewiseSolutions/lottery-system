@@ -1,4 +1,5 @@
 import { Component, HostListener } from '@angular/core';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-sidebar',
@@ -9,12 +10,19 @@ import { Component, HostListener } from '@angular/core';
 export class SidebarComponent {
   isMobileMenuOpen = false;
 
+  constructor(private router: Router) {}
+
   toggleMobileMenu() {
     this.isMobileMenuOpen = !this.isMobileMenuOpen;
   }
 
   closeMobileMenu() {
     this.isMobileMenuOpen = false;
+  }
+
+  navigateTo(route: string) {
+    this.router.navigate([route]);
+    this.closeMobileMenu();
   }
 
   @HostListener('document:click', ['$event'])

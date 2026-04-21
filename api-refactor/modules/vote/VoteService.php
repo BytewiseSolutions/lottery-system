@@ -84,14 +84,7 @@ class VoteService
             $this->activityLogService->log(
                 $user->id,
                 ACTION_VOTE_SUBMIT,
-                json_encode([
-                    'vote_id' => (int)$createdVote->id,
-                    'draw_id' => (int)$draw->id,
-                    'lottery' => $draw->getLotteryName(),
-                    'draw_date' => $drawDate,
-                    'numbers' => $mainNumbers,
-                    'bonus_numbers' => $bonusNumbers
-                ])
+                "Vote submitted for {$draw->getLotteryName()} of {$drawDate}"
             );
 
             return [
