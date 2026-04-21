@@ -47,45 +47,57 @@
             <div class="tab-content">
                 <h3>Winners</h3>
 
-                <div class="winners-list">
+                <div class="table-wrapper">
+                    <table class="winners-table">
 
-                    @for (w of winners; track $index) {
-                    <div class="winner-card">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Name</th>
+                                <th>Email</th>
+                                <th>Prize</th>
+                                <th>Claim</th>
+                                <th>Payment</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
 
-                        <div class="winner-info">
-                            <div>
-                                <strong>{{ w.name }}</strong>
-                                <small>{{ w.email }}</small>
-                            </div>
+                        <tbody>
+                            @for (w of winners; track $index) {
+                            <tr>
+                                <td>{{ $index + 1 }}</td>
+                                <td>{{ w.name }}</td>
+                                <td>{{ w.email }}</td>
+                                <td class="prize">M {{ w.prize_amount }}</td>
 
-                            <div class="prize">
-                                M {{ w.prize_amount }}
-                            </div>
-                        </div>
+                                <td>
+                                    <span class="badge" [class.pending]="w.claim_status === 'pending'"
+                                        [class.paid]="w.claim_status === 'claimed'">
+                                        {{ w.claim_status }}
+                                    </span>
+                                </td>
 
-                        <div class="status-group">
-                            <span class="badge" [class.pending]="w.claim_status === 'pending'">
-                                {{ w.claim_status }}
-                            </span>
+                                <td>
+                                    <span class="badge" [class.pending]="w.payment_status === 'pending'"
+                                        [class.paid]="w.payment_status === 'paid'">
+                                        {{ w.payment_status }}
+                                    </span>
+                                </td>
 
-                            <span class="badge" [class.paid]="w.payment_status === 'paid'">
-                                {{ w.payment_status }}
-                            </span>
-                        </div>
+                                <td>
+                                    <div class="actions">
+                                        <button class="view-btn">View</button>
+                                        <button class="pay-btn" (click)="payWinner(w)">Pay</button>
+                                        <button class="claim-btn" (click)="markClaimed(w)">
+                                            Claimed
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                            }
+                        </tbody>
 
-                        <div class="actions">
-                            <button class="view-btn">View</button>
-                            <button class="pay-btn" (click)="payWinner(w)">
-                                Pay
-                            </button>
-                            <button class="claim-btn" (click)="markClaimed(w)">
-                                Mark Claimed
-                            </button>
-                        </div>
-
-                    </div>
-                    }
-
+                    </table>
                 </div>
             </div>
             }
