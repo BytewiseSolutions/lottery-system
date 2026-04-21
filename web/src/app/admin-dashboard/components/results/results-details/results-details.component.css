@@ -1,0 +1,330 @@
+/* .admin-dashboard {
+  min-height: 100vh;
+  background-color: var(--system-grouped-background, #f2f2f7);
+}
+
+.main-content {
+  margin-top: 100px;
+  min-height: calc(100vh - 100px);
+  padding-top: 2rem;
+}
+
+@media (max-width: 768px) {
+  .main-content {
+    margin-top: 50px;
+    padding-top: 1rem;
+  }
+}
+
+.result-detail-page {
+  padding: 0 2rem 2rem;
+  background-color: #f2f2f7;
+  min-height: calc(100vh - 100px);
+}
+
+.result-detail-page h1 {
+  margin: 0;
+  padding: 1.25rem 1.5rem;
+  background: #ffffff;
+  color: #222;
+  font-size: 2rem;
+  font-weight: 700;
+  border-radius: 14px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.06);
+  border-left: 5px solid rgb(108, 0, 146);
+}
+
+@media (max-width: 768px) {
+  .result-detail-page {
+    padding: 0 1rem 1.5rem;
+    min-height: calc(100vh - 50px);
+  }
+
+  .result-detail-page h1 {
+    font-size: 1.45rem;
+    padding: 1rem 1.1rem;
+    border-radius: 12px;
+  }
+}
+
+@media (max-width: 480px) {
+  .result-detail-page h1 {
+    font-size: 1.2rem;
+    padding: 0.9rem 1rem;
+  }
+}
+
+.result-header-card {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1rem;
+  background: #fff;
+  padding: 1.2rem;
+  border-radius: 14px;
+  margin-top: 1rem;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.06);
+}
+
+.header-item label {
+  font-size: 0.75rem;
+  color: #777;
+}
+
+.header-item h2,
+.header-item h3 {
+  margin: 0.2rem 0 0;
+}
+
+.status {
+  display: inline-block;
+  padding: 0.3rem 0.7rem;
+  border-radius: 20px;
+  background: #eee;
+  font-size: 0.8rem;
+}
+
+.status.published {
+  background: #dcfce7;
+  color: #16a34a;
+}
+
+.tabs {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 1.5rem;
+}
+
+.tabs button {
+  padding: 0.6rem 1rem;
+  border: none;
+  background: #fff;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.tabs button.active {
+  background: rgb(108,0,146);
+  color: #fff;
+}
+
+.tab-content {
+  margin-top: 1rem;
+  background: #fff;
+  padding: 1.2rem;
+  border-radius: 12px;
+}
+
+.numbers {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+}
+
+.ball {
+  width: 35px;
+  height: 35px;
+  background: #eee;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+}
+
+.ball.bonus {
+  background: #e9d5ff;
+    display: flex;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+  flex-wrap: wrap;
+} */
+
+.admin-dashboard {
+  min-height: 100vh;
+  background-color: #f2f2f7;
+}
+
+.main-content {
+  margin-top: 100px;
+  min-height: calc(100vh - 100px);
+  padding-top: 2rem;
+}
+
+/* PAGE */
+.result-detail-page {
+  padding: 0 2rem 2rem;
+}
+
+/* HEADER */
+.result-header-card {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1rem;
+  background: #fff;
+  padding: 1.2rem;
+  border-radius: 14px;
+}
+
+.header-item label {
+  font-size: 0.75rem;
+  color: #777;
+}
+
+/* STATUS */
+.status {
+  padding: 0.3rem 0.7rem;
+  border-radius: 20px;
+  background: #eee;
+}
+
+.status.published {
+  background: #dcfce7;
+  color: #16a34a;
+}
+
+/* TABS */
+.tabs {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 1.5rem;
+}
+
+.tabs button {
+  padding: 0.6rem 1rem;
+  border: none;
+  background: #fff;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.tabs button.active {
+  background: rgb(108,0,146);
+  color: #fff;
+}
+
+/* CONTENT */
+.tab-content {
+  margin-top: 1rem;
+  background: #fff;
+  padding: 1.2rem;
+  border-radius: 12px;
+}
+
+/* NUMBERS */
+.numbers {
+  display: flex;
+  gap: 0.5rem;
+}
+
+/* BALL */
+.ball {
+  width: 35px;
+  height: 35px;
+  background: #eee;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+}
+
+/* BONUS SECTION FIX */
+.bonus-section {
+  margin-top: 1rem;
+}
+
+.bonus {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap; /* 🔥 horizontal + responsive */
+}
+
+.bonus-ball {
+  background: #e9d5ff;
+}
+
+.winners-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+}
+
+.winner-card {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: #f9f9f9;
+  padding: 1rem;
+  border-radius: 10px;
+}
+
+.winner-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.prize {
+  font-weight: 700;
+  color: #16a34a;
+}
+
+.status-group {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.badge {
+  padding: 0.3rem 0.6rem;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  background: #eee;
+}
+
+.badge.pending {
+  background: #fef9c3;
+}
+
+.badge.paid {
+  background: #dcfce7;
+}
+
+.actions {
+  display: flex;
+  gap: 0.4rem;
+  align-items: center;
+  flex-wrap: nowrap; 
+}
+
+.actions button {
+  white-space: nowrap;
+  font-size: 0.8rem;
+  line-height: 1;
+  height: 30px;
+  padding: 0.3rem 0.6rem;
+}
+
+.pay-btn {
+  background: #16a34a;
+  color: white;
+  padding: 0.3rem 0.7rem;
+}
+
+.claim-btn {
+  background: #2563eb;
+  color: white;
+  padding: 0.3rem 0.7rem;
+}
+
+.view-btn {
+  background: #e5e7eb;
+  padding: 0.3rem 0.7rem;
+}
+
+.winner-item {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  padding: 0.5rem;
+  background: #f9f9f9;
+  border-radius: 8px;
+}

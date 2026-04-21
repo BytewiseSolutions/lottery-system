@@ -1,12 +1,7 @@
-/* ===============================
-   RESULTS FORM (SMALL + CLEAN)
-=================================*/
-
 .results-form {
   padding: 0.75rem;
 }
 
-/* FORM GROUP */
 .form-group {
   margin-bottom: 1rem;
 }
@@ -19,7 +14,6 @@
   color: #333;
 }
 
-/* INPUTS */
 .form-group input,
 .form-group select,
 .form-group textarea {
@@ -48,14 +42,12 @@
   box-shadow: 0 0 0 3px rgba(108, 0, 146, 0.08);
 }
 
-/* ROW */
 .form-row {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 0.75rem;
 }
 
-/* NUMBERS GRID */
 .numbers-grid {
   display: grid;
   grid-template-columns: repeat(5, 1fr);
@@ -73,7 +65,6 @@
   height: 38px;
 }
 
-/* RADIO */
 .radio-group {
   display: flex;
   gap: 0.75rem;
@@ -86,7 +77,6 @@
   font-size: 0.9rem;
 }
 
-/* ACTIONS */
 .form-actions {
   display: flex;
   justify-content: flex-end;
@@ -108,7 +98,6 @@
   transition: 0.2s ease;
 }
 
-/* PRIMARY */
 .btn-primary {
   background: rgb(108, 0, 146);
   color: #fff;
@@ -123,7 +112,6 @@
   cursor: not-allowed;
 }
 
-/* SECONDARY */
 .btn-secondary {
   background: #f3f3f3;
   color: #555;
@@ -133,13 +121,9 @@
   background: #e7e7e7;
 }
 
-/* ===============================
-   MODAL IMPROVEMENT
-=================================*/
-
 .modal-content {
   width: 100%;
-  max-width: 560px;   /* reduced from 650 */
+  max-width: 560px;   
   max-height: 88vh;
   background: #fff;
   border-radius: 14px;
@@ -161,10 +145,6 @@
   max-height: calc(88vh - 70px);
   overflow-y: auto;
 }
-
-/* ===============================
-   MOBILE
-=================================*/
 
 @media (max-width: 768px) {
 

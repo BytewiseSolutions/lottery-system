@@ -1,0 +1,132 @@
+<div class="admin-dashboard">
+    <app-sidebar></app-sidebar>
+
+    <div class="main-content">
+        <div class="result-detail-page">
+
+            <div class="result-header-card">
+
+                <div class="header-item">
+                    <label>Lottery</label>
+                    <h2>{{ result?.lottery_name }}</h2>
+                </div>
+
+                <div class="header-item">
+                    <label>Draw</label>
+                    <h3>{{ result?.draw_date | date:'mediumDate' }}</h3>
+                </div>
+
+                <div class="header-item">
+                    <label>Jackpot</label>
+                    <h3>M{{ result?.jackpot }}</h3>
+                </div>
+
+            </div>
+
+            <div class="tabs">
+
+                <button (click)="activeTab = 'winners'" [class.active]="activeTab === 'winners'">
+                    Winners
+                </button>
+
+                <button (click)="activeTab = 'numbers'" [class.active]="activeTab === 'numbers'">
+                    Winning Numbers
+                </button>
+
+                <button (click)="activeTab = 'entries'" [class.active]="activeTab === 'entries'">
+                    Entries
+                </button>
+
+                <button (click)="activeTab = 'meta'" [class.active]="activeTab === 'meta'">
+                    Meta Info
+                </button>
+
+            </div>
+
+            @if (activeTab === 'winners') {
+            <div class="tab-content">
+                <h3>Winners</h3>
+
+                <div class="winners-list">
+
+                    @for (w of winners; track $index) {
+                    <div class="winner-card">
+
+                        <div class="winner-info">
+                            <div>
+                                <strong>{{ w.name }}</strong>
+                                <small>{{ w.email }}</small>
+                            </div>
+
+                            <div class="prize">
+                                M {{ w.prize_amount }}
+                            </div>
+                        </div>
+
+                        <div class="status-group">
+                            <span class="badge" [class.pending]="w.claim_status === 'pending'">
+                                {{ w.claim_status }}
+                            </span>
+
+                            <span class="badge" [class.paid]="w.payment_status === 'paid'">
+                                {{ w.payment_status }}
+                            </span>
+                        </div>
+
+                        <div class="actions">
+                            <button class="view-btn">View</button>
+                            <button class="pay-btn" (click)="payWinner(w)">
+                                Pay
+                            </button>
+                            <button class="claim-btn" (click)="markClaimed(w)">
+                                Mark Claimed
+                            </button>
+                        </div>
+
+                    </div>
+                    }
+
+                </div>
+            </div>
+            }
+
+            @if (activeTab === 'numbers') {
+            <div class="tab-content">
+                <h3>Winning Numbers</h3>
+
+                <div class="numbers">
+                    @for (num of result?.winning_numbers; track $index) {
+                    <span class="ball">{{ num }}</span>
+                    }
+                </div>
+
+                <div class="bonus-section">
+                    <h4>Bonus Numbers</h4>
+
+                    <div class="bonus">
+                        @for (num of result?.bonus_numbers; track $index) {
+                        <span class="ball bonus-ball">{{ num }}</span>
+                        }
+                    </div>
+                </div>
+            </div>
+            }
+
+            @if (activeTab === 'entries') {
+            <div class="tab-content">
+                <h3>Entries Summary</h3>
+                <p>Total Entries: {{ result?.total_entries || 0 }}</p>
+            </div>
+            }
+
+            @if (activeTab === 'meta') {
+            <div class="tab-content">
+                <h3>Meta Info</h3>
+                <p>Created: {{ result?.created_at | date }}</p>
+                <p>Updated: {{ result?.updated_at | date }}</p>
+            </div>
+            }
+
+        </div>
+    </div>
+</div>

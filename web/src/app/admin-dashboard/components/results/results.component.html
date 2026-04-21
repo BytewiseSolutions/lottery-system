@@ -3,6 +3,7 @@
 
   <main class="main-content">
     <div class="results-page">
+
       <div class="page-header">
         <h1>Manage Results</h1>
 
@@ -11,26 +12,74 @@
           Upload Results
         </button>
       </div>
-    </div>
 
-    @if (isModalOpen) {
-      <div class="modal-overlay" (click)="closeModal()">
-        <div class="modal-content" (click)="$event.stopPropagation()">
+      <div class="view-results">
+        <div class="table-responsive">
 
-          <div class="modal-header">
-            <h2>Upload Results</h2>
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Lottery</th>
+                <th>Draw</th>
+                <th>Jackpot</th>
+                <th>Winners</th>
+                <th>Status</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
 
-            <button class="close-btn" (click)="closeModal()">
-              <i class="fas fa-times"></i>
-            </button>
-          </div>
+            <tbody>
+              @for (result of results; track result.id) {
+              <tr>
+                <td>{{ result.lottery }}</td>
+                <td>{{ result.draw }}</td>
+                <td>${{ result.jackpot }}</td>
+                <td>{{ result.winners_count }}</td>
+                <td>{{ result.status }}</td>
 
-          <div class="modal-body">
-            <app-results-form (cancel)="closeModal()" (save)="saveResult($event)"></app-results-form>
-          </div>
+                <td class="action-buttons">
+                  <button type="button" (click)="viewResult(result)">
+                    View
+                  </button>
+
+                  <button type="button" (click)="editResult(result)">
+                    Edit
+                  </button>
+                </td>
+              </tr>
+              }
+            </tbody>
+          </table>
 
         </div>
       </div>
+
+    </div>
+
+    @if (isModalOpen) {
+    <div class="modal-overlay" (click)="closeModal()">
+
+      <div class="modal-content" (click)="$event.stopPropagation()">
+
+        <div class="modal-header">
+          <h2>
+            {{ isEditMode ? 'Edit Results' : 'Upload Results' }}
+          </h2>
+
+          <button class="close-btn" (click)="closeModal()">
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
+
+        <div class="modal-body">
+          <app-results-form [editData]="selectedResult" [isEditMode]="isEditMode" (cancel)="closeModal()"
+            (save)="saveResult($event)">
+          </app-results-form>
+        </div>
+
+      </div>
+
+    </div>
     }
 
   </main>
