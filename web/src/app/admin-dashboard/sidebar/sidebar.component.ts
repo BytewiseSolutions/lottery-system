@@ -1,9 +1,10 @@
 import { Component, HostListener } from '@angular/core';
 import { Router } from '@angular/router';
+import { CommonModule } from '@angular/common';
 
 @Component({
   selector: 'app-sidebar',
-  imports: [],
+  imports: [CommonModule],
   templateUrl: './sidebar.component.html',
   styleUrls: ['./sidebar.component.css']
 })
@@ -23,6 +24,10 @@ export class SidebarComponent {
   navigateTo(route: string) {
     this.router.navigate([route]);
     this.closeMobileMenu();
+  }
+
+  isActive(route: string): boolean {
+    return this.router.url === route;
   }
 
   @HostListener('document:click', ['$event'])

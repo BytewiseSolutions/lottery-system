@@ -1,4 +1,5 @@
-<div class="stats-grid" *ngIf="!loading">
+@if (!loading) {
+<div class="stats-grid">
   <div class="stat-card">
     <div class="stat-icon">
       <i class="fas fa-ticket-alt"></i>
@@ -8,7 +9,7 @@
       <p>Total Entries</p>
     </div>
   </div>
-  
+
   <div class="stat-card">
     <div class="stat-icon">
       <i class="fas fa-trophy"></i>
@@ -18,7 +19,7 @@
       <p>Winners This Month</p>
     </div>
   </div>
-  
+
   <div class="stat-card">
     <div class="stat-icon">
       <i class="fas fa-money-bill-wave"></i>
@@ -28,7 +29,7 @@
       <p>Total Payouts</p>
     </div>
   </div>
-  
+
   <div class="stat-card">
     <div class="stat-icon">
       <i class="fas fa-users"></i>
@@ -39,35 +40,46 @@
     </div>
   </div>
 </div>
+}
 
-<div class="loading-state" *ngIf="loading">
+@if (loading) {
+<div class="loading-state">
   <div class="stats-grid">
-    <div class="stat-card skeleton" *ngFor="let item of [1,2,3,4]">
+    @for (item of [1,2,3,4]; track item) {
+    <div class="stat-card skeleton">
       <div class="stat-icon skeleton-icon"></div>
       <div class="stat-info">
         <div class="skeleton-text skeleton-title"></div>
         <div class="skeleton-text skeleton-subtitle"></div>
       </div>
     </div>
+    }
   </div>
 </div>
+}
 
-<div class="error-state" *ngIf="error && !loading">
+@if (error && !loading) {
+<div class="error-state">
   <div class="error-message">
     <i class="fas fa-exclamation-triangle"></i>
     <p>{{ error }}</p>
     <button class="retry-btn" (click)="loadDashboardData()">Retry</button>
   </div>
 </div>
+}
 
-<div class="dashboard-widgets" *ngIf="!loading">
+@if (!loading) {
+<div class="dashboard-widgets">
   <div class="widget recent-activity">
     <div class="widget-header">
       <h3>Recent Activity</h3>
       <button class="btn-link" (click)="navigateToActivityLog()">View All</button>
     </div>
-    <div class="activity-list" *ngIf="recentActivity.length > 0; else noActivity">
-      <div class="activity-item" *ngFor="let activity of recentActivity">
+
+    @if (recentActivity.length > 0) {
+    <div class="activity-list">
+      @for (activity of recentActivity; track activity.id) {
+      <div class="activity-item">
         <div class="activity-icon">
           <i [class]="getActivityIcon(activity.action)"></i>
         </div>
@@ -76,36 +88,42 @@
           <small>{{ getTimeAgo(activity.created_at) }}</small>
         </div>
       </div>
+      }
     </div>
-    <ng-template #noActivity>
-      <div class="no-activity">
-        <i class="fas fa-inbox"></i>
-        <p>No recent activity</p>
-      </div>
-    </ng-template>
+    } @else {
+    <div class="no-activity">
+      <i class="fas fa-inbox"></i>
+      <p>No recent activity</p>
+    </div>
+    }
   </div>
 
   <div class="widget quick-actions">
     <div class="widget-header">
       <h3>Quick Actions</h3>
     </div>
+
     <div class="action-buttons">
-      <button class="action-btn">
+      <button class="action-btn" (click)="navigateTo('/admin-dashboard/user')">
         <i class="fas fa-users"></i>
         <span>Users</span>
       </button>
-      <button class="action-btn">
+
+      <button class="action-btn" (click)="navigateTo('/admin-dashboard/result')">
         <i class="fas fa-list-alt"></i>
         <span>Results</span>
       </button>
-      <button class="action-btn">
+
+      <button class="action-btn" (click)="navigateTo('/admin-dashboard/winner')">
         <i class="fas fa-trophy"></i>
         <span>Announce Winner</span>
       </button>
-      <button class="action-btn">
+
+      <button class="action-btn" (click)="navigateTo('/admin-dashboard/notification')">
         <i class="fas fa-envelope"></i>
         <span>Send Notification</span>
       </button>
     </div>
   </div>
 </div>
+}

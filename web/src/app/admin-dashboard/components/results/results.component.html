@@ -1,3 +1,37 @@
 <div class="admin-dashboard">
-     <app-sidebar></app-sidebar>
+  <app-sidebar></app-sidebar>
+
+  <main class="main-content">
+    <div class="results-page">
+      <div class="page-header">
+        <h1>Manage Results</h1>
+
+        <button class="upload-btn" (click)="openModal()">
+          <i class="fas fa-upload"></i>
+          Upload Results
+        </button>
+      </div>
+    </div>
+
+    @if (isModalOpen) {
+      <div class="modal-overlay" (click)="closeModal()">
+        <div class="modal-content" (click)="$event.stopPropagation()">
+
+          <div class="modal-header">
+            <h2>Upload Results</h2>
+
+            <button class="close-btn" (click)="closeModal()">
+              <i class="fas fa-times"></i>
+            </button>
+          </div>
+
+          <div class="modal-body">
+            <app-results-form (cancel)="closeModal()" (save)="saveResult($event)"></app-results-form>
+          </div>
+
+        </div>
+      </div>
+    }
+
+  </main>
 </div>

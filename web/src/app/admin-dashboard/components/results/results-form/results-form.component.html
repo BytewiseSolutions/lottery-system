@@ -1,0 +1,62 @@
+<form class="results-form" (ngSubmit)="onSubmit()">
+  <div class="form-group">
+    <label for="draw">Select Draw *</label>
+    <select id="draw" [(ngModel)]="formData.draw_id" name="draw_id" required>
+      <option value="">Choose a draw...</option>
+      @for (draw of draws; track draw.id) {
+        <option [value]="draw.id">
+          {{draw.lottery_name}} - {{draw.draw_date | date:'medium'}}
+        </option>
+      }
+    </select>
+  </div>
+
+  <div class="form-group">
+    <label>Winning Numbers *</label>
+    <div class="numbers-grid">
+      @for (num of formData.winning_numbers; track $index) {
+        <input 
+          type="number" 
+          min="1" 
+          max="50" 
+          [(ngModel)]="formData.winning_numbers[$index]" 
+          [name]="'main_' + $index" 
+          placeholder="{{$index + 1}}"
+          required>
+      }
+    </div>
+  </div>
+
+  <div class="form-group">
+    <label>Bonus Numbers</label>
+    <div class="numbers-grid bonus">
+      @for (num of formData.bonus_numbers; track $index) {
+        <input 
+          type="number" 
+          min="1" 
+          max="12" 
+          [(ngModel)]="formData.bonus_numbers[$index]" 
+          [name]="'bonus_' + $index" 
+          placeholder="B{{$index + 1}}">
+      }
+    </div>
+  </div>
+
+  <div class="form-group">
+    <label for="jackpot">Jackpot Amount *</label>
+    <input 
+      type="number" 
+      id="jackpot" 
+      step="0.01" 
+      min="0" 
+      [(ngModel)]="formData.jackpot" 
+      name="jackpot" 
+      placeholder="0.00" 
+      required>
+  </div>
+
+  <div class="form-actions">
+    <button type="button" class="btn-secondary" (click)="onCancel()">Cancel</button>
+    <button type="submit" class="btn-primary" [disabled]="!isFormValid()">Save</button>
+  </div>
+</form>

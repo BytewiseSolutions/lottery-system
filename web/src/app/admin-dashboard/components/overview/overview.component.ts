@@ -23,7 +23,10 @@ export class OverviewComponent implements OnInit {
   loading = true;
   error: string | null = null;
 
-  constructor(private backendService: BackendService, private router: Router) {}
+  constructor(
+    private backendService: BackendService, 
+    private router: Router
+  ) {}
 
   ngOnInit() {
     this.loadDashboardData();
@@ -33,7 +36,6 @@ export class OverviewComponent implements OnInit {
     this.loading = true;
     this.error = null;
 
-    // Load stats
     this.backendService.getAnalytics().subscribe({
       next: (response: any) => {
         if (response.success) {
@@ -183,7 +185,9 @@ export class OverviewComponent implements OnInit {
         return details || `${userName}: ${formattedAction}`;
     }
   }
-
+  navigateTo(url: string): void {
+    this.router.navigate([url]);
+  }
   navigateToActivityLog() {
     this.router.navigate(['/admin-dashboard/activity-log']);
   }
