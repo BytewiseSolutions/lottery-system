@@ -1,11 +1,16 @@
 import { Component } from '@angular/core';
 import { SidebarComponent } from '../../../sidebar/sidebar.component';
 import { CommonModule } from '@angular/common';
+import { WinnerListComponent } from '../winner-list/winner-list.component';
 
 @Component({
   selector: 'app-results-details',
   standalone: true,
-  imports: [CommonModule, SidebarComponent],
+  imports: [
+    CommonModule, 
+    SidebarComponent,
+    WinnerListComponent
+  ],
   templateUrl: './results-details.component.html',
   styleUrl: './results-details.component.css'
 })
@@ -25,49 +30,11 @@ export class ResultsDetailsComponent {
     total_entries: 1200
   };
 
-winners = [
-  {
-    name: 'Thabo Monamane',
-    email: 'thabo@gmail.com',
-    prize_amount: 5000,
-    claim_status: 'pending',
-    payment_status: 'pending'
-  },
-  {
-    name: 'Lerato Nkosi',
-    email: 'lerato@gmail.com',
-    prize_amount: 3000,
-    claim_status: 'pending',
-    payment_status: 'pending'
-  },
-  {
-    name: 'Neo Mahlakeng',
-    email: 'neo@gmail.com',
-    prize_amount: 1500,
-    claim_status: 'claimed',
-    payment_status: 'paid'
-  },
-  {
-    name: 'Kabelo Radebe',
-    email: 'kabelo@gmail.com',
-    prize_amount: 2000,
-    claim_status: 'pending',
-    payment_status: 'pending'
-  },
-  {
-    name: 'Palesa Mokoena',
-    email: 'palesa@gmail.com',
-    prize_amount: 1000,
-    claim_status: 'pending',
-    payment_status: 'failed'
+  payWinner(w: any) {
+    console.log('Paying winner:', w);
   }
-];
 
-payWinner(w: any) {
-  console.log('Paying winner:', w);
-}
-
-markClaimed(w: any) {
-  console.log('Mark as claimed:', w);
-}
+  markClaimed(w: any) {
+    console.log('Mark as claimed:', w);
+  }
 }

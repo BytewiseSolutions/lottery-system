@@ -1,0 +1,35 @@
+<form class="claim-form" (ngSubmit)="onSubmit()">
+  <div class="winner-info">
+    <h3>Winner Information</h3>
+    <div class="info-grid">
+      <div class="info-item">
+        <label>Name</label>
+        <span>{{winner?.name}}</span>
+      </div>
+      <div class="info-item">
+        <label>Email</label>
+        <span>{{winner?.email}}</span>
+      </div>
+      <div class="info-item">
+        <label>Prize Amount</label>
+        <span class="prize">M{{winner?.prize_amount}}</span>
+      </div>
+      <div class="info-item">
+        <label>Current Status</label>
+        <span class="badge" [class]="winner?.claim_status">{{winner?.claim_status}}</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="form-group">
+    <label class="checkbox-label">
+      <input type="checkbox" [(ngModel)]="formData.confirmed" name="confirmed" required>
+      <span>I confirm that this winner has provided valid identification and meets all claim requirements</span>
+    </label>
+  </div>
+
+  <div class="form-actions">
+    <button type="button" class="btn-secondary" (click)="onCancel()">Cancel</button>
+    <button type="submit" class="btn-primary" [disabled]="!isFormValid()">Mark as Claimed</button>
+  </div>
+</form>
