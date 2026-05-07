@@ -48,7 +48,7 @@
               </thead>
 
               <tbody>
-                @for (result of results; track result.id) {
+                @for (result of paginatedResults; track result.id; let index = $index) {
                 <tr>
                   <td>{{ result.lottery }}</td>
                   <td>{{ formatDrawDate(result.draw_date) }}</td>
@@ -69,6 +69,31 @@
                 }
               </tbody>
             </table>
+
+            <div class="table-footer">
+              <div class="table-info">
+                Showing {{ paginatedResults.length }} of {{ totalItems }} results
+              </div>
+              <div class="pagination">
+                <button
+                  class="btn-icon"
+                  type="button"
+                  (click)="onPageChange(currentPage - 1)"
+                  [disabled]="currentPage === 1">
+                  <i class="fas fa-chevron-left"></i>
+                </button>
+                <span class="page-info">
+                  Page {{ currentPage }} of {{ totalPages || 1 }}
+                </span>
+                <button
+                  class="btn-icon"
+                  type="button"
+                  (click)="onPageChange(currentPage + 1)"
+                  [disabled]="currentPage === totalPages || totalPages === 0">
+                  <i class="fas fa-chevron-right"></i>
+                </button>
+              </div>
+            </div>
           }
 
         </div>

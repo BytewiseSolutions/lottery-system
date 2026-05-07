@@ -122,6 +122,37 @@ class EntryController
         }
     }
 
+    public function getEntryDetails()
+    {
+        try {
+            $user = $this->getCurrentUser();
+
+            if (!$user) {
+                Response::json(false, 'Unauthorized', null, HTTP_UNAUTHORIZED);
+            }
+
+            if (!$user->isAdmin()) {
+                Response::json(false, 'Admin access required', null, HTTP_FORBIDDEN);
+            }
+
+            $entryId = isset($_GET['id']) ? (int)$_GET['id'] : 0;
+            $result = $this->entryService->getEntryById($entryId);
+
+            if ($result['success']) {
+                Response::json(true, 'Entry fetched successfully', $result['data'], HTTP_OK);
+            }
+
+            Response::json(false, $result['message'], null, HTTP_BAD_REQUEST);
+
+        } catch (Exception $e) {
+            Logger::error('EntryController entry details error', [
+                'error' => $e->getMessage()
+            ]);
+
+            Response::json(false, 'Failed to fetch entry details', null, HTTP_INTERNAL_ERROR);
+        }
+    }
+
     private function getAuthenticatedUser()
     {
         $user = $this->getCurrentUser();

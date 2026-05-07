@@ -6,20 +6,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { BackendService } from '../../../../util/backend.service';
 import { SuccessPopupService } from '../../../../services/success-popup.service';
 import { ErrorHandlerService } from '../../../../services/error-handler.service';
-
-interface ResultDetail {
-  id: number;
-  draw_id: number;
-  lottery: string;
-  draw_date: string;
-  jackpot: number | string;
-  status: string;
-  winning_numbers: number[];
-  bonus_numbers: number[];
-  created_at?: string;
-  updated_at?: string;
-  total_entries?: number;
-}
+import { ResultDetail } from '../../../../util/results';
 
 @Component({
   selector: 'app-results-details',

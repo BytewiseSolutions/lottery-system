@@ -257,6 +257,14 @@ function handleEntryRoutes($method, $action) {
             }
             break;
 
+        case 'details':
+            if ($method === 'GET') {
+                $controller->getEntryDetails();
+            } else {
+                Response::json(false, 'Method not allowed', null, 405);
+            }
+            break;
+
         default:
             Response::json(false, 'Entry endpoint not found', null, 404);
     }

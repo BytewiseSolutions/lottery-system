@@ -2,21 +2,8 @@ import { CommonModule } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
 import { SidebarComponent } from '../../sidebar/sidebar.component';
 import { BackendService } from '../../../util/backend.service';
-
-interface AdminEntry {
-  id: number;
-  user_id: number;
-  draw_id: number;
-  lottery: string;
-  numbers: number[];
-  bonus_numbers: number[];
-  draw_date: string;
-  draw_datetime?: string;
-  created_at: string;
-  user_name?: string;
-  user_email?: string;
-  user_phone?: string;
-}
+import { Router } from '@angular/router';
+import { EntryDetail } from './entry';
 
 @Component({
   selector: 'app-entry',
@@ -28,10 +15,17 @@ export class EntryComponent implements OnInit {
   loading = true;
   error = false;
   exporting = false;
-  entries: AdminEntry[] = [];
-  selectedEntry: AdminEntry | null = null;
+  entries: EntryDetail[] = [];
+  paginatedEntries: EntryDetail[] = [];
+  currentPage = 1;
+  itemsPerPage = 10;
+  totalItems = 0;
+  totalPages = 0;
 
-  constructor(private backendService: BackendService) {}
+  constructor(
+    private backendService: BackendService,
+    private router: Router
+  ) {}
 
   ngOnInit(): void {
     this.loadEntries();
@@ -44,23 +38,26 @@ export class EntryComponent implements OnInit {
     this.backendService.getAllEntries().subscribe({
       next: (response: any) => {
         this.entries = response?.success && Array.isArray(response.data) ? response.data : [];
+        this.totalItems = this.entries.length;
+        this.totalPages = Math.ceil(this.totalItems / this.itemsPerPage);
+        this.currentPage = 1;
+        this.updatePaginatedEntries();
         this.loading = false;
       },
       error: (error) => {
         console.error('Failed to load entries:', error);
         this.entries = [];
+        this.paginatedEntries = [];
+        this.totalItems = 0;
+        this.totalPages = 0;
         this.loading = false;
         this.error = true;
       }
     });
   }
 
-  viewEntry(entry: AdminEntry) {
-    this.selectedEntry = entry;
-  }
-
-  closeEntryModal() {
-    this.selectedEntry = null;
+  viewEntry(entry: EntryDetail) {
+    this.router.navigate(['/admin-dashboard/entry', entry.id]);
   }
 
   exportCsv() {
@@ -101,11 +98,18 @@ export class EntryComponent implements OnInit {
     this.exporting = false;
   }
 
+  onPageChange(page: number) {
+    if (page >= 1 && page <= this.totalPages) {
+      this.currentPage = page;
+      this.updatePaginatedEntries();
+    }
+  }
+
   formatNumbers(numbers: number[] = []): string {
     return Array.isArray(numbers) ? numbers.join(', ') : '';
   }
 
-  formatDrawLabel(entry: AdminEntry): string {
+  formatDrawLabel(entry: EntryDetail): string {
     const drawDate = entry.draw_datetime || entry.draw_date;
     return `${entry.lottery} ${this.formatDrawDate(drawDate)}`;
   }
@@ -167,8 +171,14 @@ export class EntryComponent implements OnInit {
     });
   }
 
-  getUserLabel(entry: AdminEntry): string {
+  getUserLabel(entry: EntryDetail): string {
     return entry.user_name?.trim() || `User #${entry.user_id}`;
+  }
+
+  private updatePaginatedEntries() {
+    const startIndex = (this.currentPage - 1) * this.itemsPerPage;
+    const endIndex = startIndex + this.itemsPerPage;
+    this.paginatedEntries = this.entries.slice(startIndex, endIndex);
   }
 
 }

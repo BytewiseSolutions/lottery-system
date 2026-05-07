@@ -37,6 +37,10 @@ export class ResultsComponent implements OnInit {
   error = false;
   saving = false;
   selectedResult: any = null;
+  currentPage = 1;
+  itemsPerPage = 10;
+  totalItems = 0;
+  totalPages = 0;
 
   constructor(
     private router: Router,
@@ -46,6 +50,7 @@ export class ResultsComponent implements OnInit {
   ) {}
 
   results: AdminResult[] = [];
+  paginatedResults: AdminResult[] = [];
 
   ngOnInit() {
     this.loadResults();
@@ -59,9 +64,16 @@ export class ResultsComponent implements OnInit {
       next: (response: any) => {
         if (response?.success) {
           this.results = Array.isArray(response.data) ? response.data : [];
+          this.totalItems = this.results.length;
+          this.totalPages = Math.ceil(this.totalItems / this.itemsPerPage);
+          this.currentPage = 1;
+          this.updatePaginatedResults();
         } else {
           this.results = [];
           this.error = true;
+          this.totalItems = 0;
+          this.totalPages = 0;
+          this.paginatedResults = [];
         }
 
         this.loading = false;
@@ -69,6 +81,9 @@ export class ResultsComponent implements OnInit {
       error: (error) => {
         console.error('Failed to load results:', error);
         this.results = [];
+        this.paginatedResults = [];
+        this.totalItems = 0;
+        this.totalPages = 0;
         this.loading = false;
         this.error = true;
       }
@@ -112,6 +127,19 @@ export class ResultsComponent implements OnInit {
 
   isModalBusy(): boolean {
     return this.saving;
+  }
+
+  onPageChange(page: number) {
+    if (page >= 1 && page <= this.totalPages) {
+      this.currentPage = page;
+      this.updatePaginatedResults();
+    }
+  }
+
+  private updatePaginatedResults() {
+    const startIndex = (this.currentPage - 1) * this.itemsPerPage;
+    const endIndex = startIndex + this.itemsPerPage;
+    this.paginatedResults = this.results.slice(startIndex, endIndex);
   }
 
   saveResult(formData: any) {

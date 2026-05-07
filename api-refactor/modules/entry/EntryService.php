@@ -185,6 +185,45 @@ class EntryService
         }
     }
 
+    public function getEntryById($entryId)
+    {
+        $entryId = (int)$entryId;
+
+        if ($entryId <= 0) {
+            return [
+                'success' => false,
+                'message' => 'Valid entry ID is required'
+            ];
+        }
+
+        try {
+            $entry = $this->entryRepository->getEntryById($entryId);
+
+            if (!$entry) {
+                return [
+                    'success' => false,
+                    'message' => 'Entry not found'
+                ];
+            }
+
+            return [
+                'success' => true,
+                'data' => $entry->toArray()
+            ];
+
+        } catch (Exception $e) {
+            Logger::error('Get entry by ID failed', [
+                'error' => $e->getMessage(),
+                'entry_id' => $entryId
+            ]);
+
+            return [
+                'success' => false,
+                'message' => 'Failed to load entry details'
+            ];
+        }
+    }
+
     private function normalizeNumbers(array $numbers, $requiredCount, array $excluded = [])
     {
         $normalized = array_map('intval', $numbers);

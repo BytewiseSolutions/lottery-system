@@ -163,6 +163,10 @@ export class BackendService {
     return this.get('entry/list');
   }
 
+  getEntryById(entryId: number | string): Observable<any> {
+    return this.get('entry/details', { id: entryId });
+  }
+
   getWinners(resultId?: number | string): Observable<any> {
     return this.get('winner/list', resultId ? { result_id: resultId } : undefined);
   }
