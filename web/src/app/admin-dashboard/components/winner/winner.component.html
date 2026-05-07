@@ -7,49 +7,34 @@
                     <h1>Winners Management</h1>
 
                     <div class="header-actions">
-                         <button class="export-btn">
+                         <button class="export-btn" type="button" (click)="exportCsv()" [disabled]="totalItems === 0 || exporting">
                               <i class="fas fa-file-csv"></i>
-                              Export CSV
+                              {{ exporting ? 'Exporting...' : 'Export CSV' }}
                          </button>
 
-                         <button class="upload-btn">
-                              <i class="fas fa-upload"></i>
-                              Add Winner
-                         </button>
                     </div>
                </div>
                <div class="draw-info-section">
                     <div class="current-draw-info">
                          <div class="draw-details">
-                              <h4> Monday Lotto - 28 April 2026 || 'All Draws' </h4>
+                              <h4>{{ getSummaryLabel() }}</h4>
                               <div class="draw-meta">
-                                   <span class="draw-date">Monday Lotto - 28 April 2026</span>
-
-                                   <span class="draw-numbers">
-                                        Winning Numbers:
-                                        <span class="number">5, 12, 23, 34, 41</span>
-                                   </span>
-
-                                   <span class="bonus-numbers">
-                                        Bonus Numbers:
-                                        <span class="bonus-number">7, 19</span>
-                                   </span>
-
-                                   <span class="total-winners">10 Winners</span>
+                                   <span class="draw-date">Showing winners across all published results</span>
+                                   <span class="total-winners">{{ totalItems }} Winners</span>
                               </div>
                          </div>
 
                          <div class="draw-stats">
                               <div class="stat-item">
-                                   <span class="stat-value">$5896.56 </span>
+                                   <span class="stat-value">M{{ formatCurrency(totalPrizePool) }}</span>
                                    <span class="stat-label">Total Prize Pool</span>
                               </div>
                               <div class="stat-item">
-                                   <span class="stat-value">7 </span>
+                                   <span class="stat-value">{{ paidWinnersCount }}</span>
                                    <span class="stat-label">Paid Winners</span>
                               </div>
                               <div class="stat-item">
-                                   <span class="stat-value">3 </span>
+                                   <span class="stat-value">{{ pendingWinnersCount }}</span>
                                    <span class="stat-label">Pending</span>
                               </div>
                          </div>
@@ -59,41 +44,59 @@
                <div class="filters-section">
                     <div class="filters-row">
                          <div class="filter-group">
-                              <label>Draw</label>
-                              <select class="filter-select">
-                                   <option value="">All Draws</option>
-                                   <option value="">Monday Lotto - 28 April 2026</option>
-                                   <option value="">Wednesday Lotto - 30 April 2026</option>
-                                   <option value="">Friday Lotto - 1 May 2026</option>
-                              </select>
-                         </div>
-
-                         <div class="filter-group">
                               <label>Claim Status</label>
-                              <select class="filter-select">
-                                   <option value="">All Claims</option>
+                              <select class="filter-select" [(ngModel)]="selectedClaimStatus" (ngModelChange)="onFiltersChange()">
+                                   <option value="all">All Claims</option>
                                    <option value="pending">Pending</option>
                                    <option value="claimed">Claimed</option>
                               </select>
                          </div>
 
                          <div class="filter-group">
-                              <label for="">Payment Status</label>
-                              <select class="filter-select">
-                                   <option value="">All Payments</option>
+                              <label>Payment Status</label>
+                              <select class="filter-select" [(ngModel)]="selectedPaymentStatus" (ngModelChange)="onFiltersChange()">
+                                   <option value="all">All Payments</option>
                                    <option value="pending">Pending</option>
                                    <option value="paid">Paid</option>
                                    <option value="failed">Failed</option>
                               </select>
                          </div>
 
+                         <div class="filter-group">
+                              <label>Sort</label>
+                              <select class="filter-select" [(ngModel)]="sortOrder" (ngModelChange)="onFiltersChange()">
+                                   <option value="newest">Newest first</option>
+                                   <option value="oldest">Oldest first</option>
+                              </select>
+                         </div>
+
                          <div class="filter-actions">
-                              <button class="clear-filters-btn">Clear Filters</button>
+                              <button class="clear-filters-btn" type="button" (click)="clearFilters()" [disabled]="!hasActiveFilters()">Clear Filters</button>
                          </div>
                     </div>
                </div>
 
                <div class="view-results">
+                    @if (loading) {
+                    <div class="winners-state">
+                         <p>Loading winners...</p>
+                    </div>
+                    }
+
+                    @if (error && !loading) {
+                    <div class="winners-state winners-state-error">
+                         <p>Winners could not be loaded.</p>
+                         <button type="button" class="retry-btn" (click)="loadWinners()">Retry</button>
+                    </div>
+                    }
+
+                    @if (!loading && !error && totalItems === 0) {
+                    <div class="winners-state">
+                         <p>No winners matched the selected filters.</p>
+                    </div>
+                    }
+
+                    @if (!loading && !error && totalItems > 0) {
                     <div class="table-wrapper desktop-view">
                          <table class="winners-table">
                               <thead>
@@ -109,12 +112,12 @@
                               </thead>
 
                               <tbody>
-                                   @for (w of winners; track $index) {
+                                   @for (w of winners; track w.id; let index = $index) {
                                    <tr>
-                                        <td>{{ $index + 1 }}</td>
+                                        <td>{{ (currentPage - 1) * itemsPerPage + index + 1 }}</td>
                                         <td>{{ w.name }}</td>
                                         <td>{{ w.email }}</td>
-                                        <td class="prize">M {{ w.prize_amount }}</td>
+                                        <td class="prize">M {{ formatCurrency(w.prize_amount) }}</td>
                                         <td>
                                              <span class="badge">
                                                   {{ w.claim_status }}
@@ -128,22 +131,37 @@
                                         </td>
                                         <td>
                                              <div class="actions">
-                                                  <button class="pay-btn" (click)="payWinner(w)">Pay</button>
-                                                  <button class="claim-btn" (click)="markClaimed(w)">Claim</button>
+                                                  <button class="pay-btn" (click)="payWinner(w)" [disabled]="!canPay(w)">{{ getPayLabel(w) }}</button>
+                                                  <button class="claim-btn" (click)="markClaimed(w)" [disabled]="!canClaim(w)">{{ getClaimLabel(w) }}</button>
                                              </div>
                                         </td>
                                    </tr>
                                    }
                               </tbody>
                          </table>
+
+                         <div class="table-footer">
+                              <div class="table-info">
+                                   Showing {{ winners.length }} of {{ totalItems }} winners
+                              </div>
+                              <div class="pagination">
+                                   <button class="btn-icon" type="button" (click)="onPageChange(currentPage - 1)" [disabled]="currentPage === 1">
+                                        <i class="fas fa-chevron-left"></i>
+                                   </button>
+                                   <span class="page-info">Page {{ currentPage }} of {{ totalPages || 1 }}</span>
+                                   <button class="btn-icon" type="button" (click)="onPageChange(currentPage + 1)" [disabled]="currentPage === totalPages || totalPages === 0">
+                                        <i class="fas fa-chevron-right"></i>
+                                   </button>
+                              </div>
+                         </div>
                     </div>
 
                     <div class="mobile-view mobile-list">
-                         @for (w of winners; track $index){
+                         @for (w of winners; track w.id; let index = $index){
                          <div class="winner-card">
                               <div class="top-row">
-                                   <strong>{{ $index + 1 }}. {{ w.name }}</strong>
-                                   <span class="prize">M {{ w.prize_amount }}</span>
+                                   <strong>{{ (currentPage - 1) * itemsPerPage + index + 1 }}. {{ w.name }}</strong>
+                                   <span class="prize">M {{ formatCurrency(w.prize_amount) }}</span>
                               </div>
                               <small>{{ w.email }}</small>
 
@@ -153,12 +171,13 @@
                               </div>
 
                               <div class="actions">
-                                   <button class="pay-btn" (click)="payWinner(w)">Pay</button>
-                                   <button class="claim-btn" (click)="markClaimed(w)">Claim</button>
+                                   <button class="pay-btn" (click)="payWinner(w)" [disabled]="!canPay(w)">{{ getPayLabel(w) }}</button>
+                                   <button class="claim-btn" (click)="markClaimed(w)" [disabled]="!canClaim(w)">{{ getClaimLabel(w) }}</button>
                               </div>
                          </div>
                          }
                     </div>
+                    }
                </div>
 
                @if (isPayModalOpen) {

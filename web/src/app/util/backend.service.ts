@@ -171,6 +171,10 @@ export class BackendService {
     return this.get('winner/list', resultId ? { result_id: resultId } : undefined);
   }
 
+  getWinnersPage(params?: any): Observable<any> {
+    return this.get('winner/list', params);
+  }
+
   markWinnerClaimed(winnerId: number | string): Observable<any> {
     return this.post('winner/claim', { winner_id: winnerId });
   }

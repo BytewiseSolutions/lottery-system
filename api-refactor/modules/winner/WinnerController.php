@@ -13,10 +13,42 @@ class WinnerController
     {
         try {
             $resultId = isset($_GET['result_id']) ? (int)$_GET['result_id'] : null;
-            $result = $this->winnerService->getWinners($resultId);
+            $page = isset($_GET['page']) ? (int)$_GET['page'] : null;
+            $limit = isset($_GET['limit']) ? (int)$_GET['limit'] : null;
+            $claimStatus = trim((string)($_GET['claim_status'] ?? 'all'));
+            $paymentStatus = trim((string)($_GET['payment_status'] ?? 'all'));
+            $sortOrder = trim((string)($_GET['sort_order'] ?? 'newest'));
 
-            if ($result['success']) {
-                Response::json(true, 'Winners fetched successfully', $result['data'], HTTP_OK);
+            if ($page !== null || $limit !== null || $claimStatus !== 'all' || $paymentStatus !== 'all' || $sortOrder !== 'newest') {
+                $result = $this->winnerService->getWinnersPage(
+                    $page ?? 1,
+                    $limit ?? DEFAULT_PAGE_SIZE,
+                    [
+                        'result_id' => $resultId,
+                        'claim_status' => $claimStatus,
+                        'payment_status' => $paymentStatus,
+                        'sort_order' => $sortOrder
+                    ]
+                );
+
+                if ($result['success']) {
+                    Response::json(
+                        true,
+                        'Winners fetched successfully',
+                        $result['data'],
+                        HTTP_OK,
+                        [
+                            'pagination' => $result['pagination'] ?? null,
+                            'stats' => $result['stats'] ?? null
+                        ]
+                    );
+                }
+            } else {
+                $result = $this->winnerService->getWinners($resultId);
+
+                if ($result['success']) {
+                    Response::json(true, 'Winners fetched successfully', $result['data'], HTTP_OK);
+                }
             }
 
             Response::json(false, $result['message'], null, HTTP_BAD_REQUEST);

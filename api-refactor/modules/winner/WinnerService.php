@@ -34,6 +34,47 @@ class WinnerService
         }
     }
 
+    public function getWinnersPage($page = 1, $limit = 20, $filters = [])
+    {
+        try {
+            $page = max(1, (int)$page);
+            $limit = min(MAX_PAGE_SIZE, max(MIN_PAGE_SIZE, (int)$limit));
+
+            $winners = $this->winnerRepository->getWinnersPage($page, $limit, $filters);
+            $totalCount = $this->winnerRepository->countWinners($filters);
+            $totalPages = $totalCount > 0 ? (int)ceil($totalCount / $limit) : 0;
+            $stats = $this->winnerRepository->getWinnerStats($filters);
+
+            return [
+                'success' => true,
+                'data' => array_map(function ($winner) {
+                    return $winner->toArray();
+                }, $winners),
+                'pagination' => [
+                    'current_page' => $page,
+                    'per_page' => $limit,
+                    'total_items' => $totalCount,
+                    'total_pages' => $totalPages,
+                    'has_next' => $page < $totalPages,
+                    'has_prev' => $page > 1
+                ],
+                'stats' => $stats
+            ];
+
+        } catch (Exception $e) {
+            Logger::error('Get paginated winners failed', [
+                'error' => $e->getMessage(),
+                'page' => $page,
+                'limit' => $limit
+            ]);
+
+            return [
+                'success' => false,
+                'message' => 'Failed to load winners'
+            ];
+        }
+    }
+
     public function markClaimed($winnerId)
     {
         if (!$winnerId) {
