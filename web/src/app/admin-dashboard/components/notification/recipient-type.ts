@@ -1,0 +1,1 @@
+export type RecipientType = 'all' | 'admins' | 'users';

@@ -150,7 +150,7 @@ function handleUserRoutes($method, $action) {
             
         case 'profile':
             if ($method === 'GET') {
-                $controller->getProfile();
+                $controller->getCurrentProfile();
             } elseif ($method === 'PUT') {
                 $controller->updateProfile();
             } else {
@@ -329,6 +329,30 @@ function handleNotificationRoutes($method, $action) {
         case 'list':
             if ($method === 'GET') {
                 $controller->getNotifications();
+            } else {
+                Response::json(false, 'Method not allowed', null, 405);
+            }
+            break;
+            
+        case 'unread-count':
+            if ($method === 'GET') {
+                $controller->getUnreadCount();
+            } else {
+                Response::json(false, 'Method not allowed', null, 405);
+            }
+            break;
+            
+        case 'create':
+            if ($method === 'POST') {
+                $controller->createNotification();
+            } else {
+                Response::json(false, 'Method not allowed', null, 405);
+            }
+            break;
+            
+        case 'mark-read':
+            if ($method === 'POST') {
+                $controller->markAsRead();
             } else {
                 Response::json(false, 'Method not allowed', null, 405);
             }

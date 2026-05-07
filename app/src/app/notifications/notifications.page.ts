@@ -28,8 +28,13 @@ export class NotificationsPage implements OnInit {
     this.loading = true;
     this.error = false;
     this.notificationService.getNotifications().subscribe({
-      next: (data) => {
-        this.notifications = data.notifications || [];
+      next: (response) => {
+        if (response.success) {
+          this.notifications = response.data || [];
+        } else {
+          this.notifications = [];
+          this.toast.showError(response.message || 'Failed to load notifications');
+        }
         this.loading = false;
       },
       error: () => {
@@ -55,8 +60,10 @@ export class NotificationsPage implements OnInit {
 
   handleRefresh(event: any) {
     this.notificationService.getNotifications().subscribe({
-      next: (data) => {
-        this.notifications = data.notifications || [];
+      next: (response) => {
+        if (response.success) {
+          this.notifications = response.data || [];
+        }
         event.target.complete();
       },
       error: () => {

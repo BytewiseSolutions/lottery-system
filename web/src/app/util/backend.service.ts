@@ -186,4 +186,20 @@ uploadFile(fileData: FormData): Observable<any> {
     return this.post('auth/reset-password', data);
   }
 
+  getCurrentUser(): Observable<any> {
+    return this.get('user/profile');
+  }
+
+  getUnreadNotificationCount(): Observable<any> {
+    return this.get('notification/unread-count');
+  }
+
+  markNotificationAsRead(notificationId: number): Observable<any> {
+    return this.post('notification/mark-read', { id: notificationId });
+  }
+
+  createNotification(notificationData: any): Observable<any> {
+    return this.post('notification/create', notificationData);
+  }
+
 }

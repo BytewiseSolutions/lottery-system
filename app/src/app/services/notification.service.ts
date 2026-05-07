@@ -19,17 +19,27 @@ export class NotificationService {
   }
 
   getNotifications(): Observable<any> {
-    return this.http.get(`${environment.apiUrl}/api/user-notifications`, { headers: this.getHeaders() })
-      .pipe(tap((data: any) => this.unreadCountSubject.next(data.unread_count || 0)));
+    return this.http.get(`${environment.apiUrl}/notification/list`, { headers: this.getHeaders() })
+      .pipe(tap((response: any) => {
+        if (response.success && response.data) {
+          // Load unread count separately
+          this.loadUnreadCount();
+        }
+      }));
   }
 
   markAsRead(id: number): Observable<any> {
-    return this.http.post(`${environment.apiUrl}/api/mark-notification-read`, { id }, { headers: this.getHeaders() })
+    // Note: Mark as read endpoint needs to be implemented in api-refactor
+    return this.http.post(`${environment.apiUrl}/notification/mark-read`, { id }, { headers: this.getHeaders() })
       .pipe(tap(() => this.loadUnreadCount()));
   }
 
   private loadUnreadCount() {
-    this.http.get(`${environment.apiUrl}/api/user-notifications`, { headers: this.getHeaders() })
-      .subscribe((data: any) => this.unreadCountSubject.next(data.unread_count || 0));
+    this.http.get(`${environment.apiUrl}/notification/unread-count`, { headers: this.getHeaders() })
+      .subscribe((response: any) => {
+        if (response.success && response.data) {
+          this.unreadCountSubject.next(response.data.count || 0);
+        }
+      });
   }
 }

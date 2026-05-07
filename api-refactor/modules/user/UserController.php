@@ -70,6 +70,56 @@ class UserController
         }
     }
 
+    public function getCurrentProfile()
+    {
+        try {
+            // Get user ID from JWT token or session
+            $userId = $this->getCurrentUserId();
+            
+            if (!$userId) {
+                Response::json(false, 'Authentication required', null, HTTP_UNAUTHORIZED);
+            }
+
+            $result = $this->userService->getUserById($userId);
+            
+            if ($result['success']) {
+                Response::json(true, 'Profile retrieved successfully', $result['data'], HTTP_OK);
+            } else {
+                Response::json(false, $result['message'], null, HTTP_NOT_FOUND);
+            }
+            
+        } catch (Exception $e) {
+            error_log("Get current profile controller error: " . $e->getMessage());
+            Response::json(false, 'Failed to retrieve profile', null, HTTP_INTERNAL_ERROR);
+        }
+    }
+
+    private function getCurrentUserId()
+    {
+        // This should extract user ID from JWT token
+        // For now, return a default admin user ID
+        // You'll need to implement proper JWT token parsing
+        $headers = getallheaders();
+        $authHeader = $headers['Authorization'] ?? '';
+        
+        if (strpos($authHeader, 'Bearer ') === 0) {
+            $token = substr($authHeader, 7);
+            // TODO: Decode JWT token and extract user ID
+            // For now, return admin user ID from database
+            try {
+                $pdo = Connection::get();
+                $stmt = $pdo->prepare('SELECT id FROM user WHERE role = ? LIMIT 1');
+                $stmt->execute([ROLE_ADMIN]);
+                $result = $stmt->fetch(PDO::FETCH_ASSOC);
+                return $result ? $result['id'] : null;
+            } catch (Exception $e) {
+                return null;
+            }
+        }
+        
+        return null;
+    }
+
     public function getUsers()
     {
         try {

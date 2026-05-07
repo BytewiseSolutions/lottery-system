@@ -17,20 +17,30 @@
         </div>
         <div class="notifications" (click)="navigateTo('/admin-dashboard/notification')">
           <i class="fas fa-bell"></i>
-          <span class="notification-badge">3</span>
+          @if (unreadNotificationCount > 0) {
+            <span class="notification-badge">{{ unreadNotificationCount > 99 ? '99+' : unreadNotificationCount }}</span>
+          }
         </div>
         <div class="user-profile">
           <div class="user-avatar">
-            <i class="fas fa-user-shield"></i>
+            @if (loading) {
+              <div class="avatar-skeleton"></div>
+            } @else {
+              <span class="avatar-initials">{{ getUserInitials() }}</span>
+            }
           </div>
           <div class="user-info">
-            <span class="user-name">Admin</span>
+            @if (loading) {
+              <div class="user-name-skeleton"></div>
+            } @else {
+              <span class="user-name">{{ getUserDisplayName() }}</span>
+            }
             <i class="fas fa-chevron-down"></i>
           </div>
           <div class="user-dropdown">
             <a class="dropdown-item">Profile</a>
             <a class="dropdown-item">Settings</a>
-            <a class="dropdown-item logout">Logout</a>
+            <a class="dropdown-item logout" (click)="logout()">Logout</a>
           </div>
         </div>
         <button class="mobile-menu-toggle" (click)="toggleMobileMenu()">
