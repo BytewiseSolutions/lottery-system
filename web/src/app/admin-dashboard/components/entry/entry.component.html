@@ -6,10 +6,52 @@
       <div class="page-header">
         <h1>All Entries</h1>
 
-        <button class="export-btn" type="button" (click)="exportCsv()" [disabled]="entries.length === 0 || exporting">
+        <button class="export-btn" type="button" (click)="exportCsv()" [disabled]="filteredEntries.length === 0 || exporting">
           <i class="fas fa-file-csv"></i>
           {{ exporting ? 'Exporting...' : 'Export CSV' }}
         </button>
+      </div>
+
+      <div class="filter-bar">
+        <div class="filter-group filter-group-search">
+          <label for="entry-search">Search</label>
+          <input
+            id="entry-search"
+            type="text"
+            [(ngModel)]="searchTerm"
+            (ngModelChange)="onFiltersChange()"
+            placeholder="Search by user, email, phone, lottery, date...">
+        </div>
+
+        <div class="filter-group">
+          <label for="entry-lottery">Lottery</label>
+          <select
+            id="entry-lottery"
+            [(ngModel)]="selectedLottery"
+            (ngModelChange)="onFiltersChange()">
+            <option value="all">All lotteries</option>
+            @for (lottery of lotteryOptions; track lottery) {
+              <option [value]="lottery">{{ lottery }}</option>
+            }
+          </select>
+        </div>
+
+        <div class="filter-group">
+          <label for="entry-sort">Sort</label>
+          <select
+            id="entry-sort"
+            [(ngModel)]="sortOrder"
+            (ngModelChange)="onFiltersChange()">
+            <option value="newest">Newest first</option>
+            <option value="oldest">Oldest first</option>
+          </select>
+        </div>
+
+        <div class="filter-actions">
+          <button type="button" class="clear-btn" (click)="clearFilters()" [disabled]="!hasActiveFilters()">
+            Clear
+          </button>
+        </div>
       </div>
 
       <div class="view-entries">
@@ -33,7 +75,13 @@
             </div>
           }
 
-          @if (!loading && !error && entries.length > 0) {
+          @if (!loading && !error && entries.length > 0 && filteredEntries.length === 0) {
+            <div class="entries-state">
+              <p>No entries matched your search or filters.</p>
+            </div>
+          }
+
+          @if (!loading && !error && filteredEntries.length > 0) {
             <table class="entries-table">
               <thead>
                 <tr>
