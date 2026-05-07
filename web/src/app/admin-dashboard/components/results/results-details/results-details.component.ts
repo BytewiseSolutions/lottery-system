@@ -1,7 +1,24 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { SidebarComponent } from '../../../sidebar/sidebar.component';
 import { CommonModule } from '@angular/common';
 import { WinnerListComponent } from '../winner-list/winner-list.component';
+import { ActivatedRoute } from '@angular/router';
+import { BackendService } from '../../../../util/backend.service';
+import { ToastService } from '../../../../services/toast.service';
+
+interface ResultDetail {
+  id: number;
+  draw_id: number;
+  lottery: string;
+  draw_date: string;
+  jackpot: number | string;
+  status: string;
+  winning_numbers: number[];
+  bonus_numbers: number[];
+  created_at?: string;
+  updated_at?: string;
+  total_entries?: number;
+}
 
 @Component({
   selector: 'app-results-details',
@@ -14,27 +31,196 @@ import { WinnerListComponent } from '../winner-list/winner-list.component';
   templateUrl: './results-details.component.html',
   styleUrl: './results-details.component.css'
 })
-export class ResultsDetailsComponent {
+export class ResultsDetailsComponent implements OnInit {
 
   activeTab: string = 'winners';
+  loading = true;
+  error = false;
+  winnersLoading = false;
+  entriesLoading = false;
+  result: ResultDetail | null = null;
+  winners: any[] = [];
+  entries: any[] = [];
 
-  result: any = {
-    lottery_name: 'Monday Lotto',
-    draw_date: new Date(),
-    jackpot: 1568,
-    status: 'published',
-    winning_numbers: [5, 10, 18, 27, 44],
-    bonus_numbers: [3, 9],
-    created_at: new Date(),
-    updated_at: new Date(),
-    total_entries: 1200
-  };
+  constructor(
+    private route: ActivatedRoute,
+    private backendService: BackendService,
+    private toastService: ToastService
+  ) {}
 
-  payWinner(w: any) {
-    console.log('Paying winner:', w);
+  ngOnInit() {
+    this.route.paramMap.subscribe(params => {
+      const id = Number(params.get('id'));
+
+      if (!id) {
+        this.loading = false;
+        this.error = true;
+        return;
+      }
+
+      this.loadResult(id);
+    });
   }
 
-  markClaimed(w: any) {
-    console.log('Mark as claimed:', w);
+  private loadResult(resultId: number) {
+    this.loading = true;
+    this.error = false;
+
+    this.backendService.getResults().subscribe({
+      next: (response: any) => {
+        if (!response?.success || !Array.isArray(response.data)) {
+          this.result = null;
+          this.error = true;
+          this.loading = false;
+          return;
+        }
+
+        this.result = response.data.find((item: ResultDetail) => Number(item.id) === resultId) ?? null;
+        this.error = !this.result;
+        if (this.result) {
+          this.loadWinners(this.result.id);
+          this.loadEntries(this.result.draw_id);
+        } else {
+          this.winners = [];
+          this.entries = [];
+        }
+        this.loading = false;
+      },
+      error: (error) => {
+        console.error('Failed to load result details:', error);
+        this.result = null;
+        this.error = true;
+        this.loading = false;
+      }
+    });
+  }
+
+  private loadWinners(resultId: number) {
+    this.winnersLoading = true;
+
+    this.backendService.getWinners(resultId).subscribe({
+      next: (response: any) => {
+        this.winners = response?.success && Array.isArray(response.data) ? response.data : [];
+        this.winnersLoading = false;
+      },
+      error: (error) => {
+        console.error('Failed to load winners:', error);
+        this.winners = [];
+        this.winnersLoading = false;
+      }
+    });
+  }
+
+  private loadEntries(drawId: number) {
+    this.entriesLoading = true;
+
+    this.backendService.getEntriesByDraw(drawId).subscribe({
+      next: (response: any) => {
+        this.entries = response?.success && Array.isArray(response.data) ? response.data : [];
+        this.entriesLoading = false;
+      },
+      error: (error) => {
+        console.error('Failed to load entries:', error);
+        this.entries = [];
+        this.entriesLoading = false;
+      }
+    });
+  }
+
+  payWinner(paymentData: any) {
+    this.backendService.processWinnerPayment({
+      winner_id: paymentData?.winner?.id,
+      amount: paymentData?.amount,
+      payment_method: paymentData?.payment_method,
+      transaction_id: paymentData?.transaction_id
+    }).subscribe({
+      next: (response: any) => {
+        if (response?.success && this.result) {
+          this.toastService.showSuccess('Winner payment processed successfully.');
+          this.loadWinners(this.result.id);
+          return;
+        }
+
+        this.toastService.showError(response?.message || 'Failed to process payment');
+      },
+      error: (error) => {
+        console.error('Failed to process payment:', error);
+        this.toastService.showError(error?.error?.message || 'Failed to process payment');
+      }
+    });
+  }
+
+  markClaimed(claimData: any) {
+    this.backendService.markWinnerClaimed(claimData?.winner?.id).subscribe({
+      next: (response: any) => {
+        if (response?.success && this.result) {
+          this.toastService.showSuccess('Winner marked as claimed.');
+          this.loadWinners(this.result.id);
+          return;
+        }
+
+        this.toastService.showError(response?.message || 'Failed to mark winner as claimed');
+      },
+      error: (error) => {
+        console.error('Failed to mark winner as claimed:', error);
+        this.toastService.showError(error?.error?.message || 'Failed to mark winner as claimed');
+      }
+    });
+  }
+
+  formatDate(dateString?: string): string {
+    if (!dateString) {
+      return 'Not available';
+    }
+
+    const date = new Date(dateString);
+
+    if (Number.isNaN(date.getTime())) {
+      return dateString;
+    }
+
+    return date.toLocaleString('en-GB', {
+      day: 'numeric',
+      month: 'long',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: false
+    });
+  }
+
+  formatDrawDate(dateString?: string): string {
+    if (!dateString) {
+      return 'Not available';
+    }
+
+    const date = new Date(dateString);
+
+    if (Number.isNaN(date.getTime())) {
+      return dateString;
+    }
+
+    return date.toLocaleDateString('en-GB', {
+      day: 'numeric',
+      month: 'long',
+      year: 'numeric'
+    });
+  }
+
+  formatJackpot(value: number | string | undefined): string {
+    const amount = typeof value === 'number' ? value : Number(value);
+
+    if (Number.isNaN(amount)) {
+      return String(value ?? '0');
+    }
+
+    return amount.toLocaleString('en-LS', {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2
+    });
+  }
+
+  formatNumbers(numbers: number[] = []): string {
+    return numbers.join(', ');
   }
 }

@@ -14,7 +14,7 @@ class DrawService
     {
         try {
             $this->drawRepository->ensureDefaultLotteries();
-            $this->generateUpcomingDraws();
+            $this->ensureRecentAndUpcomingDraws();
 
             $draw = $this->drawRepository->getNextUpcomingDraw();
 
@@ -46,7 +46,7 @@ class DrawService
     {
         try {
             $this->drawRepository->ensureDefaultLotteries();
-            $this->generateUpcomingDraws();
+            $this->ensureRecentAndUpcomingDraws();
 
             $draws = $this->drawRepository->getUpcomingDraws();
 
@@ -73,7 +73,34 @@ class DrawService
         }
     }
 
-    private function generateUpcomingDraws()
+    public function getPastDrawsWithoutResults()
+    {
+        try {
+            $this->drawRepository->ensureDefaultLotteries();
+            $this->ensureRecentAndUpcomingDraws();
+
+            $draws = $this->drawRepository->getPastDrawsWithoutResults();
+
+            return [
+                'success' => true,
+                'data' => array_map(function ($draw) {
+                    return $draw->toArray();
+                }, $draws)
+            ];
+
+        } catch (Exception $e) {
+            Logger::error('Get past draws without results failed', [
+                'error' => $e->getMessage()
+            ]);
+
+            return [
+                'success' => false,
+                'message' => 'Failed to load past draws'
+            ];
+        }
+    }
+
+    private function ensureRecentAndUpcomingDraws()
     {
         $today = new DateTime();
         $targets = Draw::getDefaultLotteries();
@@ -81,27 +108,35 @@ class DrawService
         foreach ($targets as $lotteryId => $lottery) {
             $day = $lottery['day'];
 
-            $date = $this->nextDay($day, clone $today);
+            $previousDate = $this->previousDay($day, clone $today);
+            $nextDate = $this->nextDay($day, clone $today);
 
-            $exists = $this->drawRepository->exists($lotteryId, $date);
-
-            if (!$exists) {
-
-                $draw = new Draw([
-                    'lottery_id' => $lotteryId,
-                    'draw_date'  => $date . ' 20:00:00',
-                    'status'     => DRAW_SCHEDULED,
-                    'jackpot'    => $this->calculateJackpot($lotteryId)
-                ]);
-
-                $this->drawRepository->create($draw);
-
-                Logger::info('Auto draw created', [
-                    'lottery_id' => $lotteryId,
-                    'draw_date' => $date
-                ]);
-            }
+            $this->createDrawIfMissing($lotteryId, $previousDate);
+            $this->createDrawIfMissing($lotteryId, $nextDate);
         }
+    }
+
+    private function createDrawIfMissing($lotteryId, $date)
+    {
+        $exists = $this->drawRepository->exists($lotteryId, $date);
+
+        if ($exists) {
+            return;
+        }
+
+        $draw = new Draw([
+            'lottery_id' => $lotteryId,
+            'draw_date'  => $date . ' 20:00:00',
+            'status'     => DRAW_SCHEDULED,
+            'jackpot'    => $this->calculateJackpot($lotteryId)
+        ]);
+
+        $this->drawRepository->create($draw);
+
+        Logger::info('Auto draw created', [
+            'lottery_id' => $lotteryId,
+            'draw_date' => $date
+        ]);
     }
 
     private function nextDay($dayName, DateTime $date)
@@ -111,6 +146,17 @@ class DrawService
         }
 
         $date->modify('next ' . $dayName);
+
+        return $date->format('Y-m-d');
+    }
+
+    private function previousDay($dayName, DateTime $date)
+    {
+        if ($date->format('l') === $dayName) {
+            return $date->format('Y-m-d');
+        }
+
+        $date->modify('last ' . $dayName);
 
         return $date->format('Y-m-d');
     }

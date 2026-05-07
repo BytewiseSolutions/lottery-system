@@ -13,6 +13,8 @@ class Result
     public $status;
     public $notes;
     public $created_at;
+    public $updated_at;
+    public $total_entries;
 
     public function __construct($data = [])
     {
@@ -27,6 +29,8 @@ class Result
         $this->status = $data['status'] ?? 'published';
         $this->notes = $data['notes'] ?? null;
         $this->created_at = $data['created_at'] ?? null;
+        $this->updated_at = $data['updated_at'] ?? null;
+        $this->total_entries = (int)($data['total_entries'] ?? 0);
     }
 
     public function toArray()
@@ -45,7 +49,9 @@ class Result
             'winners_count' => $this->winners_count,
             'status' => $this->status,
             'notes' => $this->notes,
-            'created_at' => $this->created_at
+            'created_at' => $this->created_at,
+            'updated_at' => $this->updated_at,
+            'total_entries' => $this->total_entries
         ];
     }
 

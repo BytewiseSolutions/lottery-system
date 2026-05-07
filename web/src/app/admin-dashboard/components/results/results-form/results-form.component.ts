@@ -1,6 +1,23 @@
 import { Component, EventEmitter, Input, Output, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { BackendService } from '../../../../util/backend.service';
+
+interface AdminDrawOption {
+  id: number;
+  lottery: string;
+  draw_date: string;
+  jackpot?: number | string;
+}
+
+interface ResultFormData {
+  draw_id: string | number;
+  winning_numbers: Array<number | null>;
+  bonus_numbers: Array<number | null>;
+  jackpot: number | null;
+  winners_count: number;
+  status: string;
+}
 
 @Component({
   selector: 'app-results-form',
@@ -17,9 +34,15 @@ export class ResultsFormComponent implements OnInit {
   @Output() cancel = new EventEmitter<void>();
   @Output() save = new EventEmitter<any>();
 
-  draws: any[] = [];
+  draws: AdminDrawOption[] = [];
+  drawsLoading = false;
+  autofillLoading = false;
+  autofillMessage = '';
+  autofillMessageType: 'info' | 'success' | 'error' = 'info';
 
-  formData = {
+  constructor(private backendService: BackendService) {}
+
+  formData: ResultFormData = {
     draw_id: '',
     winning_numbers: [null, null, null, null, null],
     bonus_numbers: [null, null],
@@ -44,7 +67,41 @@ export class ResultsFormComponent implements OnInit {
   }
 
   loadDraws() {
-    this.draws = [];
+    this.drawsLoading = true;
+
+    this.backendService.getPastDraws().subscribe({
+      next: (response: any) => {
+        const drawList = Array.isArray(response?.data)
+          ? response.data
+          : Array.isArray(response)
+            ? response
+            : [];
+
+        this.draws = drawList;
+
+        if (this.editData?.draw_id && !this.draws.some(draw => Number(draw.id) === Number(this.editData.draw_id))) {
+          this.draws = [
+            {
+              id: Number(this.editData.draw_id),
+              lottery: this.editData.lottery || 'Existing Draw',
+              draw_date: this.editData.draw_date || ''
+            },
+            ...this.draws
+          ];
+        }
+
+        this.drawsLoading = false;
+
+        if (!this.isEditMode && this.formData.draw_id) {
+          this.onDrawChange(this.formData.draw_id);
+        }
+      },
+      error: (error) => {
+        console.error('Failed to load draws:', error);
+        this.draws = [];
+        this.drawsLoading = false;
+      }
+    });
   }
 
   onSubmit() {
@@ -57,6 +114,59 @@ export class ResultsFormComponent implements OnInit {
     this.cancel.emit();
   }
 
+  onDrawChange(drawId: string | number) {
+    this.autofillMessage = '';
+    this.autofillMessageType = 'info';
+
+    const selectedDraw = this.draws.find(draw => Number(draw.id) === Number(drawId));
+
+    if (selectedDraw?.jackpot !== undefined && selectedDraw?.jackpot !== null) {
+      this.formData.jackpot = Number(selectedDraw.jackpot);
+    }
+
+    if (!drawId) {
+      return;
+    }
+
+    this.autofillLoading = true;
+    this.autofillMessage = 'Auto-filling numbers and jackpot for the selected draw...';
+    this.autofillMessageType = 'info';
+
+    this.backendService.getHighestVoteForDraw(drawId).subscribe({
+      next: (response: any) => {
+        if (response?.success && response.data) {
+          const winningNumbers = Array.isArray(response.data.winning_numbers)
+            ? response.data.winning_numbers
+            : [];
+          const bonusNumbers = Array.isArray(response.data.bonus_numbers)
+            ? response.data.bonus_numbers
+            : [];
+
+          this.formData.winning_numbers = this.padNumbers(winningNumbers, 5);
+          this.formData.bonus_numbers = this.padNumbers(bonusNumbers, 2);
+
+          if (response.data.jackpot !== undefined && response.data.jackpot !== null) {
+            this.formData.jackpot = Number(response.data.jackpot);
+          }
+
+          this.autofillMessage = 'Winning numbers, bonus numbers, and jackpot were auto-filled for this draw.';
+          this.autofillMessageType = 'success';
+        } else {
+          this.autofillMessage = 'No highest-vote data was found for this draw.';
+          this.autofillMessageType = 'error';
+        }
+
+        this.autofillLoading = false;
+      },
+      error: (error) => {
+        console.error('Failed to auto-fill result data:', error);
+        this.autofillLoading = false;
+        this.autofillMessage = 'Auto-fill failed for this draw.';
+        this.autofillMessageType = 'error';
+      }
+    });
+  }
+
   isFormValid(): boolean {
     return !!(
       this.formData.draw_id &&
@@ -66,5 +176,32 @@ export class ResultsFormComponent implements OnInit {
       this.formData.jackpot !== null &&
       Number(this.formData.jackpot) >= 0
     );
+  }
+
+  formatDrawDate(dateString: string): string {
+    const date = new Date(dateString);
+
+    if (Number.isNaN(date.getTime())) {
+      return dateString;
+    }
+
+    return date.toLocaleString('en-GB', {
+      day: 'numeric',
+      month: 'long',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: false
+    });
+  }
+
+  private padNumbers(numbers: number[], size: number): Array<number | null> {
+    const normalized = numbers.map(number => Number(number) || null).slice(0, size);
+
+    while (normalized.length < size) {
+      normalized.push(null);
+    }
+
+    return normalized;
   }
 }

@@ -241,6 +241,83 @@ class VoteService
         }
     }
 
+    public function getHighestVoteForDraw($drawId)
+    {
+        $drawId = (int)$drawId;
+
+        if ($drawId <= 0) {
+            return [
+                'success' => false,
+                'message' => 'Valid draw ID required'
+            ];
+        }
+
+        try {
+            $draw = $this->voteRepository->findDrawById($drawId);
+
+            if (!$draw) {
+                return [
+                    'success' => false,
+                    'message' => 'Draw not found'
+                ];
+            }
+
+            $highestVote = $this->voteRepository->getHighestVoteByDrawId($drawId);
+
+            if (!$highestVote) {
+                $drawDate = (new DateTime($draw->draw_date))->format('Y-m-d');
+                $summary = $this->buildVoteSummary((int)$draw->lottery_id, $drawDate);
+
+                $this->voteRepository->upsertHighestVote(
+                    $draw->getLotteryName(),
+                    $draw->id,
+                    $summary['topSection1'],
+                    $summary['topSection2'],
+                    $summary['totalMainVotes'],
+                    $summary['totalBonusVotes']
+                );
+
+                $highestVote = $this->voteRepository->getHighestVoteByDrawId($drawId);
+            }
+
+            $highestVote = $highestVote ?: [];
+
+            return [
+                'success' => true,
+                'data' => [
+                    'draw_id' => $draw->id,
+                    'lottery' => $draw->getLotteryName(),
+                    'draw_date' => $draw->draw_date,
+                    'jackpot' => $draw->jackpot,
+                    'winning_numbers' => $this->sanitizeHighestVoteNumbers([
+                        $highestVote['main_1'] ?? 0,
+                        $highestVote['main_2'] ?? 0,
+                        $highestVote['main_3'] ?? 0,
+                        $highestVote['main_4'] ?? 0,
+                        $highestVote['main_5'] ?? 0
+                    ]),
+                    'bonus_numbers' => $this->sanitizeHighestVoteNumbers([
+                        $highestVote['bonus_1'] ?? 0,
+                        $highestVote['bonus_2'] ?? 0
+                    ]),
+                    'total_main_votes' => (int)($highestVote['total_main_votes'] ?? 0),
+                    'total_bonus_votes' => (int)($highestVote['total_bonus_votes'] ?? 0)
+                ]
+            ];
+
+        } catch (Exception $e) {
+            Logger::error('Get highest vote for draw failed', [
+                'error' => $e->getMessage(),
+                'draw_id' => $drawId
+            ]);
+
+            return [
+                'success' => false,
+                'message' => 'Failed to load highest vote for draw'
+            ];
+        }
+    }
+
     private function buildVoteSummary($lotteryId, $drawDate)
     {
         $votes = $this->voteRepository->getVotesForDraw($lotteryId, $drawDate);
@@ -349,6 +426,13 @@ class VoteService
         });
 
         return $items;
+    }
+
+    private function sanitizeHighestVoteNumbers(array $numbers)
+    {
+        return array_values(array_filter(array_map('intval', $numbers), function ($number) {
+            return $number > 0;
+        }));
     }
 
     private function extractTopNumbers(array $items, $requiredCount)

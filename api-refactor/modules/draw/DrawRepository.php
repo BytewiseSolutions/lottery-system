@@ -141,6 +141,59 @@ class DrawRepository
         return $draws;
     }
 
+    public function getPastDrawsWithoutResults()
+    {
+        $sql = "SELECT d.*, l.name AS lottery
+                FROM draw d
+                LEFT JOIN lottery l ON l.id = d.lottery_id
+                LEFT JOIN result r ON r.draw_id = d.id
+                WHERE d.draw_date < NOW()
+                AND r.id IS NULL
+                ORDER BY d.draw_date DESC
+                LIMIT 3";
+
+        $stmt = $this->pdo->prepare($sql);
+        $stmt->execute();
+
+        $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+        $draws = [];
+
+        foreach ($rows as $row) {
+            $draws[] = new Draw($row);
+        }
+
+        return $draws;
+    }
+
+    public function getDueDrawsWithoutResults($asOf = null)
+    {
+        $asOf = $asOf ?: date('Y-m-d H:i:s');
+
+        $sql = "SELECT d.*, l.name AS lottery
+                FROM draw d
+                LEFT JOIN lottery l ON l.id = d.lottery_id
+                LEFT JOIN result r ON r.draw_id = d.id
+                WHERE d.draw_date <= :as_of
+                AND r.id IS NULL
+                ORDER BY d.draw_date ASC";
+
+        $stmt = $this->pdo->prepare($sql);
+        $stmt->execute([
+            ':as_of' => $asOf
+        ]);
+
+        $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+        $draws = [];
+
+        foreach ($rows as $row) {
+            $draws[] = new Draw($row);
+        }
+
+        return $draws;
+    }
+
     public function countVotesByLottery($lotteryId)
     {
         $sql = "SELECT COUNT(*) total

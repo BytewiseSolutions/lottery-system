@@ -109,6 +109,27 @@ class VoteController
         }
     }
 
+    public function getHighestVoteForDraw()
+    {
+        try {
+            $drawId = $_GET['draw_id'] ?? null;
+            $result = $this->voteService->getHighestVoteForDraw($drawId);
+
+            if ($result['success']) {
+                Response::json(true, 'Highest vote fetched successfully', $result['data'], HTTP_OK);
+            }
+
+            Response::json(false, $result['message'], null, HTTP_BAD_REQUEST);
+
+        } catch (Exception $e) {
+            Logger::error('VoteController highest vote error', [
+                'error' => $e->getMessage()
+            ]);
+
+            Response::json(false, 'Failed to fetch highest vote', null, HTTP_INTERNAL_ERROR);
+        }
+    }
+
     private function getAuthenticatedUser()
     {
         $header = $_SERVER['HTTP_AUTHORIZATION'] ?? $_SERVER['Authorization'] ?? '';

@@ -1,14 +1,27 @@
 <form class="results-form" (ngSubmit)="onSubmit()">
   <div class="form-group">
     <label for="draw">Select Draw *</label>
-    <select id="draw" [(ngModel)]="formData.draw_id" name="draw_id" required>
-      <option value="">Choose a draw...</option>
+    <select
+      id="draw"
+      [(ngModel)]="formData.draw_id"
+      name="draw_id"
+      (ngModelChange)="onDrawChange($event)"
+      required>
+      <option value="">
+        {{ drawsLoading ? 'Loading draws...' : 'Choose a draw...' }}
+      </option>
       @for (draw of draws; track draw.id) {
         <option [value]="draw.id">
-          {{draw.lottery_name}} - {{draw.draw_date | date:'medium'}}
+          {{ draw.lottery }} - {{ formatDrawDate(draw.draw_date) }}
         </option>
       }
     </select>
+    @if (autofillMessage) {
+      <small
+        [style.color]="autofillMessageType === 'error' ? '#b42318' : autofillMessageType === 'success' ? '#027a48' : '#6941c6'">
+        {{ autofillMessage }}
+      </small>
+    }
   </div>
 
   <div class="form-group">
@@ -18,7 +31,7 @@
         <input 
           type="number" 
           min="1" 
-          max="50" 
+          max="75" 
           [(ngModel)]="formData.winning_numbers[$index]" 
           [name]="'main_' + $index" 
           placeholder="{{$index + 1}}"
@@ -34,7 +47,7 @@
         <input 
           type="number" 
           min="1" 
-          max="12" 
+          max="75" 
           [(ngModel)]="formData.bonus_numbers[$index]" 
           [name]="'bonus_' + $index" 
           placeholder="B{{$index + 1}}">

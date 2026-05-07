@@ -15,41 +15,61 @@
 
       <div class="view-results">
         <div class="table-responsive">
+          @if (loading) {
+            <div class="results-state">
+              <p>Loading results...</p>
+            </div>
+          }
 
-          <table class="data-table">
-            <thead>
-              <tr>
-                <th>Lottery</th>
-                <th>Draw</th>
-                <th>Jackpot</th>
-                <th>Winners</th>
-                <th>Status</th>
-                <th>Actions</th>
-              </tr>
-            </thead>
+          @if (error && !loading) {
+            <div class="results-state results-state-error">
+              <p>Failed to load results.</p>
+              <button class="retry-btn" type="button" (click)="loadResults()">Retry</button>
+            </div>
+          }
 
-            <tbody>
-              @for (result of results; track result.id) {
-              <tr>
-                <td>{{ result.lottery }}</td>
-                <td>{{ result.draw }}</td>
-                <td>${{ result.jackpot }}</td>
-                <td>{{ result.winners_count }}</td>
-                <td>{{ result.status }}</td>
+          @if (!loading && !error && results.length === 0) {
+            <div class="results-state">
+              <p>No published results found yet.</p>
+            </div>
+          }
 
-                <td class="action-buttons">
-                  <button type="button" (click)="viewResult(result)">
-                    View
-                  </button>
+          @if (!loading && !error && results.length > 0) {
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Lottery</th>
+                  <th>Draw</th>
+                  <th>Jackpot</th>
+                  <th>Winners</th>
+                  <th>Status</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
 
-                  <button type="button" (click)="editResult(result)">
-                    Edit
-                  </button>
-                </td>
-              </tr>
-              }
-            </tbody>
-          </table>
+              <tbody>
+                @for (result of results; track result.id) {
+                <tr>
+                  <td>{{ result.lottery }}</td>
+                  <td>{{ formatDrawDate(result.draw_date) }}</td>
+                  <td>M{{ formatJackpot(result.jackpot) }}</td>
+                  <td>{{ result.winners_count }}</td>
+                  <td>{{ formatStatus(result.status) }}</td>
+
+                  <td class="action-buttons">
+                    <button type="button" (click)="viewResult(result)">
+                      View
+                    </button>
+
+                    <button type="button" (click)="editResult(result)">
+                      Edit
+                    </button>
+                  </td>
+                </tr>
+                }
+              </tbody>
+            </table>
+          }
 
         </div>
       </div>

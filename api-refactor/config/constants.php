@@ -49,9 +49,9 @@ define('HTTP_INTERNAL_ERROR', 500);
 define('HTTP_SERVICE_UNAVAILABLE', 503);
 
 define('MIN_MAIN_NUMBER', 1);
-define('MAX_MAIN_NUMBER', 50);
+define('MAX_MAIN_NUMBER', 75);
 define('MIN_BONUS_NUMBER', 1);
-define('MAX_BONUS_NUMBER', 12);
+define('MAX_BONUS_NUMBER', 75);
 define('REQUIRED_MAIN_NUMBERS', 5);
 define('REQUIRED_BONUS_NUMBERS', 2);
 

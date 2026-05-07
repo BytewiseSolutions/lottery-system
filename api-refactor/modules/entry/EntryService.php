@@ -136,6 +136,31 @@ class EntryService
         }
     }
 
+    public function getEntriesByDraw($drawId)
+    {
+        try {
+            $entries = $this->entryRepository->getEntriesByDraw($drawId);
+
+            return [
+                'success' => true,
+                'data' => array_map(function ($entry) {
+                    return $entry->toArray();
+                }, $entries)
+            ];
+
+        } catch (Exception $e) {
+            Logger::error('Get entries by draw failed', [
+                'error' => $e->getMessage(),
+                'draw_id' => $drawId
+            ]);
+
+            return [
+                'success' => false,
+                'message' => 'Failed to load draw entries'
+            ];
+        }
+    }
+
     private function normalizeNumbers(array $numbers, $requiredCount, array $excluded = [])
     {
         $normalized = array_map('intval', $numbers);

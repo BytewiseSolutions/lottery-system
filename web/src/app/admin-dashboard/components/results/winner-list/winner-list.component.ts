@@ -12,43 +12,8 @@ import { PayFormComponent } from '../pay-form/pay-form.component';
 })
 export class WinnerListComponent {
 
-  @Input() winners: any[] = [
-    {
-      name: 'Thabo Monamane',
-      email: 'thabo@gmail.com',
-      prize_amount: 5000,
-      claim_status: 'pending',
-      payment_status: 'pending'
-    },
-    {
-      name: 'Lerato Nkosi',
-      email: 'lerato@gmail.com',
-      prize_amount: 3000,
-      claim_status: 'pending',
-      payment_status: 'pending'
-    },
-    {
-      name: 'Neo Mahlakeng',
-      email: 'neo@gmail.com',
-      prize_amount: 1500,
-      claim_status: 'claimed',
-      payment_status: 'paid'
-    },
-    {
-      name: 'Kabelo Radebe',
-      email: 'kabelo@gmail.com',
-      prize_amount: 2000,
-      claim_status: 'pending',
-      payment_status: 'pending'
-    },
-    {
-      name: 'Palesa Mokoena',
-      email: 'palesa@gmail.com',
-      prize_amount: 1000,
-      claim_status: 'pending',
-      payment_status: 'failed'
-    }
-  ];
+  @Input() winners: any[] = [];
+  @Input() loading = false;
 
   @Output() pay = new EventEmitter<any>();
   @Output() claim = new EventEmitter<any>();

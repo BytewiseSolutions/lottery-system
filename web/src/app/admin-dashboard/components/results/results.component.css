@@ -134,6 +134,36 @@
   box-shadow: 0 10px 25px rgba(0,0,0,.06);
 }
 
+.results-state {
+  padding: 2.5rem 1.5rem;
+  text-align: center;
+  color: #666;
+}
+
+.results-state p {
+  margin: 0;
+  font-size: 0.95rem;
+}
+
+.results-state-error {
+  color: #b42318;
+}
+
+.retry-btn {
+  margin-top: 1rem;
+  padding: 0.7rem 1.2rem;
+  border: none;
+  border-radius: 8px;
+  background: rgb(108, 0, 146);
+  color: #fff;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.retry-btn:hover {
+  background: rgb(88, 0, 126);
+}
+
 .data-table {
   width: 100%;
   border-collapse: collapse;

@@ -1,6 +1,15 @@
 <div class="tab-content">
   <h3>Winners</h3>
 
+  @if (loading) {
+    <p class="winners-state">Loading winners...</p>
+  }
+
+  @if (!loading && winners.length === 0) {
+    <p class="winners-state">No winners found for this result yet.</p>
+  }
+
+  @if (!loading && winners.length > 0) {
   <div class="table-wrapper desktop-view">
     <table class="winners-table">
 
@@ -75,6 +84,7 @@
     }
 
   </div>
+  }
 </div>
 
 @if (isPayModalOpen) {

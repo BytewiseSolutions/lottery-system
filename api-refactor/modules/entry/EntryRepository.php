@@ -119,4 +119,25 @@ class EntryRepository
 
         return $entries;
     }
+
+    public function getEntriesByDraw($drawId)
+    {
+        $sql = "SELECT e.*
+                FROM entry e
+                WHERE e.draw_id = :draw_id
+                ORDER BY e.created_at DESC";
+
+        $stmt = $this->pdo->prepare($sql);
+        $stmt->execute([
+            ':draw_id' => $drawId
+        ]);
+
+        $entries = [];
+
+        while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+            $entries[] = new Entry($row);
+        }
+
+        return $entries;
+    }
 }

@@ -207,6 +207,14 @@ function handleVoteRoutes($method, $action) {
                 Response::json(false, 'Method not allowed', null, 405);
             }
             break;
+
+        case 'highest-vote':
+            if ($method === 'GET') {
+                $controller->getHighestVoteForDraw();
+            } else {
+                Response::json(false, 'Method not allowed', null, 405);
+            }
+            break;
             
         default:
             Response::json(false, 'Vote endpoint not found', null, 404);
@@ -228,6 +236,14 @@ function handleEntryRoutes($method, $action) {
         case 'history':
             if ($method === 'GET') {
                 $controller->getEntryHistory();
+            } else {
+                Response::json(false, 'Method not allowed', null, 405);
+            }
+            break;
+
+        case 'draw':
+            if ($method === 'GET') {
+                $controller->getEntriesByDraw();
             } else {
                 Response::json(false, 'Method not allowed', null, 405);
             }
@@ -257,6 +273,14 @@ function handleDrawRoutes($method, $action) {
                 Response::json(false, 'Method not allowed', null, 405);
             }
             break;
+
+        case 'past':
+            if ($method === 'GET') {
+                $controller->getPastDrawsWithoutResults();
+            } else {
+                Response::json(false, 'Method not allowed', null, 405);
+            }
+            break;
             
         default:
             Response::json(false, 'Draw endpoint not found', null, 404);
@@ -282,6 +306,22 @@ function handleResultRoutes($method, $action) {
                 Response::json(false, 'Method not allowed', null, 405);
             }
             break;
+
+        case 'create':
+            if ($method === 'POST') {
+                $controller->createResult();
+            } else {
+                Response::json(false, 'Method not allowed', null, 405);
+            }
+            break;
+
+        case 'update':
+            if ($method === 'PUT') {
+                $controller->updateResult();
+            } else {
+                Response::json(false, 'Method not allowed', null, 405);
+            }
+            break;
             
         default:
             Response::json(false, 'Result endpoint not found', null, 404);
@@ -295,6 +335,14 @@ function handleWinnerRoutes($method, $action) {
         case 'list':
             if ($method === 'GET') {
                 $controller->getWinners();
+            } else {
+                Response::json(false, 'Method not allowed', null, 405);
+            }
+            break;
+
+        case 'claim':
+            if ($method === 'POST') {
+                $controller->markClaimed();
             } else {
                 Response::json(false, 'Method not allowed', null, 405);
             }

@@ -8,12 +8,11 @@ import { ToastService, Toast } from '../../../services/toast.service';
   imports: [CommonModule],
   template: `
     <div class="toast-container">
-      <div *ngFor="let toast of toasts" 
+      <div *ngFor="let toast of toasts"
            class="toast" 
-           [ngClass]="'toast-' + toast.type"
-           (click)="removeToast(toast)">
-        {{ toast.message }}
-        <span class="toast-close">×</span>
+           [ngClass]="'toast-' + toast.type">
+        <span class="toast-message">{{ toast.message }}</span>
+        <button type="button" class="toast-close" (click)="removeToast(toast)" aria-label="Close notification">×</button>
       </div>
     </div>
   `,
@@ -34,13 +33,24 @@ import { ToastService, Toast } from '../../../services/toast.service';
       cursor: pointer;
       position: relative;
       min-width: 300px;
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      box-shadow: 0 10px 25px rgba(15, 23, 42, 0.18);
+    }
+    .toast-message {
+      flex: 1;
+      line-height: 1.4;
     }
     .toast-close {
-      position: absolute;
-      right: 8px;
-      top: 8px;
+      border: 0;
+      background: transparent;
+      color: inherit;
       font-size: 18px;
-      opacity: 0.7;
+      line-height: 1;
+      opacity: 0.8;
+      cursor: pointer;
+      padding: 0;
     }
     .toast-success { background-color: #10b981; }
     .toast-error { background-color: #ef4444; }
@@ -59,9 +69,7 @@ export class ToastComponent implements OnInit, OnDestroy {
 
   ngOnInit() {
     this.subscription = this.toastService.toast$.subscribe(toast => {
-      console.log('Toast component received:', toast);
       this.toasts.push(toast);
-      console.log('Current toasts:', this.toasts);
       setTimeout(() => {
         this.removeToast(toast);
       }, toast.duration || 6000);

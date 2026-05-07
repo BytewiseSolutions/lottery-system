@@ -48,4 +48,24 @@ class DrawController
             Response::json(false, 'Failed to fetch upcoming draws', null, HTTP_INTERNAL_ERROR);
         }
     }
+
+    public function getPastDrawsWithoutResults()
+    {
+        try {
+            $result = $this->drawService->getPastDrawsWithoutResults();
+
+            if ($result['success']) {
+                Response::json(true, 'Past draws fetched successfully', $result['data'], HTTP_OK);
+            } else {
+                Response::json(false, $result['message'], null, HTTP_NOT_FOUND);
+            }
+
+        } catch (Exception $e) {
+            Logger::error('DrawController past draws error', [
+                'error' => $e->getMessage()
+            ]);
+
+            Response::json(false, 'Failed to fetch past draws', null, HTTP_INTERNAL_ERROR);
+        }
+    }
 }

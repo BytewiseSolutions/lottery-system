@@ -102,6 +102,12 @@ export class BackendService {
     });
   }
 
+  getHighestVoteForDraw(drawId: number | string): Observable<any> {
+    return this.get('vote/highest-vote', {
+      draw_id: drawId
+    });
+  }
+
   getVoteHistory(): Observable<any> {
     return this.get('vote/history');
   }
@@ -114,6 +120,10 @@ export class BackendService {
     return this.get('draw/upcoming');
   }
 
+  getPastDraws(): Observable<any> {
+    return this.get('draw/past');
+  }
+
   getLatestResults(): Observable<any> {
     return this.get('result/latest');
   }
@@ -122,12 +132,32 @@ export class BackendService {
     return this.get('result/list');
   }
 
+  createResult(resultData: any): Observable<any> {
+    return this.post('result/create', resultData);
+  }
+
+  updateResult(resultData: any): Observable<any> {
+    return this.put('result/update', resultData);
+  }
+
   getEntryHistory(): Observable<any> {
     return this.get('entry/history');
   }
 
-  getWinners(): Observable<any> {
-    return this.get('winner/list');
+  getEntriesByDraw(drawId: number | string): Observable<any> {
+    return this.get('entry/draw', { draw_id: drawId });
+  }
+
+  getWinners(resultId?: number | string): Observable<any> {
+    return this.get('winner/list', resultId ? { result_id: resultId } : undefined);
+  }
+
+  markWinnerClaimed(winnerId: number | string): Observable<any> {
+    return this.post('winner/claim', { winner_id: winnerId });
+  }
+
+  processWinnerPayment(paymentData: any): Observable<any> {
+    return this.post('payment/process', paymentData);
   }
 
   getNotifications(): Observable<any> {

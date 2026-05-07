@@ -72,6 +72,24 @@ class VoteRepository
         return $row ? new Draw($row) : null;
     }
 
+    public function findDrawById($drawId)
+    {
+        $sql = "SELECT d.*, l.name AS lottery
+                FROM draw d
+                INNER JOIN lottery l ON l.id = d.lottery_id
+                WHERE d.id = :draw_id
+                LIMIT 1";
+
+        $stmt = $this->pdo->prepare($sql);
+        $stmt->execute([
+            ':draw_id' => $drawId
+        ]);
+
+        $row = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        return $row ? new Draw($row) : null;
+    }
+
     public function create(Vote $vote)
     {
         $sql = "INSERT INTO vote (
@@ -238,6 +256,21 @@ class VoteRepository
             ':total_main_votes' => (int)$totalMainVotes,
             ':total_bonus_votes' => (int)$totalBonusVotes
         ]);
+    }
+
+    public function getHighestVoteByDrawId($drawId)
+    {
+        $sql = "SELECT *
+                FROM highest_vote
+                WHERE draw_id = :draw_id
+                LIMIT 1";
+
+        $stmt = $this->pdo->prepare($sql);
+        $stmt->execute([
+            ':draw_id' => $drawId
+        ]);
+
+        return $stmt->fetch(PDO::FETCH_ASSOC) ?: null;
     }
 
     private function padNumbers(array $numbers, $requiredCount)

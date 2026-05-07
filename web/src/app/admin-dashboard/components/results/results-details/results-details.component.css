@@ -93,6 +93,35 @@
   border-radius: 12px;
 }
 
+.entries-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+  margin-top: 1rem;
+}
+
+.entry-card {
+  border: 1px solid #ececec;
+  border-radius: 10px;
+  padding: 0.95rem 1rem;
+  background: #fafafa;
+}
+
+.entry-card-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  align-items: center;
+  margin-bottom: 0.45rem;
+  color: #444;
+}
+
+.entry-card p {
+  margin: 0.25rem 0 0;
+  color: #555;
+  font-size: 0.93rem;
+}
+
 .numbers,
 .bonus {
   display: flex;

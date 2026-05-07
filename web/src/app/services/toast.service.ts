@@ -14,15 +14,15 @@ export class ToastService {
   private toastSubject = new Subject<Toast>();
   public toast$ = this.toastSubject.asObservable();
 
-  showSuccess(message: string, duration = 6000) {
+  showSuccess(message: string, duration = 8000) {
     this.toastSubject.next({ message, type: 'success', duration });
   }
 
-  showError(message: string, duration = 6000) {
+  showError(message: string, duration = 10000) {
     this.toastSubject.next({ message, type: 'error', duration });
   }
 
-  showInfo(message: string, duration = 6000) {
+  showInfo(message: string, duration = 8000) {
     this.toastSubject.next({ message, type: 'info', duration });
   }
 }

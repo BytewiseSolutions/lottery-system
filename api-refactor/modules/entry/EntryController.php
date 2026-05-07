@@ -64,6 +64,32 @@ class EntryController
         }
     }
 
+    public function getEntriesByDraw()
+    {
+        try {
+            $drawId = isset($_GET['draw_id']) ? (int)$_GET['draw_id'] : null;
+
+            if (!$drawId) {
+                Response::json(false, 'Draw ID required', null, HTTP_BAD_REQUEST);
+            }
+
+            $result = $this->entryService->getEntriesByDraw($drawId);
+
+            if ($result['success']) {
+                Response::json(true, 'Draw entries fetched successfully', $result['data'], HTTP_OK);
+            }
+
+            Response::json(false, $result['message'], null, HTTP_BAD_REQUEST);
+
+        } catch (Exception $e) {
+            Logger::error('EntryController draw entries error', [
+                'error' => $e->getMessage()
+            ]);
+
+            Response::json(false, 'Failed to fetch draw entries', null, HTTP_INTERNAL_ERROR);
+        }
+    }
+
     private function getAuthenticatedUser()
     {
         $header = $_SERVER['HTTP_AUTHORIZATION'] ?? $_SERVER['Authorization'] ?? '';
