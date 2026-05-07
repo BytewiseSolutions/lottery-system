@@ -23,7 +23,7 @@ export class LoginPageComponent implements OnInit {
   ) {}
 
   ngOnInit() {
-    if (localStorage.getItem('auth_token')) {
+    if (localStorage.getItem('auth_token') || localStorage.getItem('token')) {
       this.redirectAfterLogin();
       return;
     }

@@ -5,7 +5,7 @@ import { LayoutComponent } from '../layout/layout.component';
 import { LoginComponent } from '../shared/components/login/login.component';
 import { SignupComponent } from '../shared/components/signup/signup.component';
 import { BackendService } from '../util/backend.service';
-import { ToastService } from '../services/toast.service';
+import { ModalService } from '../util/modal.service';
 
 @Component({
   selector: 'app-play-lottery',
@@ -30,7 +30,7 @@ export class PlayLotteryComponent implements OnInit {
     private route: ActivatedRoute, 
     private router: Router,
     private backendService: BackendService,
-    private toastService: ToastService
+    private modalService: ModalService
   ) {}
 
   ngOnInit() {
@@ -64,7 +64,7 @@ export class PlayLotteryComponent implements OnInit {
 
   toggleBonusNumber(num: number) {
     if (this.selectedNumbers.includes(num)) {
-      this.toastService.showError(`Number ${num} is already selected in main numbers. Please choose a different number.`);
+      this.modalService.showError(`Number ${num} is already selected in main numbers. Please choose a different number.`, 'Invalid Selection');
       return;
     }
     
@@ -186,7 +186,7 @@ export class PlayLotteryComponent implements OnInit {
             }
           }, 15000);
         } else {
-          this.toastService.showError(result.error || 'Failed to submit entry');
+          this.modalService.showError(result.error || 'Failed to submit entry', 'Submission Failed');
         }
       } catch (error: any) {
         if (error?.status === 401) {
@@ -195,7 +195,7 @@ export class PlayLotteryComponent implements OnInit {
           return;
         }
 
-        this.toastService.showError(error?.error?.error || error?.error?.message || 'Network error. Please check your connection.');
+        this.modalService.showError(error?.error?.error || error?.error?.message || 'Network error. Please check your connection.', 'Connection Error');
       } finally {
         this.isLoading = false;
       }
@@ -225,11 +225,11 @@ export class PlayLotteryComponent implements OnInit {
         if (response.success) {
           this.selectedNumbers = response.numbers || response.data?.numbers || [];
         } else {
-          this.toastService.showError('Failed to generate quick pick numbers');
+          this.modalService.showError('Failed to generate quick pick numbers', 'Quick Pick Error');
         }
       },
       error: (err) => {
-        this.toastService.showError('Failed to generate quick pick numbers');
+        this.modalService.showError('Failed to generate quick pick numbers', 'Quick Pick Error');
         console.error('Quick pick error:', err);
       }
     });
@@ -241,11 +241,11 @@ export class PlayLotteryComponent implements OnInit {
         if (response.success) {
           this.selectedBonusNumbers = response.numbers || response.data?.numbers || [];
         } else {
-          this.toastService.showError('Failed to generate quick pick bonus numbers');
+          this.modalService.showError('Failed to generate quick pick bonus numbers', 'Quick Pick Error');
         }
       },
       error: (err) => {
-        this.toastService.showError('Failed to generate quick pick bonus numbers');
+        this.modalService.showError('Failed to generate quick pick bonus numbers', 'Quick Pick Error');
         console.error('Quick pick bonus error:', err);
       }
     });

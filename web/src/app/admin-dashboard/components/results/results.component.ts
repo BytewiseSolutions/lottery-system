@@ -4,7 +4,8 @@ import { SidebarComponent } from '../../sidebar/sidebar.component';
 import { ResultsFormComponent } from './results-form/results-form.component';
 import { Router } from '@angular/router';
 import { BackendService } from '../../../util/backend.service';
-import { ToastService } from '../../../services/toast.service';
+import { SuccessPopupService } from '../../../services/success-popup.service';
+import { ErrorHandlerService } from '../../../services/error-handler.service';
 
 interface AdminResult {
   id: number;
@@ -40,7 +41,8 @@ export class ResultsComponent implements OnInit {
   constructor(
     private router: Router,
     private backendService: BackendService,
-    private toastService: ToastService
+    private successPopupService: SuccessPopupService,
+    private errorHandlerService: ErrorHandlerService
   ) {}
 
   results: AdminResult[] = [];
@@ -117,18 +119,21 @@ export class ResultsComponent implements OnInit {
         this.saving = false;
 
         if (response?.success) {
-          this.toastService.showSuccess(this.isEditMode ? 'Result updated successfully.' : 'Result uploaded successfully.');
+          this.successPopupService.show(
+            this.isEditMode ? 'Result updated successfully.' : 'Result uploaded successfully.',
+            this.isEditMode ? 'Result Updated' : 'Result Uploaded'
+          );
           this.closeModal();
           this.loadResults();
           return;
         }
 
-        this.toastService.showError(response?.message || 'Failed to save result');
+        this.errorHandlerService.showError(response?.message || 'Failed to save result');
       },
       error: (error) => {
         console.error('Failed to save result:', error);
         this.saving = false;
-        this.toastService.showError(error?.error?.message || 'Failed to save result');
+        this.errorHandlerService.showError(error?.error?.message || 'Failed to save result');
       }
     });
   }

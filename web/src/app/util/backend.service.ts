@@ -69,7 +69,14 @@ export class BackendService {
   }
 
   logout(): Observable<any> {
-    return this.post('auth/logout', {});
+    const token = localStorage.getItem('auth_token') || localStorage.getItem('token');
+    return this.post('auth/logout', { token });
+  }
+
+  clearAuthSession(): void {
+    localStorage.removeItem('auth_token');
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
   }
 
   getUserProfile(): Observable<any> {

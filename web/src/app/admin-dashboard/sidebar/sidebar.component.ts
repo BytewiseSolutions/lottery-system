@@ -89,13 +89,17 @@ export class SidebarComponent implements OnInit, OnDestroy {
   logout() {
     this.backendService.logout().subscribe({
       next: () => {
-        localStorage.removeItem('auth_token');
+        this.backendService.clearAuthSession();
+        this.currentUser = null;
+        this.unreadNotificationCount = 0;
         this.router.navigate(['/login']);
       },
       error: (err) => {
         console.error('Logout error:', err);
         // Still remove token and redirect on error
-        localStorage.removeItem('auth_token');
+        this.backendService.clearAuthSession();
+        this.currentUser = null;
+        this.unreadNotificationCount = 0;
         this.router.navigate(['/login']);
       }
     });

@@ -4,7 +4,8 @@ import { CommonModule } from '@angular/common';
 import { WinnerListComponent } from '../winner-list/winner-list.component';
 import { ActivatedRoute } from '@angular/router';
 import { BackendService } from '../../../../util/backend.service';
-import { ToastService } from '../../../../services/toast.service';
+import { SuccessPopupService } from '../../../../services/success-popup.service';
+import { ErrorHandlerService } from '../../../../services/error-handler.service';
 
 interface ResultDetail {
   id: number;
@@ -45,7 +46,8 @@ export class ResultsDetailsComponent implements OnInit {
   constructor(
     private route: ActivatedRoute,
     private backendService: BackendService,
-    private toastService: ToastService
+    private successPopupService: SuccessPopupService,
+    private errorHandlerService: ErrorHandlerService
   ) {}
 
   ngOnInit() {
@@ -136,16 +138,16 @@ export class ResultsDetailsComponent implements OnInit {
     }).subscribe({
       next: (response: any) => {
         if (response?.success && this.result) {
-          this.toastService.showSuccess('Winner payment processed successfully.');
+          this.successPopupService.show('Winner payment processed successfully.', 'Payment Processed');
           this.loadWinners(this.result.id);
           return;
         }
 
-        this.toastService.showError(response?.message || 'Failed to process payment');
+        this.errorHandlerService.showError(response?.message || 'Failed to process payment');
       },
       error: (error) => {
         console.error('Failed to process payment:', error);
-        this.toastService.showError(error?.error?.message || 'Failed to process payment');
+        this.errorHandlerService.showError(error?.error?.message || 'Failed to process payment');
       }
     });
   }
@@ -154,16 +156,16 @@ export class ResultsDetailsComponent implements OnInit {
     this.backendService.markWinnerClaimed(claimData?.winner?.id).subscribe({
       next: (response: any) => {
         if (response?.success && this.result) {
-          this.toastService.showSuccess('Winner marked as claimed.');
+          this.successPopupService.show('Winner marked as claimed.', 'Claim Updated');
           this.loadWinners(this.result.id);
           return;
         }
 
-        this.toastService.showError(response?.message || 'Failed to mark winner as claimed');
+        this.errorHandlerService.showError(response?.message || 'Failed to mark winner as claimed');
       },
       error: (error) => {
         console.error('Failed to mark winner as claimed:', error);
-        this.toastService.showError(error?.error?.message || 'Failed to mark winner as claimed');
+        this.errorHandlerService.showError(error?.error?.message || 'Failed to mark winner as claimed');
       }
     });
   }
