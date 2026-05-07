@@ -160,12 +160,20 @@ export class NotificationComponent implements OnInit {
   }
 
   formatDate(dateString: string): string {
-    try {
-      const date = new Date(dateString);
-      return date.toLocaleString();
-    } catch {
+    const date = new Date(dateString);
+
+    if (Number.isNaN(date.getTime())) {
       return dateString;
     }
+
+    return date.toLocaleString('en-GB', {
+      day: 'numeric',
+      month: 'long',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: false
+    });
   }
 
   refreshNotifications() {

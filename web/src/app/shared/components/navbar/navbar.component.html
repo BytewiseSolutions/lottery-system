@@ -37,9 +37,17 @@
                     <div *ngIf="notifications.length === 0" class="no-notifications">
                       <p>No new notifications</p>
                     </div>
-                    <div *ngFor="let notification of notifications" class="notification-item">
+                    <div
+                      *ngFor="let notification of notifications"
+                      class="notification-item"
+                      [class.notification-unread]="!notification.is_read"
+                      (click)="markNotificationAsRead(notification, $event)">
+                      <div class="notification-item-header">
+                        <p class="notification-title">{{ notification.title || 'Notification' }}</p>
+                        <span *ngIf="!notification.is_read" class="notification-pill">New</span>
+                      </div>
                       <p class="notification-message">{{ notification.message }}</p>
-                      <button class="notification-action-btn" (click)="navigateToProfile()">{{ notification.action }}</button>
+                      <p class="notification-date">Posted at: {{ formatNotificationDate(notification.created_at) }}</p>
                     </div>
                   </div>
                 </div>
