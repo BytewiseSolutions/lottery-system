@@ -17,8 +17,6 @@ export class EntryComponent implements OnInit {
   error = false;
   exporting = false;
   entries: EntryDetail[] = [];
-  filteredEntries: EntryDetail[] = [];
-  paginatedEntries: EntryDetail[] = [];
   currentPage = 1;
   itemsPerPage = 10;
   totalItems = 0;
@@ -41,18 +39,28 @@ export class EntryComponent implements OnInit {
     this.loading = true;
     this.error = false;
 
-    this.backendService.getAllEntries().subscribe({
+    this.backendService.getAllEntries({
+      page: this.currentPage,
+      limit: this.itemsPerPage,
+      search: this.searchTerm.trim() || undefined,
+      lottery: this.selectedLottery !== 'all' ? this.selectedLottery : undefined,
+      sort_order: this.sortOrder
+    }).subscribe({
       next: (response: any) => {
         this.entries = response?.success && Array.isArray(response.data) ? response.data : [];
-        this.lotteryOptions = [...new Set(this.entries.map((entry) => entry.lottery).filter(Boolean))].sort((a, b) => a.localeCompare(b));
-        this.applyFilters();
+        const pagination = response?.meta?.pagination || {};
+        const filters = response?.meta?.filters || {};
+
+        this.totalItems = Number(pagination.total_items ?? this.entries.length);
+        this.totalPages = Number(pagination.total_pages ?? 0);
+        this.currentPage = Number(pagination.current_page ?? this.currentPage);
+        this.itemsPerPage = Number(pagination.per_page ?? this.itemsPerPage);
+        this.lotteryOptions = Array.isArray(filters.lottery_options) ? filters.lottery_options : [];
         this.loading = false;
       },
       error: (error) => {
         console.error('Failed to load entries:', error);
         this.entries = [];
-        this.filteredEntries = [];
-        this.paginatedEntries = [];
         this.totalItems = 0;
         this.totalPages = 0;
         this.lotteryOptions = [];
@@ -67,58 +75,31 @@ export class EntryComponent implements OnInit {
   }
 
   exportCsv() {
-    if (this.filteredEntries.length === 0 || this.exporting) {
+    if (this.totalItems === 0 || this.exporting) {
       return;
     }
 
     this.exporting = true;
-
-    const rows = [
-      ['ID', 'User', 'Email', 'Phone', 'Lottery', 'Draw Date', 'Draw Time', 'Main Numbers', 'Bonus Numbers', 'Submitted At'],
-      ...this.filteredEntries.map((entry) => [
-        String(entry.id),
-        entry.user_name || '',
-        entry.user_email || '',
-        entry.user_phone || '',
-        entry.lottery || '',
-        this.formatDrawDate(entry.draw_datetime || entry.draw_date),
-        this.formatDrawTime(entry.draw_datetime),
-        this.formatNumbers(entry.numbers),
-        this.formatNumbers(entry.bonus_numbers),
-        this.formatDateTime(entry.created_at)
-      ])
-    ];
-
-    const csv = rows
-      .map((row) => row.map((value) => `"${String(value).replace(/"/g, '""')}"`).join(','))
-      .join('\n');
-
-    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = `entries-${new Date().toISOString().slice(0, 10)}.csv`;
-    link.click();
-    URL.revokeObjectURL(url);
-
-    this.exporting = false;
+    this.fetchEntriesForExport(1, [], 100);
   }
 
   onFiltersChange() {
-    this.applyFilters();
+    this.currentPage = 1;
+    this.loadEntries();
   }
 
   clearFilters() {
     this.searchTerm = '';
     this.selectedLottery = 'all';
     this.sortOrder = 'newest';
-    this.applyFilters();
+    this.currentPage = 1;
+    this.loadEntries();
   }
 
   onPageChange(page: number) {
     if (page >= 1 && page <= this.totalPages) {
       this.currentPage = page;
-      this.updatePaginatedEntries();
+      this.loadEntries();
     }
   }
 
@@ -196,53 +177,62 @@ export class EntryComponent implements OnInit {
     return !!this.searchTerm.trim() || this.selectedLottery !== 'all' || this.sortOrder !== 'newest';
   }
 
-  private applyFilters() {
-    const search = this.searchTerm.trim().toLowerCase();
+  private fetchEntriesForExport(page: number, collectedEntries: EntryDetail[], limit: number) {
+    this.backendService.getAllEntries({
+      page,
+      limit,
+      search: this.searchTerm.trim() || undefined,
+      lottery: this.selectedLottery !== 'all' ? this.selectedLottery : undefined,
+      sort_order: this.sortOrder
+    }).subscribe({
+      next: (response: any) => {
+        const exportEntries = response?.success && Array.isArray(response.data) ? response.data : [];
+        const pagination = response?.meta?.pagination || {};
+        const nextEntries = [...collectedEntries, ...exportEntries];
+        const totalPages = Number(pagination.total_pages ?? 0);
 
-    let filtered = [...this.entries];
+        if (page < totalPages) {
+          this.fetchEntriesForExport(page + 1, nextEntries, limit);
+          return;
+        }
 
-    if (this.selectedLottery !== 'all') {
-      filtered = filtered.filter((entry) => entry.lottery === this.selectedLottery);
-    }
-
-    if (search) {
-      filtered = filtered.filter((entry) => {
-        const searchFields = [
-          String(entry.id),
-          this.getUserLabel(entry),
-          entry.user_email || '',
-          entry.user_phone || '',
-          entry.lottery || '',
-          this.formatDrawDate(entry.draw_datetime || entry.draw_date),
-          this.formatDateTime(entry.created_at)
-        ];
-
-        return searchFields.some((field) => field.toLowerCase().includes(search));
-      });
-    }
-
-    filtered.sort((left, right) => {
-      const leftTime = new Date(left.created_at || '').getTime();
-      const rightTime = new Date(right.created_at || '').getTime();
-
-      if (this.sortOrder === 'oldest') {
-        return leftTime - rightTime;
+        this.downloadEntriesCsv(nextEntries);
+        this.exporting = false;
+      },
+      error: (error) => {
+        console.error('Failed to export entries:', error);
+        this.exporting = false;
       }
-
-      return rightTime - leftTime;
     });
-
-    this.filteredEntries = filtered;
-    this.totalItems = filtered.length;
-    this.totalPages = Math.ceil(this.totalItems / this.itemsPerPage);
-    this.currentPage = 1;
-    this.updatePaginatedEntries();
   }
 
-  private updatePaginatedEntries() {
-    const startIndex = (this.currentPage - 1) * this.itemsPerPage;
-    const endIndex = startIndex + this.itemsPerPage;
-    this.paginatedEntries = this.filteredEntries.slice(startIndex, endIndex);
-  }
+  private downloadEntriesCsv(entries: EntryDetail[]) {
+    const rows = [
+      ['ID', 'User', 'Email', 'Phone', 'Lottery', 'Draw Date', 'Draw Time', 'Main Numbers', 'Bonus Numbers', 'Submitted At'],
+      ...entries.map((entry) => [
+        String(entry.id),
+        entry.user_name || '',
+        entry.user_email || '',
+        entry.user_phone || '',
+        entry.lottery || '',
+        this.formatDrawDate(entry.draw_datetime || entry.draw_date),
+        this.formatDrawTime(entry.draw_datetime),
+        this.formatNumbers(entry.numbers),
+        this.formatNumbers(entry.bonus_numbers),
+        this.formatDateTime(entry.created_at)
+      ])
+    ];
 
+    const csv = rows
+      .map((row) => row.map((value) => `"${String(value).replace(/"/g, '""')}"`).join(','))
+      .join('\n');
+
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `entries-${new Date().toISOString().slice(0, 10)}.csv`;
+    link.click();
+    URL.revokeObjectURL(url);
+  }
 }

@@ -6,7 +6,7 @@
       <div class="page-header">
         <h1>All Entries</h1>
 
-        <button class="export-btn" type="button" (click)="exportCsv()" [disabled]="filteredEntries.length === 0 || exporting">
+        <button class="export-btn" type="button" (click)="exportCsv()" [disabled]="totalItems === 0 || exporting">
           <i class="fas fa-file-csv"></i>
           {{ exporting ? 'Exporting...' : 'Export CSV' }}
         </button>
@@ -69,19 +69,19 @@
             </div>
           }
 
-          @if (!loading && !error && entries.length === 0) {
+          @if (!loading && !error && entries.length === 0 && !hasActiveFilters()) {
             <div class="entries-state">
               <p>No entries found yet.</p>
             </div>
           }
 
-          @if (!loading && !error && entries.length > 0 && filteredEntries.length === 0) {
+          @if (!loading && !error && totalItems === 0 && hasActiveFilters()) {
             <div class="entries-state">
               <p>No entries matched your search or filters.</p>
             </div>
           }
 
-          @if (!loading && !error && filteredEntries.length > 0) {
+          @if (!loading && !error && entries.length > 0) {
             <table class="entries-table">
               <thead>
                 <tr>
@@ -94,7 +94,7 @@
               </thead>
 
               <tbody>
-                @for (entry of paginatedEntries; track entry.id; let index = $index) {
+                @for (entry of entries; track entry.id; let index = $index) {
                   <tr>
                     <td>{{ (currentPage - 1) * itemsPerPage + index + 1 }}</td>
                     <td>{{ getUserLabel(entry) }}</td>
@@ -112,7 +112,7 @@
 
             <div class="table-footer">
               <div class="table-info">
-                Showing {{ paginatedEntries.length }} of {{ totalItems }} entries
+                Showing {{ entries.length }} of {{ totalItems }} entries
               </div>
               <div class="pagination">
                 <button

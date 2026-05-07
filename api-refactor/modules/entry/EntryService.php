@@ -185,6 +185,48 @@ class EntryService
         }
     }
 
+    public function getEntriesPage($page = 1, $limit = 20, $filters = [])
+    {
+        try {
+            $page = max(1, (int)$page);
+            $limit = min(MAX_PAGE_SIZE, max(MIN_PAGE_SIZE, (int)$limit));
+
+            $entries = $this->entryRepository->getEntriesPage($page, $limit, $filters);
+            $totalCount = $this->entryRepository->countEntries($filters);
+            $totalPages = $totalCount > 0 ? (int)ceil($totalCount / $limit) : 0;
+
+            return [
+                'success' => true,
+                'data' => array_map(function ($entry) {
+                    return $entry->toArray();
+                }, $entries),
+                'pagination' => [
+                    'current_page' => $page,
+                    'per_page' => $limit,
+                    'total_items' => $totalCount,
+                    'total_pages' => $totalPages,
+                    'has_next' => $page < $totalPages,
+                    'has_prev' => $page > 1
+                ],
+                'filters' => [
+                    'lottery_options' => $this->entryRepository->getDistinctLotteries()
+                ]
+            ];
+
+        } catch (Exception $e) {
+            Logger::error('Get paginated entries failed', [
+                'error' => $e->getMessage(),
+                'page' => $page,
+                'limit' => $limit
+            ]);
+
+            return [
+                'success' => false,
+                'message' => 'Failed to load entries'
+            ];
+        }
+    }
+
     public function getEntryById($entryId)
     {
         $entryId = (int)$entryId;

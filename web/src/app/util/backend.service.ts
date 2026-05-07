@@ -159,8 +159,8 @@ export class BackendService {
     return this.get('entry/draw', { draw_id: drawId });
   }
 
-  getAllEntries(): Observable<any> {
-    return this.get('entry/list');
+  getAllEntries(params?: any): Observable<any> {
+    return this.get('entry/list', params);
   }
 
   getEntryById(entryId: number | string): Observable<any> {

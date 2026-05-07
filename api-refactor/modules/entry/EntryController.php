@@ -105,10 +105,27 @@ class EntryController
                 Response::json(false, 'Admin access required', null, HTTP_FORBIDDEN);
             }
 
-            $result = $this->entryService->getAllEntries();
+            $page = $_GET['page'] ?? 1;
+            $limit = $_GET['limit'] ?? DEFAULT_PAGE_SIZE;
+            $filters = [
+                'search' => trim((string)($_GET['search'] ?? '')),
+                'lottery' => trim((string)($_GET['lottery'] ?? 'all')),
+                'sort_order' => trim((string)($_GET['sort_order'] ?? 'newest'))
+            ];
+
+            $result = $this->entryService->getEntriesPage($page, $limit, $filters);
 
             if ($result['success']) {
-                Response::json(true, 'Entries fetched successfully', $result['data'], HTTP_OK);
+                Response::json(
+                    true,
+                    'Entries fetched successfully',
+                    $result['data'],
+                    HTTP_OK,
+                    [
+                        'pagination' => $result['pagination'] ?? null,
+                        'filters' => $result['filters'] ?? null
+                    ]
+                );
             }
 
             Response::json(false, $result['message'], null, HTTP_BAD_REQUEST);
