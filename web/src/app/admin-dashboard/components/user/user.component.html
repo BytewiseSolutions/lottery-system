@@ -1,55 +1,171 @@
 <div class="admin-dashboard">
-     <app-sidebar></app-sidebar>
+  <app-sidebar></app-sidebar>
 
-     <main class="main-content">
-          <div class="user-page">
-               <div class="page-header">
-                    <h1>Manage Users</h1>
+  <main class="main-content">
+    <div class="user-page">
+      <div class="page-header">
+        <h1>Manage Users</h1>
 
-                    <div class="header-actions">
-                         <button class="export-btn">
-                              <i class="fas fa-file-csv"></i>
-                              Export CSV
-                         </button>
+        <div class="header-actions">
+          <button class="export-btn" type="button" (click)="exportCsv()" [disabled]="exporting || totalItems === 0">
+            <i class="fas fa-file-csv"></i>
+            {{ exporting ? 'Exporting...' : 'Export CSV' }}
+          </button>
 
-                         <button class="upload-btn" (click)="openAddUserModal()">
-                              <i class="fas fa-plus"></i>
-                              Add User
-                         </button>
-                    </div>
-               </div>
+          <button class="upload-btn" type="button" (click)="openAddUserModal()" [disabled]="saving">
+            <i class="fas fa-plus"></i>
+            Add User
+          </button>
+        </div>
+      </div>
 
-               <div class="table-wrapper desktop-view">
-                    <table class="user-table">
-                         <thead>
-                              <tr>
-                                   <th>#</th>
-                                   <th>User</th>
-                                   <th>Contact</th>
-                                   <th>Country</th>
-                                   <th>Status</th>
-                                   <th>Action</th>
-                              </tr>
-                         </thead>
+      <div class="filters-bar">
+        <div class="filter-group search-group">
+          <label for="user-search">Search</label>
+          <input
+            id="user-search"
+            type="text"
+            [(ngModel)]="searchTerm"
+            placeholder="Search by name, email, phone, country..."
+            (keyup.enter)="onFiltersChange()">
+        </div>
 
-                         <tbody>
-                              <tr>
-                                   <td>1</td>
-                                   <td>Neo Sello</td>
-                                   <td>neo&#64;gmail.com | 26659181664</td>
-                                   <td>Lesotho</td>
-                                   <td>Active</td>
-                                   <td>
-                                        <div class="actions">
-                                             <button class="view-btn">View</button>
-                                             <button class="edit-btn">Edit</button>
-                                             <button class="archive-btn">Archive</button>
-                                        </div>
-                                   </td>
-                              </tr>
-                         </tbody>
-                    </table>
-               </div>
+        <div class="filter-group">
+          <label for="user-role-filter">Role</label>
+          <select id="user-role-filter" [(ngModel)]="selectedRole" (change)="onFiltersChange()">
+            <option value="all">All Roles</option>
+            <option value="admin">Admin</option>
+            <option value="user">User</option>
+          </select>
+        </div>
+
+        <div class="filter-group">
+          <label for="user-status-filter">Status</label>
+          <select id="user-status-filter" [(ngModel)]="selectedStatus" (change)="onFiltersChange()">
+            <option value="all">All Statuses</option>
+            <option value="active">Active</option>
+            <option value="inactive">Inactive</option>
+          </select>
+        </div>
+
+        <div class="filter-group">
+          <label for="user-sort-order">Sort</label>
+          <select id="user-sort-order" [(ngModel)]="sortOrder" (change)="onFiltersChange()">
+            <option value="newest">Newest first</option>
+            <option value="oldest">Oldest first</option>
+          </select>
+        </div>
+
+        <div class="filter-actions">
+          <button class="search-btn" type="button" (click)="onFiltersChange()">Apply</button>
+          <button class="clear-btn" type="button" (click)="clearFilters()">Clear</button>
+        </div>
+      </div>
+
+      <div class="table-panel">
+        @if (loading) {
+          <div class="table-state">
+            <p>Loading users...</p>
           </div>
-     </main>
+        }
+
+        @if (error && !loading) {
+          <div class="table-state table-state-error">
+            <p>Failed to load users.</p>
+            <button class="retry-btn" type="button" (click)="retryLoad()">Retry</button>
+          </div>
+        }
+
+        @if (!loading && !error && users.length === 0) {
+          <div class="table-state">
+            <p>No users found for the selected filters.</p>
+          </div>
+        }
+
+        @if (!loading && !error && users.length > 0) {
+          <div class="table-wrapper">
+            <table class="user-table">
+              <thead>
+                <tr>
+                  <th>#</th>
+                  <th>User</th>
+                  <th>Contact</th>
+                  <th>Country</th>
+                  <th>Status</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+
+              <tbody>
+                @for (user of users; track user.id; let index = $index) {
+                  <tr>
+                    <td>{{ ((currentPage - 1) * itemsPerPage) + index + 1 }}</td>
+                    <td>{{ user.full_name }}</td>
+                    <td>{{ getContactLabel(user) }}</td>
+                    <td>{{ user.country || 'Not available' }}</td>
+                    <td>
+                      <span class="status-badge" [class.inactive]="getStatusLabel(user) === 'Inactive'">
+                        {{ getStatusLabel(user) }}
+                      </span>
+                    </td>
+                    <td>
+                      <div class="actions">
+                        <button class="view-btn" type="button" (click)="viewUser(user)">View</button>
+                        <button class="edit-btn" type="button" (click)="editUser(user)">Edit</button>
+                      </div>
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+
+          <div class="table-footer">
+            <div class="table-info">
+              Showing {{ users.length }} of {{ totalItems }} users
+            </div>
+
+            <div class="pagination">
+              <button
+                class="btn-icon"
+                type="button"
+                (click)="onPageChange(currentPage - 1)"
+                [disabled]="currentPage === 1">
+                <i class="fas fa-chevron-left"></i>
+              </button>
+
+              <span class="page-info">
+                Page {{ currentPage }} of {{ totalPages || 1 }}
+              </span>
+
+              <button
+                class="btn-icon"
+                type="button"
+                (click)="onPageChange(currentPage + 1)"
+                [disabled]="currentPage === totalPages || totalPages === 0">
+                <i class="fas fa-chevron-right"></i>
+              </button>
+            </div>
+          </div>
+        }
+      </div>
+    </div>
+
+    @if (showUserModal) {
+      <div class="modal-overlay" (click)="closeUserModal()">
+        <div class="modal-content" (click)="$event.stopPropagation()">
+          <div class="modal-body">
+            <app-user-form
+              [initialValue]="userForm"
+              [isEditMode]="isEditMode"
+              [loading]="saving"
+              [errorMessage]="formError"
+              (cancel)="closeUserModal()"
+              (saveForm)="saveUser($event)">
+            </app-user-form>
+          </div>
+        </div>
+      </div>
+    }
+  </main>
 </div>

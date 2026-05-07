@@ -47,9 +47,7 @@ export class UserFormComponent {
       country: '',
       password: '',
       role: 'user',
-      is_active: true,
-      email_verified: false,
-      phone_verified: false
+      is_active: true
     };
   }
 }

@@ -166,6 +166,30 @@ function handleUserRoutes($method, $action) {
                 Response::json(false, 'Method not allowed', null, 405);
             }
             break;
+
+        case 'details':
+            if ($method === 'GET') {
+                $controller->getUserDetails();
+            } else {
+                Response::json(false, 'Method not allowed', null, 405);
+            }
+            break;
+
+        case 'create':
+            if ($method === 'POST') {
+                $controller->createUser();
+            } else {
+                Response::json(false, 'Method not allowed', null, 405);
+            }
+            break;
+
+        case 'update':
+            if ($method === 'PUT') {
+                $controller->updateUser();
+            } else {
+                Response::json(false, 'Method not allowed', null, 405);
+            }
+            break;
             
         default:
             Response::json(false, 'User endpoint not found', null, 404);

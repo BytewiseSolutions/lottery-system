@@ -6,6 +6,4 @@ export interface UserFormValue {
   password: string;
   role: string;
   is_active: boolean;
-  email_verified: boolean;
-  phone_verified: boolean;
 }

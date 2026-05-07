@@ -144,12 +144,20 @@ class UserRepository
         ]);
     }
 
-    public function getAll($page = 1, $limit = 20)
+    public function getAll($page = 1, $limit = 20, $filters = [])
     {
         $offset = ($page - 1) * $limit;
-        
-        $sql = "SELECT * FROM user ORDER BY created_at DESC LIMIT :limit OFFSET :offset";
+
+        [$whereSql, $params] = $this->buildListFilters($filters);
+        $sortDirection = (($filters['sort_order'] ?? 'newest') === 'oldest') ? 'ASC' : 'DESC';
+
+        $sql = "SELECT * FROM user {$whereSql} ORDER BY created_at {$sortDirection}, id {$sortDirection} LIMIT :limit OFFSET :offset";
         $stmt = $this->pdo->prepare($sql);
+
+        foreach ($params as $key => $value) {
+            $stmt->bindValue($key, $value);
+        }
+
         $stmt->bindValue(':limit', $limit, PDO::PARAM_INT);
         $stmt->bindValue(':offset', $offset, PDO::PARAM_INT);
         $stmt->execute();
@@ -162,12 +170,47 @@ class UserRepository
         return $users;
     }
 
-    public function getTotalCount()
+    public function getTotalCount($filters = [])
     {
-        $sql = "SELECT COUNT(*) FROM user";
+        [$whereSql, $params] = $this->buildListFilters($filters);
+        $sql = "SELECT COUNT(*) FROM user {$whereSql}";
         $stmt = $this->pdo->prepare($sql);
+
+        foreach ($params as $key => $value) {
+            $stmt->bindValue($key, $value);
+        }
+
         $stmt->execute();
         
         return $stmt->fetchColumn();
+    }
+
+    private function buildListFilters($filters = [])
+    {
+        $conditions = [];
+        $params = [];
+
+        $search = trim((string)($filters['search'] ?? ''));
+        if ($search !== '') {
+            $conditions[] = '(CAST(id AS CHAR) LIKE :search OR first_name LIKE :search OR last_name LIKE :search OR CONCAT_WS(" ", first_name, last_name) LIKE :search OR email LIKE :search OR phone LIKE :search OR country LIKE :search)';
+            $params[':search'] = '%' . $search . '%';
+        }
+
+        $role = trim((string)($filters['role'] ?? 'all'));
+        if (in_array($role, [ROLE_USER, ROLE_ADMIN], true)) {
+            $conditions[] = 'role = :role';
+            $params[':role'] = $role;
+        }
+
+        $status = trim((string)($filters['status'] ?? 'all'));
+        if ($status === 'active') {
+            $conditions[] = 'is_active = 1';
+        } elseif ($status === 'inactive') {
+            $conditions[] = 'is_active = 0';
+        }
+
+        $whereSql = !empty($conditions) ? 'WHERE ' . implode(' AND ', $conditions) : '';
+
+        return [$whereSql, $params];
     }
 }

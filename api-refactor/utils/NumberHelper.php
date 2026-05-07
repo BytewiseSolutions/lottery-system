@@ -22,4 +22,9 @@ class NumberHelper
         if ($total == 0) return 0;
         return round(($part / $total) * 100, 2);
     }
+
+    public static function format($number)
+    {
+        return number_format($number);
+    }
 }

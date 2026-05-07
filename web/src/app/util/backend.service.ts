@@ -199,6 +199,18 @@ uploadFile(fileData: FormData): Observable<any> {
     return this.get('user/list', params);
   }
 
+  getUserById(userId: number | string): Observable<any> {
+    return this.get('user/details', { id: userId });
+  }
+
+  createUser(userData: any): Observable<any> {
+    return this.post('user/create', userData);
+  }
+
+  updateUser(userData: any): Observable<any> {
+    return this.put('user/update', userData);
+  }
+
   getAnalytics(params?: any): Observable<any> {
     return this.get('analytics/stats', params);
   }
