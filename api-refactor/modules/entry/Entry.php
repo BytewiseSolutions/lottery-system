@@ -10,6 +10,10 @@ class Entry
     public $bonus_numbers;
     public $draw_date;
     public $created_at;
+    public $user_name;
+    public $user_email;
+    public $user_phone;
+    public $draw_datetime;
 
     public function __construct($data = [])
     {
@@ -21,6 +25,10 @@ class Entry
         $this->bonus_numbers = $this->normalizeArray($data['bonus_numbers'] ?? []);
         $this->draw_date = $data['draw_date'] ?? null;
         $this->created_at = $data['created_at'] ?? null;
+        $this->user_name = $data['user_name'] ?? null;
+        $this->user_email = $data['user_email'] ?? null;
+        $this->user_phone = $data['user_phone'] ?? null;
+        $this->draw_datetime = $data['draw_datetime'] ?? null;
     }
 
     public function toArray()
@@ -33,7 +41,11 @@ class Entry
             'numbers' => $this->numbers,
             'bonus_numbers' => $this->bonus_numbers,
             'draw_date' => $this->draw_date,
-            'created_at' => $this->created_at
+            'created_at' => $this->created_at,
+            'user_name' => $this->user_name,
+            'user_email' => $this->user_email,
+            'user_phone' => $this->user_phone,
+            'draw_datetime' => $this->draw_datetime
         ];
     }
 

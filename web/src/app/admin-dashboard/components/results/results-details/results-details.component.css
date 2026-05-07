@@ -13,6 +13,44 @@
   padding: 0 2rem 2rem;
 }
 
+.detail-toolbar {
+  margin-bottom: 1rem;
+}
+
+.back-btn,
+.state-btn {
+  border: none;
+  border-radius: 8px;
+  padding: 0.65rem 1rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: 0.2s ease;
+}
+
+.back-btn {
+  background: #ede9fe;
+  color: #5b21b6;
+}
+
+.back-btn:hover,
+.state-btn:hover {
+  filter: brightness(0.97);
+}
+
+.state-btn {
+  background: rgb(108, 0, 146);
+  color: #fff;
+}
+
+.state-card,
+.state-inline {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
 .result-header-card {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -182,6 +220,12 @@
 
   .tab-content {
     padding: 1rem;
+  }
+
+  .state-card,
+  .state-inline {
+    flex-direction: column;
+    align-items: flex-start;
   }
 
   .ball {

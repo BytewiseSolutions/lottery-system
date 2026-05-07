@@ -65,6 +65,45 @@ class ResultService
         }
     }
 
+    public function getResultById($resultId)
+    {
+        $resultId = (int)$resultId;
+
+        if ($resultId <= 0) {
+            return [
+                'success' => false,
+                'message' => 'Valid result ID is required'
+            ];
+        }
+
+        try {
+            $result = $this->resultRepository->getById($resultId);
+
+            if (!$result) {
+                return [
+                    'success' => false,
+                    'message' => 'Result not found'
+                ];
+            }
+
+            return [
+                'success' => true,
+                'data' => $result->toArray()
+            ];
+
+        } catch (Exception $e) {
+            Logger::error('Get result by ID failed', [
+                'error' => $e->getMessage(),
+                'result_id' => $resultId
+            ]);
+
+            return [
+                'success' => false,
+                'message' => 'Failed to load result details'
+            ];
+        }
+    }
+
     public function createResult(ResultDto $resultDto)
     {
         return $this->saveResult($resultDto, false);

@@ -57,6 +57,13 @@
   box-shadow: 0 4px 12px rgba(108, 0, 146, 0.35);
 }
 
+.upload-btn:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
 .modal-overlay {
   position: fixed;
   inset: 0;
@@ -109,6 +116,12 @@
 
 .close-btn:hover {
   background: #ececec;
+}
+
+.close-btn:disabled,
+.action-buttons button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
 }
 
 @keyframes modalFade {

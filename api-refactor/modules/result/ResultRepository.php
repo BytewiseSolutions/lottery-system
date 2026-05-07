@@ -45,6 +45,11 @@ class ResultRepository
         return $results;
     }
 
+    public function getById($id)
+    {
+        return $this->findById($id);
+    }
+
     public function beginTransaction()
     {
         if (!$this->pdo->inTransaction()) {

@@ -86,6 +86,17 @@
   border-top: 1px solid #eee;
 }
 
+.form-feedback {
+  margin-top: -0.2rem;
+  margin-bottom: 0.9rem;
+  font-size: 0.82rem;
+  font-weight: 500;
+}
+
+.form-feedback-error {
+  color: #b42318;
+}
+
 .btn-primary,
 .btn-secondary {
   min-width: 110px;
@@ -119,6 +130,11 @@
 
 .btn-secondary:hover {
   background: #e7e7e7;
+}
+
+.btn-secondary:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
 }
 
 .modal-content {

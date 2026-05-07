@@ -30,6 +30,7 @@ export class ResultsFormComponent implements OnInit {
 
   @Input() editData: any = null;
   @Input() isEditMode: boolean = false;
+  @Input() saving: boolean = false;
 
   @Output() cancel = new EventEmitter<void>();
   @Output() save = new EventEmitter<any>();
@@ -170,12 +171,27 @@ export class ResultsFormComponent implements OnInit {
   isFormValid(): boolean {
     return !!(
       this.formData.draw_id &&
-      this.formData.winning_numbers.every(
-        (num) => num !== null && Number(num) > 0
-      ) &&
+      this.hasValidMainNumbers() &&
+      this.hasValidBonusNumbers() &&
       this.formData.jackpot !== null &&
       Number(this.formData.jackpot) >= 0
     );
+  }
+
+  getValidationMessage(): string {
+    if (!this.hasValidMainNumbers()) {
+      return 'Winning numbers must be 5 unique numbers between 1 and 75.';
+    }
+
+    if (!this.hasValidBonusNumbers()) {
+      return 'Bonus numbers must be 2 unique numbers between 1 and 75 and different from the winning numbers.';
+    }
+
+    if (this.formData.jackpot === null || Number(this.formData.jackpot) < 0) {
+      return 'Jackpot amount must be zero or more.';
+    }
+
+    return '';
   }
 
   formatDrawDate(dateString: string): string {
@@ -203,5 +219,34 @@ export class ResultsFormComponent implements OnInit {
     }
 
     return normalized;
+  }
+
+  private hasValidMainNumbers(): boolean {
+    return this.isValidNumberGroup(this.formData.winning_numbers, 5);
+  }
+
+  private hasValidBonusNumbers(): boolean {
+    if (!this.isValidNumberGroup(this.formData.bonus_numbers, 2)) {
+      return false;
+    }
+
+    const mainNumbers = this.formData.winning_numbers.map((num) => Number(num));
+    const bonusNumbers = this.formData.bonus_numbers.map((num) => Number(num));
+
+    return !bonusNumbers.some((number) => mainNumbers.includes(number));
+  }
+
+  private isValidNumberGroup(numbers: Array<number | null>, expectedCount: number): boolean {
+    const normalized = numbers.map((num) => Number(num));
+
+    if (normalized.length !== expectedCount) {
+      return false;
+    }
+
+    if (normalized.some((num) => !Number.isInteger(num) || num < 1 || num > 75)) {
+      return false;
+    }
+
+    return new Set(normalized).size === expectedCount;
   }
 }

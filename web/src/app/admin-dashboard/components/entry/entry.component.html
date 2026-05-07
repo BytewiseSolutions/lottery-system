@@ -1,47 +1,133 @@
 <div class="admin-dashboard">
-      <app-sidebar></app-sidebar>
+  <app-sidebar></app-sidebar>
 
-      <main class="main-content">
-            <div class="results-page">
-                  <div class="page-header">
-                        <h1>All Entries</h1>
+  <main class="main-content">
+    <div class="results-page">
+      <div class="page-header">
+        <h1>All Entries</h1>
 
-                        <button class="export-btn">
-                              <i class="fas fa-file-csv"></i>
-                              Export CSV
-                        </button>
-                  </div>
+        <button class="export-btn" type="button" (click)="exportCsv()" [disabled]="entries.length === 0 || exporting">
+          <i class="fas fa-file-csv"></i>
+          {{ exporting ? 'Exporting...' : 'Export CSV' }}
+        </button>
+      </div>
 
-                  <div class="table-wrapper desktop-view">
-                        <table class="entries-table">
-                              <thead>
-                                    <tr>
-                                          <th>#</th>
-                                          <th>User</th>
-                                          <th>Draw</th>
-                                          <th>Numbers</th>
-                                          <th>Bonus</th>
-                                          <th>Action</th>
-                                    </tr>
-                              </thead>
+      <div class="table-wrapper desktop-view">
+        @if (loading) {
+          <div class="entries-state">
+            <p>Loading entries...</p>
+          </div>
+        }
 
-                              <tbody>
-                                    <tr>
-                                          <td>1</td>
-                                          <td>Neo Sello</td>
-                                          <td>Monday Lotto 27 April 2026</td>
-                                          <td>3, 4, 8, 30, 45</td>
-                                          <td>2, 5</td>
-                                          <td>
-                                                <div class="actions">
-                                                      <button class="view-btn">View</button>
-                                                      <button class="archive-btn">Archive</button>
-                                                </div>
-                                          </td>
-                                    </tr>
-                              </tbody>
-                        </table>
-                  </div>
-            </div>
-      </main>
+        @if (error && !loading) {
+          <div class="entries-state entries-state-error">
+            <p>Entries could not be loaded.</p>
+            <button type="button" class="retry-btn" (click)="loadEntries()">Retry</button>
+          </div>
+        }
+
+        @if (!loading && !error && entries.length === 0) {
+          <div class="entries-state">
+            <p>No entries found yet.</p>
+          </div>
+        }
+
+        @if (!loading && !error && entries.length > 0) {
+          <table class="entries-table">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>User</th>
+                <th>Draw</th>
+                <th>Numbers</th>
+                <th>Bonus</th>
+                <th>Submitted</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+
+            <tbody>
+              @for (entry of entries; track entry.id; let index = $index) {
+                <tr>
+                  <td>{{ index + 1 }}</td>
+                  <td>{{ getUserLabel(entry) }}</td>
+                  <td>{{ formatDrawLabel(entry) }}</td>
+                  <td>{{ formatNumbers(entry.numbers) }}</td>
+                  <td>{{ formatNumbers(entry.bonus_numbers) }}</td>
+                  <td>{{ formatDateTime(entry.created_at) }}</td>
+                  <td>
+                    <div class="actions">
+                      <button class="view-btn" type="button" (click)="viewEntry(entry)">View</button>
+                    </div>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        }
+      </div>
+    </div>
+  </main>
 </div>
+
+@if (selectedEntry) {
+  <div class="modal-overlay" (click)="closeEntryModal()">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h2>Entry Details</h2>
+        <button class="close-btn" type="button" (click)="closeEntryModal()">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+
+      <div class="modal-body">
+        <div class="detail-grid">
+          <div class="detail-item">
+            <label>User</label>
+            <p>{{ getUserLabel(selectedEntry) }}</p>
+          </div>
+
+          <div class="detail-item">
+            <label>Email</label>
+            <p>{{ selectedEntry.user_email || 'Not available' }}</p>
+          </div>
+
+          <div class="detail-item">
+            <label>Phone</label>
+            <p>{{ selectedEntry.user_phone || 'Not available' }}</p>
+          </div>
+
+          <div class="detail-item">
+            <label>Lottery</label>
+            <p>{{ selectedEntry.lottery }}</p>
+          </div>
+
+          <div class="detail-item">
+            <label>Draw Date</label>
+            <p>{{ formatDrawDate(selectedEntry.draw_datetime || selectedEntry.draw_date) }}</p>
+          </div>
+
+          <div class="detail-item">
+            <label>Draw Time</label>
+            <p>{{ formatDrawTime(selectedEntry.draw_datetime) }}</p>
+          </div>
+
+          <div class="detail-item detail-item-wide">
+            <label>Main Numbers</label>
+            <p>{{ formatNumbers(selectedEntry.numbers) }}</p>
+          </div>
+
+          <div class="detail-item detail-item-wide">
+            <label>Bonus Numbers</label>
+            <p>{{ formatNumbers(selectedEntry.bonus_numbers) }}</p>
+          </div>
+
+          <div class="detail-item detail-item-wide">
+            <label>Submitted At</label>
+            <p>{{ formatDateTime(selectedEntry.created_at) }}</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+}

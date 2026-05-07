@@ -3,6 +3,10 @@
 
     <div class="main-content">
         <div class="result-detail-page">
+            <div class="detail-toolbar">
+                <button type="button" class="back-btn" (click)="goBackToResults()">Back to Results</button>
+            </div>
+
             @if (loading) {
             <div class="tab-content">
                 <p>Loading result details...</p>
@@ -10,8 +14,9 @@
             }
 
             @if (error && !loading) {
-            <div class="tab-content">
+            <div class="tab-content state-card">
                 <p>Result details could not be loaded.</p>
+                <button type="button" class="state-btn" (click)="retryResultLoad()">Retry</button>
             </div>
             }
 
@@ -59,6 +64,9 @@
             <app-winner-list
                 [winners]="winners"
                 [loading]="winnersLoading"
+                [error]="winnersError"
+                [processingWinnerId]="processingWinnerId"
+                [processingAction]="processingWinnerAction"
                 (pay)="payWinner($event)"
                 (claim)="markClaimed($event)">
             </app-winner-list>
@@ -95,11 +103,18 @@
                 <p>Loading entries...</p>
                 }
 
-                @if (!entriesLoading && entries.length === 0) {
+                @if (!entriesLoading && entriesError) {
+                <div class="state-inline">
+                    <p>Entries could not be loaded right now.</p>
+                    <button type="button" class="state-btn" (click)="retryEntriesLoad()">Retry</button>
+                </div>
+                }
+
+                @if (!entriesLoading && !entriesError && entries.length === 0) {
                 <p>No entries found for this draw.</p>
                 }
 
-                @if (!entriesLoading && entries.length > 0) {
+                @if (!entriesLoading && !entriesError && entries.length > 0) {
                 <div class="entries-list">
                     @for (entry of entries; track entry.id) {
                     <div class="entry-card">

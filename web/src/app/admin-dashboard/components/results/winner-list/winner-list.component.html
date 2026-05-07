@@ -5,11 +5,15 @@
     <p class="winners-state">Loading winners...</p>
   }
 
-  @if (!loading && winners.length === 0) {
+  @if (!loading && error) {
+    <p class="winners-state winners-state-error">Winners could not be loaded right now.</p>
+  }
+
+  @if (!loading && !error && winners.length === 0) {
     <p class="winners-state">No winners found for this result yet.</p>
   }
 
-  @if (!loading && winners.length > 0) {
+  @if (!loading && !error && winners.length > 0) {
   <div class="table-wrapper desktop-view">
     <table class="winners-table">
 
@@ -47,8 +51,8 @@
 
           <td>
             <div class="actions">
-              <button class="pay-btn" (click)="payWinner(w)">Pay</button>
-              <button class="claim-btn" (click)="markClaimed(w)">Claim</button>
+              <button class="pay-btn" (click)="payWinner(w)" [disabled]="!canPay(w)">{{ getPayLabel(w) }}</button>
+              <button class="claim-btn" (click)="markClaimed(w)" [disabled]="!canClaim(w)">{{ getClaimLabel(w) }}</button>
             </div>
           </td>
         </tr>
@@ -76,8 +80,8 @@
       </div>
 
       <div class="actions">
-        <button class="pay-btn" (click)="payWinner(w)">Pay</button>
-        <button class="claim-btn" (click)="markClaimed(w)">Claim</button>
+        <button class="pay-btn" (click)="payWinner(w)" [disabled]="!canPay(w)">{{ getPayLabel(w) }}</button>
+        <button class="claim-btn" (click)="markClaimed(w)" [disabled]="!canClaim(w)">{{ getClaimLabel(w) }}</button>
       </div>
 
     </div>

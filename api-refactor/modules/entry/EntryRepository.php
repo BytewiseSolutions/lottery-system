@@ -140,4 +140,26 @@ class EntryRepository
 
         return $entries;
     }
+
+    public function getAllEntries()
+    {
+        $sql = "SELECT e.*,
+                       CONCAT(COALESCE(u.first_name, ''), ' ', COALESCE(u.last_name, '')) AS user_name,
+                       u.email AS user_email,
+                       u.phone AS user_phone,
+                       d.draw_date AS draw_datetime
+                FROM entry e
+                INNER JOIN user u ON u.id = e.user_id
+                LEFT JOIN draw d ON d.id = e.draw_id
+                ORDER BY e.created_at DESC";
+
+        $stmt = $this->pdo->query($sql);
+        $entries = [];
+
+        while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+            $entries[] = new Entry($row);
+        }
+
+        return $entries;
+    }
 }

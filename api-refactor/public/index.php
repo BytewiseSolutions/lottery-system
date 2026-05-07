@@ -249,6 +249,14 @@ function handleEntryRoutes($method, $action) {
             }
             break;
 
+        case 'list':
+            if ($method === 'GET') {
+                $controller->getAllEntries();
+            } else {
+                Response::json(false, 'Method not allowed', null, 405);
+            }
+            break;
+
         default:
             Response::json(false, 'Entry endpoint not found', null, 404);
     }
@@ -302,6 +310,14 @@ function handleResultRoutes($method, $action) {
         case 'list':
             if ($method === 'GET') {
                 $controller->getResults();
+            } else {
+                Response::json(false, 'Method not allowed', null, 405);
+            }
+            break;
+
+        case 'details':
+            if ($method === 'GET') {
+                $controller->getResultById();
             } else {
                 Response::json(false, 'Method not allowed', null, 405);
             }

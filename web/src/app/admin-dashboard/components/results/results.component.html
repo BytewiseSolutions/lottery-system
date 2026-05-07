@@ -7,9 +7,9 @@
       <div class="page-header">
         <h1>Manage Results</h1>
 
-        <button class="upload-btn" (click)="openModal()">
+        <button class="upload-btn" (click)="openModal()" [disabled]="saving">
           <i class="fas fa-upload"></i>
-          Upload Results
+          {{ saving ? 'Saving Result...' : 'Upload Results' }}
         </button>
       </div>
 
@@ -57,11 +57,11 @@
                   <td>{{ formatStatus(result.status) }}</td>
 
                   <td class="action-buttons">
-                    <button type="button" (click)="viewResult(result)">
+                    <button type="button" (click)="viewResult(result)" [disabled]="saving">
                       View
                     </button>
 
-                    <button type="button" (click)="editResult(result)">
+                    <button type="button" (click)="editResult(result)" [disabled]="saving">
                       Edit
                     </button>
                   </td>
@@ -86,13 +86,13 @@
             {{ isEditMode ? 'Edit Results' : 'Upload Results' }}
           </h2>
 
-          <button class="close-btn" (click)="closeModal()">
+          <button class="close-btn" (click)="closeModal()" [disabled]="isModalBusy()">
             <i class="fas fa-times"></i>
           </button>
         </div>
 
         <div class="modal-body">
-          <app-results-form [editData]="selectedResult" [isEditMode]="isEditMode" (cancel)="closeModal()"
+          <app-results-form [editData]="selectedResult" [isEditMode]="isEditMode" [saving]="saving" (cancel)="closeModal()"
             (save)="saveResult($event)">
           </app-results-form>
         </div>

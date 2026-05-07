@@ -11,6 +11,10 @@
   font-size: 0.95rem;
 }
 
+.winners-state-error {
+  color: #b42318;
+}
+
 .desktop-view {
   display: block;
 }
@@ -99,6 +103,11 @@
   align-items: center;
   justify-content: center;
   transition: 0.2s ease;
+}
+
+.actions button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
 }
 
 .view-btn {

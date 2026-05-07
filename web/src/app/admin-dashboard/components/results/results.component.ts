@@ -76,12 +76,20 @@ export class ResultsComponent implements OnInit {
   }
 
   openModal() {
+    if (this.saving) {
+      return;
+    }
+
     this.isModalOpen = true;
     this.isEditMode = false;
     this.selectedResult = null;
   }
 
   closeModal() {
+    if (this.saving) {
+      return;
+    }
+
     this.isModalOpen = false;
     this.isEditMode = false;
     this.selectedResult = null;
@@ -90,12 +98,20 @@ export class ResultsComponent implements OnInit {
     this.router.navigate(['/admin-dashboard/results', result.id]);
   }
   editResult(result: any) {
+    if (this.saving) {
+      return;
+    }
+
     this.isModalOpen = true;
     this.isEditMode = true;
 
     this.selectedResult = {
       ...result
     };
+  }
+
+  isModalBusy(): boolean {
+    return this.saving;
   }
 
   saveResult(formData: any) {

@@ -161,6 +161,30 @@ class EntryService
         }
     }
 
+    public function getAllEntries()
+    {
+        try {
+            $entries = $this->entryRepository->getAllEntries();
+
+            return [
+                'success' => true,
+                'data' => array_map(function ($entry) {
+                    return $entry->toArray();
+                }, $entries)
+            ];
+
+        } catch (Exception $e) {
+            Logger::error('Get all entries failed', [
+                'error' => $e->getMessage()
+            ]);
+
+            return [
+                'success' => false,
+                'message' => 'Failed to load entries'
+            ];
+        }
+    }
+
     private function normalizeNumbers(array $numbers, $requiredCount, array $excluded = [])
     {
         $normalized = array_map('intval', $numbers);

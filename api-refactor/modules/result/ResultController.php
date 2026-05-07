@@ -49,6 +49,27 @@ class ResultController
         }
     }
 
+    public function getResultById()
+    {
+        try {
+            $resultId = $_GET['id'] ?? null;
+            $result = $this->resultService->getResultById($resultId);
+
+            if ($result['success']) {
+                Response::json(true, 'Result fetched successfully', $result['data'], HTTP_OK);
+            }
+
+            Response::json(false, $result['message'], null, HTTP_BAD_REQUEST);
+
+        } catch (Exception $e) {
+            Logger::error('ResultController result details error', [
+                'error' => $e->getMessage()
+            ]);
+
+            Response::json(false, 'Failed to fetch result details', null, HTTP_INTERNAL_ERROR);
+        }
+    }
+
     public function createResult()
     {
         try {

@@ -4,11 +4,13 @@ class EntryController
 {
     private $entryService;
     private $authRepository;
+    private $userRepository;
 
     public function __construct()
     {
         $this->entryService = new EntryService();
         $this->authRepository = new AuthRepository();
+        $this->userRepository = new UserRepository();
     }
 
     public function submitEntry()
@@ -90,7 +92,44 @@ class EntryController
         }
     }
 
+    public function getAllEntries()
+    {
+        try {
+            $user = $this->getCurrentUser();
+
+            if (!$user) {
+                Response::json(false, 'Unauthorized', null, HTTP_UNAUTHORIZED);
+            }
+
+            if (!$user->isAdmin()) {
+                Response::json(false, 'Admin access required', null, HTTP_FORBIDDEN);
+            }
+
+            $result = $this->entryService->getAllEntries();
+
+            if ($result['success']) {
+                Response::json(true, 'Entries fetched successfully', $result['data'], HTTP_OK);
+            }
+
+            Response::json(false, $result['message'], null, HTTP_BAD_REQUEST);
+
+        } catch (Exception $e) {
+            Logger::error('EntryController all entries error', [
+                'error' => $e->getMessage()
+            ]);
+
+            Response::json(false, 'Failed to fetch entries', null, HTTP_INTERNAL_ERROR);
+        }
+    }
+
     private function getAuthenticatedUser()
+    {
+        $user = $this->getCurrentUser();
+
+        return $user;
+    }
+
+    private function getCurrentUser()
     {
         $header = $_SERVER['HTTP_AUTHORIZATION'] ?? $_SERVER['Authorization'] ?? '';
 
@@ -103,6 +142,46 @@ class EntryController
             return null;
         }
 
-        return $this->authRepository->findUserByToken(trim($matches[1]));
+        $token = trim($matches[1]);
+        $user = $this->authRepository->findUserByToken($token);
+
+        if ($user) {
+            return $user;
+        }
+
+        return $this->getUserFromLegacyJwt($token);
+    }
+
+    private function getUserFromLegacyJwt($token)
+    {
+        $jwtPath = dirname(__DIR__, 3) . '/api/config/jwt.php';
+
+        if (!file_exists($jwtPath)) {
+            return null;
+        }
+
+        require_once $jwtPath;
+
+        if (!class_exists('JWT') || !method_exists('JWT', 'decode')) {
+            return null;
+        }
+
+        $payload = JWT::decode($token);
+
+        if (!$payload || !is_array($payload)) {
+            return null;
+        }
+
+        if (isset($payload['exp']) && (int)$payload['exp'] < time()) {
+            return null;
+        }
+
+        $userId = isset($payload['id']) ? (int)$payload['id'] : 0;
+
+        if ($userId <= 0) {
+            return null;
+        }
+
+        return $this->userRepository->findById($userId);
     }
 }

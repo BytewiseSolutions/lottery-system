@@ -14,6 +14,9 @@ export class WinnerListComponent {
 
   @Input() winners: any[] = [];
   @Input() loading = false;
+  @Input() error = false;
+  @Input() processingWinnerId: number | null = null;
+  @Input() processingAction: 'pay' | 'claim' | null = null;
 
   @Output() pay = new EventEmitter<any>();
   @Output() claim = new EventEmitter<any>();
@@ -43,14 +46,52 @@ export class WinnerListComponent {
   }
 
   handlePayment(paymentData: any) {
-    console.log('Processing payment:', paymentData);
     this.pay.emit(paymentData);
     this.closePayModal();
   }
 
   handleClaim(claimData: any) {
-    console.log('Processing claim:', claimData);
     this.claim.emit(claimData);
     this.closeClaimModal();
+  }
+
+  canPay(winner: any): boolean {
+    return winner?.claim_status === 'claimed' && winner?.payment_status !== 'paid' && !this.isProcessingAnotherWinner(winner, 'pay');
+  }
+
+  canClaim(winner: any): boolean {
+    return winner?.claim_status !== 'claimed' && !this.isProcessingAnotherWinner(winner, 'claim');
+  }
+
+  getPayLabel(winner: any): string {
+    if (this.processingWinnerId === Number(winner?.id) && this.processingAction === 'pay') {
+      return 'Processing...';
+    }
+
+    if (winner?.payment_status === 'paid') {
+      return 'Paid';
+    }
+
+    if (winner?.claim_status !== 'claimed') {
+      return 'Awaiting Claim';
+    }
+
+    return 'Pay';
+  }
+
+  getClaimLabel(winner: any): string {
+    if (this.processingWinnerId === Number(winner?.id) && this.processingAction === 'claim') {
+      return 'Updating...';
+    }
+
+    return winner?.claim_status === 'claimed' ? 'Claimed' : 'Claim';
+  }
+
+  private isProcessingAnotherWinner(winner: any, action: 'pay' | 'claim'): boolean {
+    if (!this.processingAction) {
+      return false;
+    }
+
+    return this.processingAction === action || this.processingWinnerId === Number(winner?.id);
   }
 }

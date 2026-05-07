@@ -2,7 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { SidebarComponent } from '../../../sidebar/sidebar.component';
 import { CommonModule } from '@angular/common';
 import { WinnerListComponent } from '../winner-list/winner-list.component';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { BackendService } from '../../../../util/backend.service';
 import { SuccessPopupService } from '../../../../services/success-popup.service';
 import { ErrorHandlerService } from '../../../../services/error-handler.service';
@@ -38,13 +38,18 @@ export class ResultsDetailsComponent implements OnInit {
   loading = true;
   error = false;
   winnersLoading = false;
+  winnersError = false;
   entriesLoading = false;
+  entriesError = false;
+  processingWinnerId: number | null = null;
+  processingWinnerAction: 'pay' | 'claim' | null = null;
   result: ResultDetail | null = null;
   winners: any[] = [];
   entries: any[] = [];
 
   constructor(
     private route: ActivatedRoute,
+    private router: Router,
     private backendService: BackendService,
     private successPopupService: SuccessPopupService,
     private errorHandlerService: ErrorHandlerService
@@ -68,16 +73,16 @@ export class ResultsDetailsComponent implements OnInit {
     this.loading = true;
     this.error = false;
 
-    this.backendService.getResults().subscribe({
+    this.backendService.getResultById(resultId).subscribe({
       next: (response: any) => {
-        if (!response?.success || !Array.isArray(response.data)) {
+        if (!response?.success || !response.data) {
           this.result = null;
           this.error = true;
           this.loading = false;
           return;
         }
 
-        this.result = response.data.find((item: ResultDetail) => Number(item.id) === resultId) ?? null;
+        this.result = response.data as ResultDetail;
         this.error = !this.result;
         if (this.result) {
           this.loadWinners(this.result.id);
@@ -99,6 +104,7 @@ export class ResultsDetailsComponent implements OnInit {
 
   private loadWinners(resultId: number) {
     this.winnersLoading = true;
+    this.winnersError = false;
 
     this.backendService.getWinners(resultId).subscribe({
       next: (response: any) => {
@@ -109,12 +115,14 @@ export class ResultsDetailsComponent implements OnInit {
         console.error('Failed to load winners:', error);
         this.winners = [];
         this.winnersLoading = false;
+        this.winnersError = true;
       }
     });
   }
 
   private loadEntries(drawId: number) {
     this.entriesLoading = true;
+    this.entriesError = false;
 
     this.backendService.getEntriesByDraw(drawId).subscribe({
       next: (response: any) => {
@@ -125,11 +133,21 @@ export class ResultsDetailsComponent implements OnInit {
         console.error('Failed to load entries:', error);
         this.entries = [];
         this.entriesLoading = false;
+        this.entriesError = true;
       }
     });
   }
 
+  retryEntriesLoad() {
+    if (this.result) {
+      this.loadEntries(this.result.draw_id);
+    }
+  }
+
   payWinner(paymentData: any) {
+    this.processingWinnerId = Number(paymentData?.winner?.id) || null;
+    this.processingWinnerAction = 'pay';
+
     this.backendService.processWinnerPayment({
       winner_id: paymentData?.winner?.id,
       amount: paymentData?.amount,
@@ -137,6 +155,8 @@ export class ResultsDetailsComponent implements OnInit {
       transaction_id: paymentData?.transaction_id
     }).subscribe({
       next: (response: any) => {
+        this.clearWinnerActionState();
+
         if (response?.success && this.result) {
           this.successPopupService.show('Winner payment processed successfully.', 'Payment Processed');
           this.loadWinners(this.result.id);
@@ -147,14 +167,20 @@ export class ResultsDetailsComponent implements OnInit {
       },
       error: (error) => {
         console.error('Failed to process payment:', error);
+        this.clearWinnerActionState();
         this.errorHandlerService.showError(error?.error?.message || 'Failed to process payment');
       }
     });
   }
 
   markClaimed(claimData: any) {
+    this.processingWinnerId = Number(claimData?.winner?.id) || null;
+    this.processingWinnerAction = 'claim';
+
     this.backendService.markWinnerClaimed(claimData?.winner?.id).subscribe({
       next: (response: any) => {
+        this.clearWinnerActionState();
+
         if (response?.success && this.result) {
           this.successPopupService.show('Winner marked as claimed.', 'Claim Updated');
           this.loadWinners(this.result.id);
@@ -165,9 +191,22 @@ export class ResultsDetailsComponent implements OnInit {
       },
       error: (error) => {
         console.error('Failed to mark winner as claimed:', error);
+        this.clearWinnerActionState();
         this.errorHandlerService.showError(error?.error?.message || 'Failed to mark winner as claimed');
       }
     });
+  }
+
+  goBackToResults() {
+    this.router.navigate(['/admin-dashboard/results']);
+  }
+
+  retryResultLoad() {
+    const id = Number(this.route.snapshot.paramMap.get('id'));
+
+    if (id) {
+      this.loadResult(id);
+    }
   }
 
   formatDate(dateString?: string): string {
@@ -224,5 +263,10 @@ export class ResultsDetailsComponent implements OnInit {
 
   formatNumbers(numbers: number[] = []): string {
     return numbers.join(', ');
+  }
+
+  private clearWinnerActionState() {
+    this.processingWinnerId = null;
+    this.processingWinnerAction = null;
   }
 }

@@ -139,6 +139,10 @@ export class BackendService {
     return this.get('result/list');
   }
 
+  getResultById(resultId: number | string): Observable<any> {
+    return this.get('result/details', { id: resultId });
+  }
+
   createResult(resultData: any): Observable<any> {
     return this.post('result/create', resultData);
   }
@@ -153,6 +157,10 @@ export class BackendService {
 
   getEntriesByDraw(drawId: number | string): Observable<any> {
     return this.get('entry/draw', { draw_id: drawId });
+  }
+
+  getAllEntries(): Observable<any> {
+    return this.get('entry/list');
   }
 
   getWinners(resultId?: number | string): Observable<any> {
