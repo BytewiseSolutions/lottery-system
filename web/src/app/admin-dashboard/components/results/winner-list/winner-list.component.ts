@@ -53,7 +53,6 @@ export class WinnerListComponent {
   @Output() pay = new EventEmitter<any>();
   @Output() claim = new EventEmitter<any>();
 
-  // Modal state
   isPayModalOpen = false;
   isClaimModalOpen = false;
   selectedWinner: any = null;

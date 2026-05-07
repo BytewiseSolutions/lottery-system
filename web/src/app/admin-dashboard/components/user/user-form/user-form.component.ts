@@ -1,16 +1,15 @@
+import { Component, EventEmitter, Input, Output, SimpleChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Component, EventEmitter, Input, OnChanges, Output, SimpleChanges } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { UserFormValue } from '../user-management.models';
+import { UserFormValue } from '../value';
 
 @Component({
   selector: 'app-user-form',
-  standalone: true,
-  imports: [CommonModule, FormsModule],
+   imports: [CommonModule, FormsModule],
   templateUrl: './user-form.component.html',
-  styleUrls: ['./user-form.component.scss']
+  styleUrl: './user-form.component.css'
 })
-export class UserFormComponent implements OnChanges {
+export class UserFormComponent {
   @Input() initialValue: Partial<UserFormValue> | null = null;
   @Input() isEditMode = false;
   @Input() loading = false;

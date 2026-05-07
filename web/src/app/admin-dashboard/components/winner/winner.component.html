@@ -1,3 +1,197 @@
 <div class="admin-dashboard">
      <app-sidebar></app-sidebar>
+
+     <main class="main-content">
+          <div class="results-page">
+               <div class="page-header">
+                    <h1>Winners Management</h1>
+
+                    <div class="header-actions">
+                         <button class="export-btn">
+                              <i class="fas fa-file-csv"></i>
+                              Export CSV
+                         </button>
+
+                         <button class="upload-btn">
+                              <i class="fas fa-upload"></i>
+                              Add Winner
+                         </button>
+                    </div>
+               </div>
+               <div class="draw-info-section">
+                    <div class="current-draw-info">
+                         <div class="draw-details">
+                              <h4> Monday Lotto - 28 April 2026 || 'All Draws' </h4>
+                              <div class="draw-meta">
+                                   <span class="draw-date">Monday Lotto - 28 April 2026</span>
+
+                                   <span class="draw-numbers">
+                                        Winning Numbers:
+                                        <span class="number">5, 12, 23, 34, 41</span>
+                                   </span>
+
+                                   <span class="bonus-numbers">
+                                        Bonus Numbers:
+                                        <span class="bonus-number">7, 19</span>
+                                   </span>
+
+                                   <span class="total-winners">10 Winners</span>
+                              </div>
+                         </div>
+
+                         <div class="draw-stats">
+                              <div class="stat-item">
+                                   <span class="stat-value">$5896.56 </span>
+                                   <span class="stat-label">Total Prize Pool</span>
+                              </div>
+                              <div class="stat-item">
+                                   <span class="stat-value">7 </span>
+                                   <span class="stat-label">Paid Winners</span>
+                              </div>
+                              <div class="stat-item">
+                                   <span class="stat-value">3 </span>
+                                   <span class="stat-label">Pending</span>
+                              </div>
+                         </div>
+                    </div>
+               </div>
+
+               <div class="filters-section">
+                    <div class="filters-row">
+                         <div class="filter-group">
+                              <label>Draw</label>
+                              <select class="filter-select">
+                                   <option value="">All Draws</option>
+                                   <option value="">Monday Lotto - 28 April 2026</option>
+                                   <option value="">Wednesday Lotto - 30 April 2026</option>
+                                   <option value="">Friday Lotto - 1 May 2026</option>
+                              </select>
+                         </div>
+
+                         <div class="filter-group">
+                              <label>Claim Status</label>
+                              <select class="filter-select">
+                                   <option value="">All Claims</option>
+                                   <option value="pending">Pending</option>
+                                   <option value="claimed">Claimed</option>
+                              </select>
+                         </div>
+
+                         <div class="filter-group">
+                              <label for="">Payment Status</label>
+                              <select class="filter-select">
+                                   <option value="">All Payments</option>
+                                   <option value="pending">Pending</option>
+                                   <option value="paid">Paid</option>
+                                   <option value="failed">Failed</option>
+                              </select>
+                         </div>
+
+                         <div class="filter-actions">
+                              <button class="clear-filters-btn">Clear Filters</button>
+                         </div>
+                    </div>
+               </div>
+
+               <div class="view-results">
+                    <div class="table-wrapper desktop-view">
+                         <table class="winners-table">
+                              <thead>
+                                   <tr>
+                                        <th>#</th>
+                                        <th>Name</th>
+                                        <th>Email</th>
+                                        <th>Prize</th>
+                                        <th>Claim</th>
+                                        <th>Payment</th>
+                                        <th>Actions</th>
+                                   </tr>
+                              </thead>
+
+                              <tbody>
+                                   @for (w of winners; track $index) {
+                                   <tr>
+                                        <td>{{ $index + 1 }}</td>
+                                        <td>{{ w.name }}</td>
+                                        <td>{{ w.email }}</td>
+                                        <td class="prize">M {{ w.prize_amount }}</td>
+                                        <td>
+                                             <span class="badge">
+                                                  {{ w.claim_status }}
+                                             </span>
+                                        </td>
+
+                                        <td>
+                                             <span class="badge">
+                                                  {{ w.payment_status }}
+                                             </span>
+                                        </td>
+                                        <td>
+                                             <div class="actions">
+                                                  <button class="pay-btn" (click)="payWinner(w)">Pay</button>
+                                                  <button class="claim-btn" (click)="markClaimed(w)">Claim</button>
+                                             </div>
+                                        </td>
+                                   </tr>
+                                   }
+                              </tbody>
+                         </table>
+                    </div>
+
+                    <div class="mobile-view mobile-list">
+                         @for (w of winners; track $index){
+                         <div class="winner-card">
+                              <div class="top-row">
+                                   <strong>{{ $index + 1 }}. {{ w.name }}</strong>
+                                   <span class="prize">M {{ w.prize_amount }}</span>
+                              </div>
+                              <small>{{ w.email }}</small>
+
+                              <div class="status-row">
+                                   <span class="badge">{{ w.claim_status }}</span>
+                                   <span class="badge">{{ w.payment_status }}</span>
+                              </div>
+
+                              <div class="actions">
+                                   <button class="pay-btn" (click)="payWinner(w)">Pay</button>
+                                   <button class="claim-btn" (click)="markClaimed(w)">Claim</button>
+                              </div>
+                         </div>
+                         }
+                    </div>
+               </div>
+
+               @if (isPayModalOpen) {
+               <div class="modal-overlay" (click)="closePayModal()">
+                    <div class="modal-content" (click)="$event.stopPropagation()">
+                         <div class="modal-header">
+                              <h2>Process Payment</h2>
+                              <button class="close-btn" (click)="closePayModal()">
+                                   <i class="fas fa-times"></i>
+                              </button>
+                         </div>
+                         <app-pay-form [winner]="selectedWinner" (cancel)="closePayModal()"
+                              (pay)="handlePayment($event)">
+                         </app-pay-form>
+                    </div>
+               </div>
+               }
+
+               @if (isClaimModalOpen) {
+               <div class="modal-overlay" (click)="closeClaimModal()">
+                    <div class="modal-content" (click)="$event.stopPropagation()">
+                         <div class="modal-header">
+                              <h2>Mark as Claimed</h2>
+                              <button class="close-btn" (click)="closeClaimModal()">
+                                   <i class="fas fa-times"></i>
+                              </button>
+                         </div>
+                         <app-claim-form [winner]="selectedWinner" (cancel)="closeClaimModal()"
+                              (claim)="handleClaim($event)">
+                         </app-claim-form>
+                    </div>
+               </div>
+               }
+          </div>
+     </main>
 </div>

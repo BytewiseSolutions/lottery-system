@@ -1,3 +1,55 @@
 <div class="admin-dashboard">
      <app-sidebar></app-sidebar>
+
+     <main class="main-content">
+          <div class="user-page">
+               <div class="page-header">
+                    <h1>Manage Users</h1>
+
+                    <div class="header-actions">
+                         <button class="export-btn">
+                              <i class="fas fa-file-csv"></i>
+                              Export CSV
+                         </button>
+
+                         <button class="upload-btn" (click)="openAddUserModal()">
+                              <i class="fas fa-plus"></i>
+                              Add User
+                         </button>
+                    </div>
+               </div>
+
+               <div class="table-wrapper desktop-view">
+                    <table class="user-table">
+                         <thead>
+                              <tr>
+                                   <th>#</th>
+                                   <th>User</th>
+                                   <th>Contact</th>
+                                   <th>Country</th>
+                                   <th>Status</th>
+                                   <th>Action</th>
+                              </tr>
+                         </thead>
+
+                         <tbody>
+                              <tr>
+                                   <td>1</td>
+                                   <td>Neo Sello</td>
+                                   <td>neo&#64;gmail.com | 26659181664</td>
+                                   <td>Lesotho</td>
+                                   <td>Active</td>
+                                   <td>
+                                        <div class="actions">
+                                             <button class="view-btn">View</button>
+                                             <button class="edit-btn">Edit</button>
+                                             <button class="archive-btn">Archive</button>
+                                        </div>
+                                   </td>
+                              </tr>
+                         </tbody>
+                    </table>
+               </div>
+          </div>
+     </main>
 </div>

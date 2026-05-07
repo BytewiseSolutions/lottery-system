@@ -20,7 +20,6 @@ export class ResultsComponent {
 
   selectedResult: any = null;
 
-
   constructor(private router: Router) {}
 
   results = [

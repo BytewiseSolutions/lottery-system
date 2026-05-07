@@ -1,10 +1,9 @@
 .claim-form {
-  padding: 0;
+  padding: 1.5rem;
+  max-width: 100%;
+  box-sizing: border-box;
 }
 
-/* =========================
-   WINNER INFO CARD
-========================= */
 .winner-info {
   background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
   padding: 1.5rem;
@@ -28,9 +27,6 @@
   font-size: 1.1rem;
 }
 
-/* =========================
-   INFO GRID
-========================= */
 .info-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
@@ -67,9 +63,6 @@
   font-size: 1rem;
 }
 
-/* =========================
-   PRIZE + BADGES
-========================= */
 .prize {
   color: #16a34a !important;
   font-size: 1.2rem !important;
@@ -97,12 +90,9 @@
   border: 1px solid #22c55e;
 }
 
-/* =========================
-   FORM GROUP
-========================= */
 .form-group {
   margin-bottom: 2rem;
-  padding: 1.5rem;
+  padding: 2rem;
   background: #fafbfc;
   border-radius: 12px;
   border: 1px solid #e2e8f0;
@@ -116,16 +106,13 @@
   font-size: 1rem;
 }
 
-/* =========================
-   CHECKBOX
-========================= */
 .checkbox-label {
   display: flex;
   align-items: flex-start;
-  gap: 1rem;
+  gap: 1.25rem;
   cursor: pointer;
-  line-height: 1.5;
-  padding: 1rem;
+  line-height: 1.6;
+  padding: 1.5rem;
   background: white;
   border-radius: 8px;
   border: 2px solid #e2e8f0;
@@ -138,86 +125,102 @@
 }
 
 .checkbox-label input[type="checkbox"] {
-  width: 18px;
-  height: 18px;
-  margin-top: 0.2rem;
+  width: 20px;
+  height: 20px;
+  margin-top: 0.1rem;
   accent-color: rgb(108, 0, 146);
+  flex-shrink: 0;
 }
 
 .checkbox-label span {
   font-weight: 500;
   color: #4a5568;
-  font-size: 0.95rem;
+  font-size: 1rem;
+  line-height: 1.6;
 }
 
-/* =========================
-   ACTIONS
-========================= */
 .form-actions {
   display: flex;
   justify-content: flex-end;
-  gap: 0.75rem;
-  margin-top: 2rem;
-  padding-top: 1.5rem;
+  gap: 1rem;
+  margin: 2.5rem -1.5rem 0 -1.5rem;
+  padding: 2rem 1.5rem 0 1.5rem;
   border-top: 1px solid #e2e8f0;
 }
 
-/* =========================
-   BUTTONS (FIXED HEIGHT)
-========================= */
 .btn-primary,
 .btn-secondary {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-
-  padding: 0.4rem 0.9rem;
-  font-size: 0.85rem;
-  line-height: 1;
-
+  
+  padding: 8px 16px;
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.4;
+  
   border-radius: 6px;
-  border: none;
+  border: 1px solid transparent;
   cursor: pointer;
-
-  height: 34px;
-  min-width: 90px;
-
+  
+  min-height: 36px;
+  min-width: 100px;
+  
+  text-decoration: none;
   white-space: nowrap;
-  transition: all 0.2s ease;
+  transition: all 0.15s ease-in-out;
+  
+  /* Prevent text selection */
+  user-select: none;
+  -webkit-user-select: none;
 }
 
-/* PRIMARY */
 .btn-primary {
-  background: rgb(108, 0, 146);
+  background: linear-gradient(135deg, rgb(108, 0, 146) 0%, rgb(88, 0, 120) 100%);
   color: white;
-  box-shadow: 0 2px 6px rgba(108, 0, 146, 0.2);
+  border-color: rgb(108, 0, 146);
+  box-shadow: 0 2px 4px rgba(108, 0, 146, 0.2), 0 1px 2px rgba(0, 0, 0, 0.1);
 }
 
 .btn-primary:hover:not(:disabled) {
-  background: rgb(88, 0, 120);
+  background: linear-gradient(135deg, rgb(88, 0, 120) 0%, rgb(68, 0, 100) 100%);
+  border-color: rgb(88, 0, 120);
+  box-shadow: 0 4px 8px rgba(108, 0, 146, 0.3), 0 2px 4px rgba(0, 0, 0, 0.15);
   transform: translateY(-1px);
 }
 
-.btn-primary:disabled {
-  background: #cbd5e0;
-  cursor: not-allowed;
-  box-shadow: none;
+.btn-primary:active:not(:disabled) {
+  transform: translateY(0);
+  box-shadow: 0 1px 2px rgba(108, 0, 146, 0.2);
 }
 
-/* SECONDARY */
+.btn-primary:disabled {
+  background: #e2e8f0;
+  color: #94a3b8;
+  border-color: #e2e8f0;
+  cursor: not-allowed;
+  box-shadow: none;
+  transform: none;
+}
+
 .btn-secondary {
-  background: #f1f5f9;
-  color: #334155;
-  border: 1px solid #e2e8f0;
+  background: white;
+  color: #475569;
+  border-color: #d1d5db;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
 }
 
 .btn-secondary:hover {
-  background: #e2e8f0;
+  background: #f8fafc;
+  border-color: #9ca3af;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
-/* =========================
-   TABLET
-========================= */
+.btn-secondary:active {
+  background: #f1f5f9;
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
 @media (max-width: 768px) {
   .info-grid {
     grid-template-columns: 1fr;
@@ -228,25 +231,39 @@
   }
 
   .form-group {
-    padding: 1.25rem;
+    padding: 1.5rem;
   }
 
-  /* keep buttons clean, NOT full width */
+  .checkbox-label {
+    padding: 1.25rem;
+    gap: 1rem;
+  }
+
+  .checkbox-label span {
+    font-size: 0.95rem;
+    line-height: 1.5;
+  }
+
+  .claim-form {
+    padding: 1rem;
+  }
+
   .form-actions {
-    justify-content: space-between;
+    flex-direction: column;
+    gap: 0.75rem;
+    margin: 2rem -1rem 0 -1rem;
+    padding: 1.5rem 1rem 0 1rem;
   }
 
   .btn-primary,
   .btn-secondary {
-    flex: 1;
-    height: 34px;
-    font-size: 0.8rem;
+    width: 100%;
+    min-height: 36px;
+    font-size: 13px;
+    padding: 8px 16px;
   }
 }
 
-/* =========================
-   SMALL MOBILE
-========================= */
 @media (max-width: 480px) {
   .winner-info h3 {
     font-size: 1.1rem;
@@ -261,12 +278,23 @@
   }
 
   .checkbox-label span {
-    font-size: 0.85rem;
+    font-size: 0.9rem;
+    line-height: 1.5;
+  }
+
+  .claim-form {
+    padding: 0.75rem;
+  }
+
+  .form-actions {
+    margin: 1.5rem -0.75rem 0 -0.75rem;
+    padding: 1.5rem 0.75rem 0 0.75rem;
   }
 
   .btn-primary,
   .btn-secondary {
-    height: 32px;
-    font-size: 0.75rem;
+    min-height: 32px;
+    font-size: 12px;
+    padding: 6px 12px;
   }
 }

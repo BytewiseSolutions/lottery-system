@@ -14,17 +14,16 @@ import { ProfileComponent } from './profile/profile.component';
 import { SettingsComponent } from './settings/settings.component';
 import { WinningsComponent } from './winnings/winnings.component';
 import { adminGuard } from './guards/admin.guard';
-import { UserDetailsPageComponent } from './admin/components/user-management/user-details/user-details-page.component';
 import { AdminDashboardComponent } from './admin-dashboard/admin-dashboard.component';
 import { ActivityLogComponent } from './admin-dashboard/components/activity-log/activity-log.component';
 import { VotingComponent } from './admin-dashboard/components/voting/voting.component';
 import { ResultsComponent } from './admin-dashboard/components/results/results.component';
 import { EntryComponent } from './admin-dashboard/components/entry/entry.component';
 import { NotificationComponent } from './admin-dashboard/components/notification/notification.component';
-import { PaymentComponent } from './admin-dashboard/components/payment/payment.component';
 import { UserComponent } from './admin-dashboard/components/user/user.component';
 import { WinnerComponent } from './admin-dashboard/components/winner/winner.component';
 import { ResultsDetailsComponent } from './admin-dashboard/components/results/results-details/results-details.component';
+import { UserDetailsComponent } from './admin-dashboard/components/user/user-details/user-details.component';
 
 export const routes: Routes = [
   { path: '', component: HomeComponent },
@@ -41,8 +40,6 @@ export const routes: Routes = [
   { path: 'profile', component: ProfileComponent },
   { path: 'settings', component: SettingsComponent },
   { path: 'winnings', component: WinningsComponent },
-  { path: 'admin/users/:id', component: UserDetailsPageComponent, canActivate: [adminGuard] },
-  { path: 'dashboard/users/:id', component: UserDetailsPageComponent, canActivate: [adminGuard] },
   { path: 'admin-dashboard', component: AdminDashboardComponent, canActivate: [adminGuard] },
   { path: 'admin-dashboard/activity-log', component: ActivityLogComponent, canActivate: [adminGuard] },
   { path: 'admin-dashboard/voting', component: VotingComponent, canActivate: [adminGuard] },
@@ -50,8 +47,8 @@ export const routes: Routes = [
   { path: 'admin-dashboard/results/:id', component: ResultsDetailsComponent, canActivate: [adminGuard] },
   { path: 'admin-dashboard/entry', component: EntryComponent, canActivate: [adminGuard] },
   { path: 'admin-dashboard/notification', component: NotificationComponent, canActivate: [adminGuard] },
-  { path: 'admin-dashboard/payment', component: PaymentComponent, canActivate: [adminGuard] },
   { path: 'admin-dashboard/user', component: UserComponent, canActivate: [adminGuard] },
+  { path: 'admin-dashboard/user/:id', component: UserDetailsComponent, canActivate: [adminGuard] },
   { path: 'admin-dashboard/winner', component: WinnerComponent, canActivate: [adminGuard] },
   { path: 'dashboard', component: AdminComponent, canActivate: [adminGuard] },
   { path: '**', redirectTo: '' }

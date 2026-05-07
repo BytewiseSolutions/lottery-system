@@ -1,3 +1,47 @@
 <div class="admin-dashboard">
-     <app-sidebar></app-sidebar>
+      <app-sidebar></app-sidebar>
+
+      <main class="main-content">
+            <div class="results-page">
+                  <div class="page-header">
+                        <h1>All Entries</h1>
+
+                        <button class="export-btn">
+                              <i class="fas fa-file-csv"></i>
+                              Export CSV
+                        </button>
+                  </div>
+
+                  <div class="table-wrapper desktop-view">
+                        <table class="entries-table">
+                              <thead>
+                                    <tr>
+                                          <th>#</th>
+                                          <th>User</th>
+                                          <th>Draw</th>
+                                          <th>Numbers</th>
+                                          <th>Bonus</th>
+                                          <th>Action</th>
+                                    </tr>
+                              </thead>
+
+                              <tbody>
+                                    <tr>
+                                          <td>1</td>
+                                          <td>Neo Sello</td>
+                                          <td>Monday Lotto 27 April 2026</td>
+                                          <td>3, 4, 8, 30, 45</td>
+                                          <td>2, 5</td>
+                                          <td>
+                                                <div class="actions">
+                                                      <button class="view-btn">View</button>
+                                                      <button class="archive-btn">Archive</button>
+                                                </div>
+                                          </td>
+                                    </tr>
+                              </tbody>
+                        </table>
+                  </div>
+            </div>
+      </main>
 </div>
