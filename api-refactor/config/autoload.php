@@ -14,6 +14,7 @@ spl_autoload_register(function ($class) {
         'NumberHelper' => 'utils/NumberHelper.php',
         'Validator' => 'utils/Validator.php',
         'Logger' => 'utils/Logger.php',
+        'LegacyJwt' => 'utils/LegacyJwt.php',
         'DefaultAdminBootstrap' => 'utils/DefaultAdminBootstrap.php',
         
         'User' => 'modules/user/User.php',

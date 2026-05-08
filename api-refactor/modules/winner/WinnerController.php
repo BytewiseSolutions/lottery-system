@@ -133,19 +133,7 @@ class WinnerController
 
     private function getUserFromLegacyJwt($token)
     {
-        $jwtPath = dirname(__DIR__, 3) . '/api/config/jwt.php';
-
-        if (!file_exists($jwtPath)) {
-            return null;
-        }
-
-        require_once $jwtPath;
-
-        if (!class_exists('JWT') || !method_exists('JWT', 'decode')) {
-            return null;
-        }
-
-        $payload = JWT::decode($token);
+        $payload = LegacyJwt::decode($token);
 
         if (!$payload || !is_array($payload)) {
             return null;
