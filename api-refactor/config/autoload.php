@@ -5,15 +5,8 @@ spl_autoload_register(function ($class) {
     
     $classMap = [
         'CorsMiddleware' => 'middleware/CorsMiddleware.php',
-        'AuthMiddleware' => 'middleware/AuthMiddleware.php',
-        'RoleMiddleware' => 'middleware/RoleMiddleware.php',
-        'RateLimitMiddleware' => 'middleware/RateLimitMiddleware.php',
-        'RequestMiddleware' => 'middleware/RequestMiddleware.php',
         
         'Connection' => 'database/Connection.php',
-        'QueryBuilder' => 'database/QueryBuilder.php',
-        'Migration' => 'database/Migration.php',
-        'Seeder' => 'database/Seeder.php',
         
         'Response' => 'utils/Response.php',
         'Hash' => 'utils/Hash.php',
@@ -62,7 +55,6 @@ spl_autoload_register(function ($class) {
         'WinnerController' => 'modules/winner/WinnerController.php',
         'WinnerService' => 'modules/winner/WinnerService.php',
         'WinnerRepository' => 'modules/winner/WinnerRepository.php',
-        'WinnerDto' => 'modules/winner/WinnerDto.php',
         
         'Payment' => 'modules/payment/Payment.php',
         'PaymentController' => 'modules/payment/PaymentController.php',
@@ -74,21 +66,16 @@ spl_autoload_register(function ($class) {
         'NotificationController' => 'modules/notification/NotificationController.php',
         'NotificationService' => 'modules/notification/NotificationService.php',
         'NotificationRepository' => 'modules/notification/NotificationRepository.php',
-        'NotificationDto' => 'modules/notification/NotificationDto.php',
         
-        'DataFile' => 'modules/file/DataFile.php',
         'FileController' => 'modules/file/FileController.php',
         'FileService' => 'modules/file/FileService.php',
         'FileRepository' => 'modules/file/FileRepository.php',
-        'FileDto' => 'modules/file/FileDto.php',
         
         'Analytics' => 'modules/analytics/Analytics.php',
         'AnalyticsController' => 'modules/analytics/AnalyticsController.php',
         'AnalyticsService' => 'modules/analytics/AnalyticsService.php',
         'AnalyticsRepository' => 'modules/analytics/AnalyticsRepository.php',
         'AnalyticsDto' => 'modules/analytics/AnalyticsDto.php',
-        'HighestVoteService' => 'modules/analytics/HighestVoteService.php',
-        'VoteStatisticsService' => 'modules/analytics/VoteStatisticsService.php',
         
         'ActivityLog' => 'modules/audit/ActivityLog.php',
         'ActivityLogController' => 'modules/audit/ActivityLogController.php',
@@ -96,11 +83,9 @@ spl_autoload_register(function ($class) {
         'ActivityLogRepository' => 'modules/audit/ActivityLogRepository.php',
         'ActivityLogDto' => 'modules/audit/ActivityLogDto.php',
         
-        'Settings' => 'modules/settings/Settings.php',
         'SettingsController' => 'modules/settings/SettingsController.php',
         'SettingsService' => 'modules/settings/SettingsService.php',
         'SettingsRepository' => 'modules/settings/SettingsRepository.php',
-        'SettingsDto' => 'modules/settings/SettingsDto.php',
 
         
     ];

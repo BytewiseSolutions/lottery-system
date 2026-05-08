@@ -78,6 +78,15 @@ class ResultController
     {
         try {
             $currentUser = $this->getCurrentUser();
+
+            if (!$currentUser) {
+                Response::json(false, 'Unauthorized', null, HTTP_UNAUTHORIZED);
+            }
+
+            if (!$currentUser->isAdmin()) {
+                Response::json(false, 'Admin access required', null, HTTP_FORBIDDEN);
+            }
+
             $resultDto = ResultDto::fromRequest();
             $result = $this->resultService->createResult($resultDto, $currentUser);
 
@@ -100,6 +109,15 @@ class ResultController
     {
         try {
             $currentUser = $this->getCurrentUser();
+
+            if (!$currentUser) {
+                Response::json(false, 'Unauthorized', null, HTTP_UNAUTHORIZED);
+            }
+
+            if (!$currentUser->isAdmin()) {
+                Response::json(false, 'Admin access required', null, HTTP_FORBIDDEN);
+            }
+
             $resultDto = ResultDto::fromRequest();
             $result = $this->resultService->updateResult($resultDto, $currentUser);
 

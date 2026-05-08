@@ -16,6 +16,16 @@ class WinnerController
     public function getWinners()
     {
         try {
+            $currentUser = $this->getCurrentUser();
+
+            if (!$currentUser) {
+                Response::json(false, 'Unauthorized', null, HTTP_UNAUTHORIZED);
+            }
+
+            if (!$currentUser->isAdmin()) {
+                Response::json(false, 'Admin access required', null, HTTP_FORBIDDEN);
+            }
+
             $resultId = isset($_GET['result_id']) ? (int)$_GET['result_id'] : null;
             $page = isset($_GET['page']) ? (int)$_GET['page'] : null;
             $limit = isset($_GET['limit']) ? (int)$_GET['limit'] : null;
@@ -70,6 +80,15 @@ class WinnerController
     {
         try {
             $currentUser = $this->getCurrentUser();
+
+            if (!$currentUser) {
+                Response::json(false, 'Unauthorized', null, HTTP_UNAUTHORIZED);
+            }
+
+            if (!$currentUser->isAdmin()) {
+                Response::json(false, 'Admin access required', null, HTTP_FORBIDDEN);
+            }
+
             $input = json_decode(file_get_contents('php://input'), true) ?? [];
             $winnerId = isset($input['winner_id']) ? (int)$input['winner_id'] : null;
             $result = $this->winnerService->markClaimed($winnerId, $currentUser);

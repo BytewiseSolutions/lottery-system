@@ -2,9 +2,6 @@ SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
 START TRANSACTION;
 SET time_zone = "+00:00";
 
-CREATE DATABASE IF NOT EXISTS lottery_system_db;
-USE lottery_system_db;
-
 CREATE TABLE user (
  id INT AUTO_INCREMENT PRIMARY KEY,
  first_name VARCHAR(100) NOT NULL,
@@ -103,6 +100,26 @@ CREATE TABLE vote (
  FOREIGN KEY (draw_id) REFERENCES draw(id) ON DELETE CASCADE
 );
 
+CREATE TABLE admin_vote (
+ id INT AUTO_INCREMENT PRIMARY KEY,
+ admin_id INT NOT NULL,
+ draw_id INT NULL,
+ lottery VARCHAR(50) NOT NULL,
+ numbers JSON NOT NULL,
+ bonus_numbers JSON,
+ allocated_votes INT DEFAULT 0,
+ voting_data JSON NULL,
+ total_votes INT DEFAULT 0,
+ vote_date DATE NOT NULL,
+ draw_date DATETIME NOT NULL,
+ created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+ updated_at TIMESTAMP NULL DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
+ INDEX idx_admin_vote_draw (draw_id),
+ INDEX idx_admin_vote_lottery_date (lottery, draw_date),
+ FOREIGN KEY (admin_id) REFERENCES user(id) ON DELETE CASCADE,
+ FOREIGN KEY (draw_id) REFERENCES draw(id) ON DELETE SET NULL
+);
+
 CREATE TABLE entry (
  id INT AUTO_INCREMENT PRIMARY KEY,
  user_id INT NOT NULL,
@@ -181,6 +198,14 @@ CREATE TABLE contact_message (
  email VARCHAR(150),
  message TEXT,
  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE system_setting (
+ setting_key VARCHAR(100) PRIMARY KEY,
+ setting_value TEXT NULL,
+ updated_by INT NULL,
+ updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+ FOREIGN KEY (updated_by) REFERENCES user(id) ON DELETE SET NULL
 );
 
 CREATE TABLE highest_vote (

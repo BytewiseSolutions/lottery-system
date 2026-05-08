@@ -17,6 +17,15 @@ class PaymentController
     {
         try {
             $currentUser = $this->getCurrentUser();
+
+            if (!$currentUser) {
+                Response::json(false, 'Unauthorized', null, HTTP_UNAUTHORIZED);
+            }
+
+            if (!$currentUser->isAdmin()) {
+                Response::json(false, 'Admin access required', null, HTTP_FORBIDDEN);
+            }
+
             $paymentDto = PaymentDto::fromRequest();
             $result = $this->paymentService->processPayment($paymentDto, $currentUser);
 
