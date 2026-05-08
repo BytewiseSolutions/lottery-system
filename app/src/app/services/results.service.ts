@@ -1,27 +1,34 @@
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { Observable } from 'rxjs';
-import { environment } from '../../environments/environment';
-import { AuthService } from './auth.service';
+import { map, Observable } from 'rxjs';
+import { BackendService } from '../util/backend.service';
 
 @Injectable({ providedIn: 'root' })
 export class ResultsService {
-  constructor(private http: HttpClient, private auth: AuthService) {}
-
-  private getHeaders(): HttpHeaders {
-    return new HttpHeaders({ Authorization: `Bearer ${this.auth.getToken()}` });
-  }
+  constructor(private backendService: BackendService) {}
 
   getPastDraws(): Observable<any> {
-    return this.http.get(`${environment.apiUrl}/past-draws.php`, { headers: this.getHeaders() });
+    return this.backendService.getResults().pipe(
+      map((response: any) => response?.data ?? [])
+    );
   }
 
   getResults(drawId: number): Observable<any> {
-    return this.http.get(`${environment.apiUrl}/results.php?draw_id=${drawId}`, { headers: this.getHeaders() });
+    return this.backendService.getResults().pipe(
+      map((response: any) => {
+        const results = Array.isArray(response?.data) ? response.data : [];
+        return results.filter((result: any) => Number(result.draw_id) === Number(drawId));
+      })
+    );
   }
 
   getWinners(drawId?: number): Observable<any> {
-    const url = drawId ? `${environment.apiUrl}/winners.php?draw_id=${drawId}` : `${environment.apiUrl}/winners.php`;
-    return this.http.get(url, { headers: this.getHeaders() });
+    return this.backendService.getMyWinnings().pipe(
+      map((response: any) => {
+        const winnings = Array.isArray(response?.data) ? response.data : [];
+        return drawId
+          ? winnings.filter((winner: any) => Number(winner.draw_id) === Number(drawId))
+          : winnings;
+      })
+    );
   }
 }

@@ -23,7 +23,7 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
         localStorage.removeItem('auth_token');
         localStorage.removeItem('token');
         localStorage.removeItem('user');
-        window.location.href = '/';
+        window.location.href = '/#/';
       } else if (error.status === 429) {
         toastService.showError('Too many requests. Please try again later.');
       } else if (error.status === 0) {

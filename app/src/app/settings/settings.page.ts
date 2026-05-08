@@ -45,11 +45,11 @@ export class SettingsPage implements OnInit {
   }
 
   openTerms() {
-    window.open('/api/terms.html', '_blank');
+    this.router.navigate(['/terms']);
   }
 
   openPrivacy() {
-    window.open('/api/privacy.html', '_blank');
+    this.router.navigate(['/privacy']);
   }
 
   goBack() {

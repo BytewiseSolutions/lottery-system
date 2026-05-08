@@ -115,11 +115,9 @@ export class NavbarComponent implements OnInit, OnDestroy {
   private checkAuthStatus() {
     const token = localStorage.getItem('auth_token') || localStorage.getItem('token');
     const user = localStorage.getItem('user');
-    console.log('Auth check - token:', token, 'user:', user);
     if (token && user) {
       this.isLoggedIn = true;
       this.currentUser = JSON.parse(user);
-      console.log('Current user:', this.currentUser);
       this.userEmail = this.currentUser.email || this.currentUser.phone || 'User';
     }
   }

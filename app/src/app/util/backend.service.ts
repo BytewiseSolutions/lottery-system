@@ -52,7 +52,7 @@ export class BackendService {
       'Accept': 'application/json'
     });
 
-    const token = localStorage.getItem('auth_token');
+    const token = localStorage.getItem('auth_token') || localStorage.getItem('token');
     if (token) {
       headers = headers.set('Authorization', `Bearer ${token}`);
     }
@@ -69,7 +69,14 @@ export class BackendService {
   }
 
   logout(): Observable<any> {
-    return this.post('auth/logout', {});
+    const token = localStorage.getItem('auth_token') || localStorage.getItem('token');
+    return this.post('auth/logout', { token });
+  }
+
+  clearAuthSession(): void {
+    localStorage.removeItem('auth_token');
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
   }
 
   getUserProfile(): Observable<any> {
@@ -87,6 +94,11 @@ export class BackendService {
   getVoteHistory(): Observable<any> {
     return this.get('vote/history');
   }
+
+  getLeadingNumbers(lottery: string, voteDate: string): Observable<any> {
+    return this.get('vote/leading', { lottery, voteDate });
+  }
+
   getCurrentDraw(): Observable<any> {
     return this.get('draw/current');
   }
@@ -95,27 +107,51 @@ export class BackendService {
     return this.get('draw/upcoming');
   }
 
+  playLottery(entryData: any): Observable<any> {
+    return this.post('entry/submit', entryData);
+  }
+
+  getEntryHistory(): Observable<any> {
+    return this.get('entry/history');
+  }
+
   getLatestResults(): Observable<any> {
     return this.get('result/latest');
+  }
+
+  getResults(): Observable<any> {
+    return this.get('result/list');
   }
 
   getWinners(): Observable<any> {
     return this.get('winner/list');
   }
 
+  getMyWinnings(): Observable<any> {
+    return this.get('winner/my');
+  }
+
   getNotifications(): Observable<any> {
     return this.get('notification/list');
   }
 
+  markNotificationAsRead(id: number): Observable<any> {
+    return this.post('notification/mark-read', { id });
+  }
+
+  getUnreadNotificationCount(): Observable<any> {
+    return this.get('notification/unread-count');
+  }
+
   uploadFile(fileData: FormData): Observable<any> {
-    const headers = new HttpHeaders();
-    const token = localStorage.getItem('auth_token');
+    let headers = new HttpHeaders();
+    const token = localStorage.getItem('auth_token') || localStorage.getItem('token');
     if (token) {
-      headers.set('Authorization', `Bearer ${token}`);
+      headers = headers.set('Authorization', `Bearer ${token}`);
     }
 
     return this.http.post(`${this.baseUrl}/file/upload`, fileData, {
-      headers: headers
+      headers
     });
   }
 
@@ -130,5 +166,9 @@ export class BackendService {
 
   updateSettings(settingsData: any): Observable<any> {
     return this.put('settings/update', settingsData);
+  }
+
+  changeCurrentPassword(passwordData: any): Observable<any> {
+    return this.post('user/change-password', passwordData);
   }
 }

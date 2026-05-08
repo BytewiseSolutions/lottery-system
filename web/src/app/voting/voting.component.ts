@@ -46,18 +46,15 @@ export class VotingComponent implements OnInit {
     this.isLoadingDraw = true;
     this.drawLoadError = '';
     this.upcomingDraw = null;
-    console.log('Loading upcoming draw...');
     
     this.backendService.getCurrentDraw().subscribe({
       next: (response: any) => {
-        console.log('getCurrentDraw response:', response);
         this.isLoadingDraw = false;
         const draw = response?.data;
 
         if (response?.success && draw) {
           this.upcomingDraw = draw;
           this.isVotingTime = !!draw.is_voting_open;
-          console.log('upcomingDraw set to:', this.upcomingDraw);
         } else {
           this.loadFallbackDraw();
         }
@@ -276,17 +273,13 @@ export class VotingComponent implements OnInit {
       return;
     }
     
-    console.log('Upcoming draw object:', this.upcomingDraw);
-    
     const voteData = {
       lottery: this.upcomingDraw.lottery || this.upcomingDraw.lottery_type || 'Unknown Lottery',
       numbers: [...this.selectedNumbers].sort((a, b) => a - b),
       bonusNumbers: [...this.selectedBonus].sort((a, b) => a - b),
       drawDate: this.getDrawDate(this.upcomingDraw)
     };
-    
-    console.log('Vote data being sent:', voteData);
-    
+
     this.backendService.submitVote(voteData).subscribe({
       next: () => {
         this.showSuccessPopup = true;

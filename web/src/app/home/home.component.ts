@@ -105,23 +105,16 @@ export class HomeComponent implements OnInit, OnDestroy {
   }
 
   private parseNumbers(numbers: any): number[] {
-    console.log('Parsing numbers:', numbers, 'Type:', typeof numbers);
-    
     if (!numbers) return [];
     
     if (Array.isArray(numbers)) {
-      console.log('Already array:', numbers);
       return numbers;
     }
     
     if (typeof numbers === 'string') {
       try {
         const cleaned = numbers.trim();
-        console.log('Cleaned string:', cleaned);
-        
         const parsed = JSON.parse(cleaned);
-        console.log('Parsed result:', parsed);
-        
         return Array.isArray(parsed) ? parsed : [];
       } catch (error) {
         console.warn('Failed to parse numbers as JSON:', numbers, error);
@@ -134,7 +127,6 @@ export class HomeComponent implements OnInit, OnDestroy {
               nums.push(num);
             }
           }
-          console.log('Extracted from concatenated string:', nums);
           return nums;
         }
         

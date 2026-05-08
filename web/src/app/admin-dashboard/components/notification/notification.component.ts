@@ -5,6 +5,8 @@ import { BackendService } from '../../../util/backend.service';
 import { NotificationFormComponent } from './notification-form/notification-form.component';
 import { Notification } from './notification';
 import { NotificationCreateRequest } from './notification-request';
+import { SuccessPopupService } from '../../../util/success-popup.service';
+import { ErrorHandlerService } from '../../../util/error-handler.service';
 
 @Component({
   selector: 'app-notification',
@@ -23,7 +25,9 @@ export class NotificationComponent implements OnInit {
   creating = false;
 
   constructor(
-    private backendService: BackendService
+    private backendService: BackendService,
+    private successPopupService: SuccessPopupService,
+    private errorHandlerService: ErrorHandlerService
   ) {}
 
   ngOnInit() {
@@ -182,18 +186,17 @@ export class NotificationComponent implements OnInit {
     this.backendService.createNotification(formData).subscribe({
       next: (response: any) => {
         if (response.success) {
-          console.log('Notification created successfully');
+          this.successPopupService.show('Notification created successfully.', 'Notification Sent');
           this.closeCreateModal();
           this.refreshNotifications();
         } else {
-          console.error('Failed to create notification:', response.message);
-          alert('Failed to create notification: ' + response.message);
+          this.errorHandlerService.showError(response?.message || 'Failed to create notification');
         }
         this.creating = false;
       },
       error: (error) => {
         console.error('Error creating notification:', error);
-        alert('Error creating notification');
+        this.errorHandlerService.showError(error?.error?.message || 'Error creating notification');
         this.creating = false;
       }
     });
