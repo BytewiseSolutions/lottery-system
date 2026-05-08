@@ -52,7 +52,7 @@ export class BackendService {
       'Accept': 'application/json'
     });
 
-    const token = localStorage.getItem('auth_token');
+    const token = localStorage.getItem('auth_token') || localStorage.getItem('token');
     if (token) {
       headers = headers.set('Authorization', `Bearer ${token}`);
     }
@@ -85,6 +85,14 @@ export class BackendService {
 
   updateUserProfile(userData: any): Observable<any> {
     return this.put('user/profile', userData);
+  }
+
+  getCurrentUserStats(): Observable<any> {
+    return this.get('user/stats');
+  }
+
+  deleteCurrentAccount(): Observable<any> {
+    return this.post('user/delete', {});
   }
 
   submitVote(voteData: any): Observable<any> {
@@ -191,6 +199,10 @@ export class BackendService {
     return this.get('winner/list', resultId ? { result_id: resultId } : undefined);
   }
 
+  getMyWinnings(): Observable<any> {
+    return this.get('winner/my');
+  }
+
   getWinnersPage(params?: any): Observable<any> {
     return this.get('winner/list', params);
   }
@@ -207,13 +219,17 @@ export class BackendService {
     return this.get('notification/list');
   }
 
-uploadFile(fileData: FormData): Observable<any> {
-  const headers = this.getHeaders().delete('Content-Type');
+  uploadFile(fileData: FormData): Observable<any> {
+    const headers = this.getHeaders().delete('Content-Type');
 
-  return this.http.post(`${this.baseUrl}/file/upload`, fileData, {
-    headers
-  });
-}
+    return this.http.post(`${this.baseUrl}/file/upload`, fileData, {
+      headers
+    });
+  }
+
+  getFileUrl(fileId: number | string): string {
+    return `${this.baseUrl}/file/get?id=${fileId}`;
+  }
 
   getUsers(params?: any): Observable<any> {
     return this.get('user/list', params);

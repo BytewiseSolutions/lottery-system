@@ -179,6 +179,22 @@ function handleUserRoutes($method, $action) {
                 Response::json(false, 'Method not allowed', null, 405);
             }
             break;
+
+        case 'stats':
+            if ($method === 'GET') {
+                $controller->getCurrentStats();
+            } else {
+                Response::json(false, 'Method not allowed', null, 405);
+            }
+            break;
+
+        case 'delete':
+            if ($method === 'POST') {
+                $controller->deleteCurrentAccount();
+            } else {
+                Response::json(false, 'Method not allowed', null, 405);
+            }
+            break;
             
         case '':  
         case 'list':
@@ -474,6 +490,14 @@ function handleWinnerRoutes($method, $action) {
             }
             break;
 
+        case 'my':
+            if ($method === 'GET') {
+                $controller->getCurrentUserWinnings();
+            } else {
+                Response::json(false, 'Method not allowed', null, 405);
+            }
+            break;
+
         case 'claim':
             if ($method === 'POST') {
                 $controller->markClaimed();
@@ -552,6 +576,14 @@ function handleFileRoutes($method, $action) {
         case 'upload':
             if ($method === 'POST') {
                 $controller->uploadFile();
+            } else {
+                Response::json(false, 'Method not allowed', null, 405);
+            }
+            break;
+
+        case 'get':
+            if ($method === 'GET') {
+                $controller->getFile();
             } else {
                 Response::json(false, 'Method not allowed', null, 405);
             }

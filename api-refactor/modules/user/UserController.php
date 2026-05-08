@@ -337,6 +337,50 @@ class UserController
         }
     }
 
+    public function getCurrentStats()
+    {
+        try {
+            $currentUser = $this->getCurrentUser();
+
+            if (!$currentUser) {
+                Response::json(false, 'Authentication required', null, HTTP_UNAUTHORIZED);
+            }
+
+            $result = $this->userService->getCurrentUserStats($currentUser);
+
+            if ($result['success']) {
+                Response::json(true, 'Statistics retrieved successfully', $result['data'], HTTP_OK);
+            }
+
+            Response::json(false, $result['message'], null, HTTP_BAD_REQUEST);
+        } catch (Exception $e) {
+            error_log("Get current stats controller error: " . $e->getMessage());
+            Response::json(false, 'Failed to retrieve account statistics', null, HTTP_INTERNAL_ERROR);
+        }
+    }
+
+    public function deleteCurrentAccount()
+    {
+        try {
+            $currentUser = $this->getCurrentUser();
+
+            if (!$currentUser) {
+                Response::json(false, 'Authentication required', null, HTTP_UNAUTHORIZED);
+            }
+
+            $result = $this->userService->deleteCurrentAccount($currentUser);
+
+            if ($result['success']) {
+                Response::json(true, $result['message'], null, HTTP_OK);
+            }
+
+            Response::json(false, $result['message'], null, HTTP_BAD_REQUEST);
+        } catch (Exception $e) {
+            error_log("Delete current account controller error: " . $e->getMessage());
+            Response::json(false, 'Failed to delete account', null, HTTP_INTERNAL_ERROR);
+        }
+    }
+
     private function getCurrentUser()
     {
         $header = $_SERVER['HTTP_AUTHORIZATION'] ?? $_SERVER['Authorization'] ?? '';

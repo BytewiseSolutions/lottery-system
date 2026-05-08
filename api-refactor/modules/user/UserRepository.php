@@ -166,6 +166,59 @@ class UserRepository
         ]);
     }
 
+    public function deleteById($userId)
+    {
+        $stmt = $this->pdo->prepare('DELETE FROM user WHERE id = :id');
+
+        return $stmt->execute([
+            ':id' => $userId
+        ]);
+    }
+
+    public function getUserStats($userId)
+    {
+        $sql = "SELECT
+                    u.created_at,
+                    (
+                        SELECT COUNT(*)
+                        FROM entry e
+                        WHERE e.user_id = u.id
+                    ) AS total_entries,
+                    (
+                        SELECT COALESCE(SUM(w.prize_amount), 0)
+                        FROM winner w
+                        WHERE w.user_id = u.id
+                    ) AS total_winnings
+                FROM user u
+                WHERE u.id = :id
+                LIMIT 1";
+
+        $stmt = $this->pdo->prepare($sql);
+        $stmt->execute([':id' => $userId]);
+
+        return $stmt->fetch(PDO::FETCH_ASSOC) ?: null;
+    }
+
+    public function getProfilePictureId($userId)
+    {
+        $sql = "SELECT id
+                FROM data_file
+                WHERE user_id = :user_id
+                  AND file_category = :file_category
+                ORDER BY id DESC
+                LIMIT 1";
+
+        $stmt = $this->pdo->prepare($sql);
+        $stmt->execute([
+            ':user_id' => $userId,
+            ':file_category' => FILE_PROFILE_PICTURE
+        ]);
+
+        $row = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        return $row ? (int)$row['id'] : null;
+    }
+
     public function getAll($page = 1, $limit = 20, $filters = [])
     {
         $offset = ($page - 1) * $limit;

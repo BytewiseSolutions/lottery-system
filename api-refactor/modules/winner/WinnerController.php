@@ -108,6 +108,31 @@ class WinnerController
         }
     }
 
+    public function getCurrentUserWinnings()
+    {
+        try {
+            $currentUser = $this->getCurrentUser();
+
+            if (!$currentUser) {
+                Response::json(false, 'Unauthorized', null, HTTP_UNAUTHORIZED);
+            }
+
+            $result = $this->winnerService->getUserWinnings($currentUser);
+
+            if ($result['success']) {
+                Response::json(true, 'Winnings fetched successfully', $result['data'], HTTP_OK);
+            }
+
+            Response::json(false, $result['message'], null, HTTP_BAD_REQUEST);
+        } catch (Exception $e) {
+            Logger::error('WinnerController current user winnings error', [
+                'error' => $e->getMessage()
+            ]);
+
+            Response::json(false, 'Failed to fetch winnings', null, HTTP_INTERNAL_ERROR);
+        }
+    }
+
     private function getCurrentUser()
     {
         $header = $_SERVER['HTTP_AUTHORIZATION'] ?? $_SERVER['Authorization'] ?? '';

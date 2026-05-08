@@ -115,7 +115,7 @@ class UserService
 
                 return [
                     'success' => true,
-                    'data' => $user->toArray()
+                    'data' => $this->attachProfilePicture($user)
                 ];
             }
 
@@ -664,6 +664,78 @@ class UserService
                 'message' => 'Failed to change password'
             ];
         }
+    }
+
+    public function getCurrentUserStats($currentUser)
+    {
+        try {
+            $stats = $this->userRepository->getUserStats($currentUser->id);
+
+            if (!$stats) {
+                return [
+                    'success' => false,
+                    'message' => ERROR_USER_NOT_FOUND
+                ];
+            }
+
+            return [
+                'success' => true,
+                'data' => [
+                    'total_entries' => (int)($stats['total_entries'] ?? 0),
+                    'total_winnings' => number_format((float)($stats['total_winnings'] ?? 0), 2, '.', ''),
+                    'member_since' => $stats['created_at'] ?? null
+                ]
+            ];
+        } catch (Exception $e) {
+            Logger::error('Get current user stats failed', [
+                'error' => $e->getMessage(),
+                'user_id' => $currentUser->id ?? null
+            ]);
+
+            return [
+                'success' => false,
+                'message' => 'Failed to load account statistics'
+            ];
+        }
+    }
+
+    public function deleteCurrentAccount($currentUser)
+    {
+        try {
+            if (!$this->userRepository->deleteById($currentUser->id)) {
+                return [
+                    'success' => false,
+                    'message' => 'Failed to delete account'
+                ];
+            }
+
+            return [
+                'success' => true,
+                'message' => 'Your account has been deleted successfully.'
+            ];
+        } catch (Exception $e) {
+            Logger::error('Delete current account failed', [
+                'error' => $e->getMessage(),
+                'user_id' => $currentUser->id ?? null
+            ]);
+
+            return [
+                'success' => false,
+                'message' => 'Failed to delete account'
+            ];
+        }
+    }
+
+    private function attachProfilePicture($user)
+    {
+        $data = $user->toArray();
+        $profilePictureId = $this->userRepository->getProfilePictureId($user->id);
+
+        if ($profilePictureId) {
+            $data['profile_picture_id'] = $profilePictureId;
+        }
+
+        return $data;
     }
 
     private function validateAdminUserPayload($data, $isEdit = false)

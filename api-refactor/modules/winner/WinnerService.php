@@ -77,6 +77,26 @@ class WinnerService
         }
     }
 
+    public function getUserWinnings($currentUser)
+    {
+        try {
+            return [
+                'success' => true,
+                'data' => $this->winnerRepository->getUserWinnings($currentUser->id)
+            ];
+        } catch (Exception $e) {
+            Logger::error('Get user winnings failed', [
+                'error' => $e->getMessage(),
+                'user_id' => $currentUser->id ?? null
+            ]);
+
+            return [
+                'success' => false,
+                'message' => 'Failed to load winnings'
+            ];
+        }
+    }
+
     public function markClaimed($winnerId, $currentUser = null)
     {
         if (!$winnerId) {

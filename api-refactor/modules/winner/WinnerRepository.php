@@ -36,6 +36,34 @@ class WinnerRepository
         return $winners;
     }
 
+    public function getUserWinnings($userId)
+    {
+        $sql = "SELECT
+                    w.id,
+                    l.name AS lottery,
+                    w.prize_amount,
+                    w.payment_status,
+                    w.created_at,
+                    p.approved_at AS paid_at,
+                    e.numbers AS entry_numbers,
+                    e.bonus_numbers AS entry_bonus
+                FROM winner w
+                INNER JOIN result r ON r.id = w.result_id
+                INNER JOIN draw d ON d.id = r.draw_id
+                INNER JOIN lottery l ON l.id = d.lottery_id
+                LEFT JOIN entry e ON e.id = w.entry_id
+                LEFT JOIN payment p ON p.winner_id = w.id AND p.status = 'completed'
+                WHERE w.user_id = :user_id
+                ORDER BY w.created_at DESC";
+
+        $stmt = $this->pdo->prepare($sql);
+        $stmt->execute([
+            ':user_id' => $userId
+        ]);
+
+        return $stmt->fetchAll(PDO::FETCH_ASSOC) ?: [];
+    }
+
     public function getWinnersPage($page = 1, $limit = 20, $filters = [])
     {
         $page = max(1, (int)$page);

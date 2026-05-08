@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { LayoutComponent } from '../layout/layout.component';
-import { environment } from '../../environments/environment';
+import { BackendService } from '../util/backend.service';
 
 interface Winning {
   id: number;
@@ -29,8 +29,10 @@ export class WinningsComponent implements OnInit {
   paidWinnings = 0;
   errorMessage = '';
 
+  constructor(private backendService: BackendService) {}
+
   ngOnInit() {
-    this.isLoggedIn = !!localStorage.getItem('token');
+    this.isLoggedIn = !!(localStorage.getItem('auth_token') || localStorage.getItem('token'));
     if (this.isLoggedIn) {
       this.loadWinnings();
     } else {
@@ -38,39 +40,33 @@ export class WinningsComponent implements OnInit {
     }
   }
 
-  async loadWinnings() {
+  loadWinnings() {
     this.isLoading = true;
     this.errorMessage = '';
-    
-    try {
-      const token = localStorage.getItem('token');
-      const response = await fetch(`${environment.apiUrl}/my-winnings`, {
-        headers: {
-          'Authorization': `Bearer ${token}`
+
+    this.backendService.getMyWinnings().subscribe({
+      next: (response: any) => {
+        this.isLoading = false;
+
+        if (response?.success) {
+          this.winnings = (response.data || []).map((w: any) => ({
+            ...w,
+            entry_numbers: typeof w.entry_numbers === 'string' ? JSON.parse(w.entry_numbers) : (w.entry_numbers || []),
+            entry_bonus: typeof w.entry_bonus === 'string' ? JSON.parse(w.entry_bonus) : (w.entry_bonus || [])
+          }));
+
+          this.calculateTotals();
+          return;
         }
-      });
 
-      if (!response.ok) {
-        throw new Error('Failed to load winnings');
+        this.errorMessage = response?.message || 'Failed to load winnings. Please try again.';
+      },
+      error: (error) => {
+        console.error('Error loading winnings:', error);
+        this.isLoading = false;
+        this.errorMessage = error?.error?.message || 'Failed to load winnings. Please try again.';
       }
-
-      const data = await response.json();
-      
-      if (data.success) {
-        this.winnings = data.winnings.map((w: any) => ({
-          ...w,
-          entry_numbers: typeof w.entry_numbers === 'string' ? JSON.parse(w.entry_numbers) : w.entry_numbers,
-          entry_bonus: typeof w.entry_bonus === 'string' ? JSON.parse(w.entry_bonus) : w.entry_bonus
-        }));
-        
-        this.calculateTotals();
-      }
-    } catch (error) {
-      console.error('Error loading winnings:', error);
-      this.errorMessage = 'Failed to load winnings. Please try again.';
-    } finally {
-      this.isLoading = false;
-    }
+    });
   }
 
   calculateTotals() {
