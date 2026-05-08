@@ -10,6 +10,7 @@ import { timeout, catchError } from 'rxjs/operators';
 import { BackendService } from '../../../util/backend.service';
 import { ApiResponse } from '../../../util/api-response';
 import { Draw } from '../../../lotteries/draw';
+import { SiteSettingsService } from '../../../services/site-settings.service';
 
 interface UserNotification {
   id: number;
@@ -48,7 +49,11 @@ export class NavbarComponent implements OnInit, OnDestroy {
   private jackpotIntervalId?: number;
   private notificationIntervalId?: number;
 
-  constructor(private backendService: BackendService, private router: Router) {}
+  constructor(
+    private backendService: BackendService,
+    private router: Router,
+    public siteSettingsService: SiteSettingsService
+  ) {}
 
   ngOnInit() {
     this.checkAuthStatus();

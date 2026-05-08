@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { BackendService } from '../../../util/backend.service';
+import { SiteSettingsService } from '../../../services/site-settings.service';
 
 @Component({
   selector: 'app-login',
@@ -34,7 +35,8 @@ export class LoginComponent {
 
   constructor(
     private router: Router,
-    private backendService: BackendService
+    private backendService: BackendService,
+    public siteSettingsService: SiteSettingsService
   ) { }
 
   close(): void {

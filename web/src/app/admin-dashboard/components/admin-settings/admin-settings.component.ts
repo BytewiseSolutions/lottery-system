@@ -7,12 +7,12 @@ import { SuccessPopupService } from '../../../services/success-popup.service';
 import { ErrorHandlerService } from '../../../services/error-handler.service';
 
 @Component({
-  selector: 'app-admin-settings',
+  selector: 'app-admin-settings-page',
   imports: [CommonModule, FormsModule, SidebarComponent],
-  templateUrl: './settings.component.html',
-  styleUrl: './settings.component.css'
+  templateUrl: './admin-settings.component.html',
+  styleUrl: './admin-settings.component.css'
 })
-export class AdminSettingsComponent implements OnInit {
+export class DashboardSettingsComponent implements OnInit {
   loading = true;
   error = false;
   saving = false;
