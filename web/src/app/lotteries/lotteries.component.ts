@@ -115,4 +115,8 @@ export class LotteriesComponent implements OnInit, OnDestroy {
 
     return `${days.toString().padStart(2, '0')} Days ${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:00`;
   }
+
+  getLotteryCloseCountdown(draw: Draw): string {
+    return this.getCountdown(draw.entry_closes_at || draw.lottery_closes_at || draw.drawDate || draw.nextDraw || '');
+  }
 }

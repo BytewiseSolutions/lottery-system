@@ -36,13 +36,13 @@ class EntryService
                 ];
             }
 
-            $drawDateTime = new DateTime($draw->draw_date);
             $now = new DateTime();
+            $entryCloseTime = new DateTime($draw->getLotteryClosesAt());
 
-            if ($now >= $drawDateTime) {
+            if ($now > $entryCloseTime) {
                 return [
                     'success' => false,
-                    'message' => 'Draw time has passed. You cannot play this lottery anymore.'
+                    'message' => 'Lottery closed at 7:00 PM. You cannot play this lottery anymore.'
                 ];
             }
 

@@ -235,4 +235,8 @@ export class HomeComponent implements OnInit, OnDestroy {
 
     return `${days.toString().padStart(2, '0')} Days ${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
   }
+
+  getLotteryCloseCountdown(draw: Draw): string {
+    return this.getCountdown(draw.entry_closes_at || draw.lottery_closes_at || draw.nextDraw || draw.drawDate);
+  }
 }

@@ -144,6 +144,11 @@ export class PlayLotteryComponent implements OnInit {
       this.showLogin();
       return;
     }
+
+    if (!this.isLotteryOpen()) {
+      this.modalService.showError('Lottery closed at 7:00 PM. Please wait for the next draw.', 'Lottery Closed');
+      return;
+    }
     
     if (this.selectedNumbers.length === 5 && this.selectedBonusNumbers.length === 2) {
       this.isLoading = true;
@@ -217,6 +222,17 @@ export class PlayLotteryComponent implements OnInit {
   dismissSuccessPopup() {
     this.showSuccessPopup = false;
     this.router.navigate(['/lotteries']);
+  }
+
+  private isLotteryOpen(): boolean {
+    if (!this.drawDate) {
+      return true;
+    }
+
+    const drawClose = new Date(this.drawDate);
+    drawClose.setHours(19, 0, 0, 0);
+
+    return new Date() <= drawClose;
   }
 
   quickPick() {

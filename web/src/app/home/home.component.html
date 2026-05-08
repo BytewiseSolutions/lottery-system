@@ -41,10 +41,10 @@
                 </h4>
                 <a routerLink="/play-lottery" [queryParams]="{lottery: getLotteryCode(draw.name), drawDate: getDateOnly(draw.nextDraw || draw.drawDate)}" [class]="i % 2 === 0 ? 'custom-button1' : 'custom-button2'">Play</a>
                 <div class="next-draw">
-                  <span class="text">Next Draw :</span>
+                  <span class="text">Lottery Closes :</span>
                   <div class="time">
                     <img src="assets/images/time.png" alt>
-                    <h6>{{getCountdown(draw.nextDraw)}}</h6>
+                    <h6>{{ getLotteryCloseCountdown(draw) }}</h6>
                   </div>
                 </div>
               </div>

@@ -64,6 +64,10 @@ try {
         case 'notification':
             handleNotificationRoutes($method, $action);
             break;
+
+        case 'contact':
+            handleContactRoutes($method, $action);
+            break;
             
         case 'file':
             handleFileRoutes($method, $action);
@@ -133,6 +137,24 @@ function handleAuthRoutes($method, $action) {
 
         default:
             Response::json(false, 'Auth endpoint not found', null, 404);
+    }
+}
+
+function handleContactRoutes($method, $action) {
+    $controller = new ContactController();
+
+    switch ($action) {
+        case '':
+        case 'submit':
+            if ($method === 'POST') {
+                $controller->submit();
+            } else {
+                Response::json(false, 'Method not allowed', null, 405);
+            }
+            break;
+
+        default:
+            Response::json(false, 'Contact endpoint not found', null, 404);
     }
 }
 

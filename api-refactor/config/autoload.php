@@ -67,6 +67,10 @@ spl_autoload_register(function ($class) {
         'NotificationController' => 'modules/notification/NotificationController.php',
         'NotificationService' => 'modules/notification/NotificationService.php',
         'NotificationRepository' => 'modules/notification/NotificationRepository.php',
+
+        'ContactController' => 'modules/contact/ContactController.php',
+        'ContactService' => 'modules/contact/ContactService.php',
+        'ContactRepository' => 'modules/contact/ContactRepository.php',
         
         'FileController' => 'modules/file/FileController.php',
         'FileService' => 'modules/file/FileService.php',

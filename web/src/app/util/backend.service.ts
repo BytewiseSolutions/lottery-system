@@ -303,4 +303,8 @@ uploadFile(fileData: FormData): Observable<any> {
     return this.post('notification/create', notificationData);
   }
 
+  submitContactMessage(contactData: any): Observable<any> {
+    return this.post('contact', contactData);
+  }
+
 }

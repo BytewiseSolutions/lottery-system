@@ -15,12 +15,6 @@
     <div class="row">
       <div class="col-lg-8 mx-auto">
         <div class="contact-form">
-          <div *ngIf="showSuccess" class="alert alert-success">
-            Thank you! Your message has been sent successfully.
-          </div>
-          <div *ngIf="errorMessage" class="alert alert-danger">
-            {{ errorMessage }}
-          </div>
           <form (ngSubmit)="submitForm()">
             <div class="form-group">
               <label>Name</label>

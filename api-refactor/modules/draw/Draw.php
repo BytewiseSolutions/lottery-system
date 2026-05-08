@@ -56,6 +56,9 @@ class Draw
             'status'     => $this->status,
             'jackpot'    => $this->jackpot,
             'created_at' => $this->created_at,
+            'lottery_closes_at' => $this->getLotteryClosesAt(),
+            'entry_closes_at' => $this->getLotteryClosesAt(),
+            'is_entry_open' => $this->isEntryOpen(),
             'voting_closes_at' => $this->getVotingClosesAt(),
             'is_voting_open' => $this->isVotingOpen()
         ];
@@ -103,6 +106,30 @@ class Draw
         $closeTime->setTime(19, 59, 59);
 
         return $closeTime->format('Y-m-d H:i:s');
+    }
+
+    public function getLotteryClosesAt()
+    {
+        if (!$this->draw_date) {
+            return null;
+        }
+
+        $closeTime = new DateTime($this->draw_date);
+        $closeTime->setTime(19, 0, 0);
+
+        return $closeTime->format('Y-m-d H:i:s');
+    }
+
+    public function isEntryOpen(?DateTime $now = null)
+    {
+        if (!$this->isScheduled() || !$this->draw_date) {
+            return false;
+        }
+
+        $now = $now ?: new DateTime();
+        $closeTime = new DateTime($this->getLotteryClosesAt());
+
+        return $now <= $closeTime;
     }
 
     public function isVotingOpen(?DateTime $now = null)

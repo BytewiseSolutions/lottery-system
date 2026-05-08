@@ -105,11 +105,14 @@ export class VotingComponent implements OnInit {
     }
 
     const now = new Date();
-    const drawDate = new Date(this.upcomingDraw.draw_date || this.upcomingDraw.drawDate);
-    
-    drawDate.setHours(19, 59, 59, 999);
-    
-    const diff = drawDate.getTime() - now.getTime();
+    const closeAtValue = this.upcomingDraw.voting_closes_at || this.upcomingDraw.draw_date || this.upcomingDraw.drawDate;
+    const closeAt = new Date(closeAtValue);
+
+    if (closeAtValue === this.upcomingDraw.draw_date || closeAtValue === this.upcomingDraw.drawDate) {
+      closeAt.setHours(19, 59, 59, 999);
+    }
+
+    const diff = closeAt.getTime() - now.getTime();
     
     if (diff <= 0) {
       this.countdown = '00:00:00';
@@ -141,16 +144,13 @@ export class VotingComponent implements OnInit {
   
   selectNumber(num: number) {
     if (this.currentStep === 1 || this.currentStep === 2) {
-      // Main numbers selection
       const idx = this.selectedNumbers.indexOf(num);
       if (idx > -1) {
         this.selectedNumbers.splice(idx, 1);
       } else if (this.selectedNumbers.length < 5) {
         this.selectedNumbers.push(num);
-        // Let backend handle sorting when needed
       }
     } else if (this.currentStep === 3 || this.currentStep === 4) {
-      // Bonus numbers selection - check if already selected in main numbers
       if (this.selectedNumbers.includes(num)) {
         this.toastService.showError(`Number ${num} is already selected in main numbers. Please choose a different number.`);
         return;
@@ -161,7 +161,6 @@ export class VotingComponent implements OnInit {
         this.selectedBonus.splice(idx, 1);
       } else if (this.selectedBonus.length < 2) {
         this.selectedBonus.push(num);
-        // Let backend handle sorting when needed
       }
     }
   }
@@ -177,7 +176,6 @@ export class VotingComponent implements OnInit {
   }
   
   isDisabled(num: number): boolean {
-    // In bonus number selection steps, disable numbers already selected in main numbers
     if (this.currentStep === 3 || this.currentStep === 4) {
       return this.selectedNumbers.includes(num);
     }

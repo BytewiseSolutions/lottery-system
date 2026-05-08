@@ -2,7 +2,9 @@ import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { LayoutComponent } from '../layout/layout.component';
-import { environment } from '../../environments/environment';
+import { BackendService } from '../util/backend.service';
+import { ErrorHandlerService } from '../util/error-handler.service';
+import { SuccessPopupService } from '../util/success-popup.service';
 
 @Component({
   selector: 'app-contact',
@@ -18,36 +20,48 @@ export class ContactComponent {
   };
   
   isSubmitting = false;
-  showSuccess = false;
-  errorMessage = '';
+
+  constructor(
+    private backendService: BackendService,
+    private errorHandlerService: ErrorHandlerService,
+    private successPopupService: SuccessPopupService
+  ) {}
 
   async submitForm() {
     if (!this.contactForm.name || !this.contactForm.email || !this.contactForm.message) {
-      this.errorMessage = 'Please fill in all fields';
+      this.errorHandlerService.showError('Please fill in all fields');
       return;
     }
 
     this.isSubmitting = true;
-    this.errorMessage = '';
 
     try {
-      const response = await fetch(`${environment.apiUrl}/contact`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(this.contactForm)
+      const result = await new Promise<any>((resolve, reject) => {
+        const request = this.backendService.submitContactMessage(this.contactForm).subscribe({
+          next: (response) => {
+            request.unsubscribe();
+            resolve(response);
+          },
+          error: (error) => {
+            request.unsubscribe();
+            reject(error);
+          }
+        });
       });
 
-      const result = await response.json();
-
       if (result.success) {
-        this.showSuccess = true;
         this.contactForm = { name: '', email: '', message: '' };
-        setTimeout(() => this.showSuccess = false, 5000);
+        this.successPopupService.show(
+          result.message || 'Thank you! Your message has been sent successfully.',
+          'Message Sent'
+        );
       } else {
-        this.errorMessage = result.error || 'Failed to send message';
+        this.errorHandlerService.showError(result.message || 'Failed to send message');
       }
-    } catch (error) {
-      this.errorMessage = 'Network error. Please try again.';
+    } catch (error: any) {
+      this.errorHandlerService.showError(
+        error?.error?.message || 'Network error. Please try again.'
+      );
     } finally {
       this.isSubmitting = false;
     }

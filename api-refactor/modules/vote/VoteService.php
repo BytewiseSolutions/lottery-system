@@ -36,13 +36,13 @@ class VoteService
                 ];
             }
 
-            $drawDateTime = new DateTime($draw->draw_date);
             $now = new DateTime();
+            $votingCloseTime = new DateTime($draw->getVotingClosesAt());
 
-            if ($now >= $drawDateTime) {
+            if ($now > $votingCloseTime) {
                 return [
                     'success' => false,
-                    'message' => 'Draw time has passed. You cannot play this lottery anymore.'
+                    'message' => 'Voting closed at 7:59 PM. You cannot vote for this lottery anymore.'
                 ];
             }
 

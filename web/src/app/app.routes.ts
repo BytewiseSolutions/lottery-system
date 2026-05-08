@@ -6,6 +6,8 @@ import { FaqComponent } from './faq/faq.component';
 import { HistoryComponent } from './history/history.component';
 import { ContactComponent } from './contact/contact.component';
 import { PlayLotteryComponent } from './play-lottery/play-lottery.component';
+import { VotingComponent as PublicVotingComponent } from './voting/voting.component';
+import { ResultsComponent as PublicResultsComponent } from './results/results.component';
 import { LoginPageComponent } from './login-page/login-page.component';
 import { TermsComponent } from './terms/terms.component';
 import { PrivacyComponent } from './privacy/privacy.component';
@@ -15,10 +17,10 @@ import { WinningsComponent } from './winnings/winnings.component';
 import { adminGuard } from './guards/admin.guard';
 import { AdminDashboardComponent } from './admin-dashboard/admin-dashboard.component';
 import { ActivityLogComponent } from './admin-dashboard/components/activity-log/activity-log.component';
-import { VotingComponent } from './admin-dashboard/components/voting/voting.component';
+import { VotingComponent as AdminVotingComponent } from './admin-dashboard/components/voting/voting.component';
 import { VoteAllocationFormComponent } from './admin-dashboard/components/voting/vote-allocation-form/vote-allocation-form.component';
 import { VoteAllocationDetailsComponent } from './admin-dashboard/components/voting/vote-allocation-details/vote-allocation-details.component';
-import { ResultsComponent } from './admin-dashboard/components/results/results.component';
+import { ResultsComponent as AdminResultsComponent } from './admin-dashboard/components/results/results.component';
 import { EntryComponent } from './admin-dashboard/components/entry/entry.component';
 import { NotificationComponent } from './admin-dashboard/components/notification/notification.component';
 import { UserComponent } from './admin-dashboard/components/user/user.component';
@@ -39,6 +41,8 @@ export const routes: Routes = [
   { path: 'contact', component: ContactComponent },
   { path: 'login', component: LoginPageComponent },
   { path: 'play-lottery', component: PlayLotteryComponent },
+  { path: 'voting', component: PublicVotingComponent },
+  { path: 'results', component: PublicResultsComponent },
   { path: 'terms', component: TermsComponent },
   { path: 'privacy', component: PrivacyComponent },
   { path: 'profile', component: ProfileComponent },
@@ -46,11 +50,11 @@ export const routes: Routes = [
   { path: 'winnings', component: WinningsComponent },
   { path: 'admin-dashboard', component: AdminDashboardComponent, canActivate: [adminGuard] },
   { path: 'admin-dashboard/activity-log', component: ActivityLogComponent, canActivate: [adminGuard] },
-  { path: 'admin-dashboard/voting', component: VotingComponent, canActivate: [adminGuard] },
+  { path: 'admin-dashboard/voting', component: AdminVotingComponent, canActivate: [adminGuard] },
   { path: 'admin-dashboard/voting/new', component: VoteAllocationFormComponent, canActivate: [adminGuard] },
   { path: 'admin-dashboard/voting/:id/edit', component: VoteAllocationFormComponent, canActivate: [adminGuard] },
   { path: 'admin-dashboard/voting/:id', component: VoteAllocationDetailsComponent, canActivate: [adminGuard] },
-  { path: 'admin-dashboard/results', component: ResultsComponent, canActivate: [adminGuard] },
+  { path: 'admin-dashboard/results', component: AdminResultsComponent, canActivate: [adminGuard] },
   { path: 'admin-dashboard/results/:id', component: ResultsDetailsComponent, canActivate: [adminGuard] },
   { path: 'admin-dashboard/entry', component: EntryComponent, canActivate: [adminGuard] },
   { path: 'admin-dashboard/entry/:id', component: EntryDetailsComponent, canActivate: [adminGuard] },
