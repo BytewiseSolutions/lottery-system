@@ -32,7 +32,8 @@ export class UserFormComponent {
   submit(): void {
     this.saveForm.emit({
       ...this.formModel,
-      full_name: this.formModel.full_name.trim(),
+      first_name: this.formModel.first_name.trim(),
+      last_name: this.formModel.last_name.trim(),
       email: this.formModel.email.trim(),
       phone: this.formModel.phone.trim(),
       country: this.formModel.country.trim()
@@ -41,7 +42,8 @@ export class UserFormComponent {
 
   private createEmptyForm(): UserFormValue {
     return {
-      full_name: '',
+      first_name: '',
+      last_name: '',
       email: '',
       phone: '',
       country: '',

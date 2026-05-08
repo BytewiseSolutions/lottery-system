@@ -83,27 +83,12 @@
         @if (activeTab === 'account') {
           <div class="tab-content">
             <h3>Account Info</h3>
-            <div class="info-grid">
-              <div class="info-card">
-                <label>User ID</label>
-                <p>{{ user.id }}</p>
-              </div>
-              <div class="info-card">
-                <label>Role</label>
-                <p>{{ getRoleLabel() }}</p>
-              </div>
-              <div class="info-card">
-                <label>Status</label>
-                <p>{{ getStatusLabel() }}</p>
-              </div>
-              <div class="info-card">
-                <label>Joined</label>
-                <p>{{ formatDateTime(user.created_at) }}</p>
-              </div>
-              <div class="info-card">
-                <label>Last Updated</label>
-                <p>{{ formatDateTime(user.updated_at) }}</p>
-              </div>
+            <div class="meta-info">
+              <p><strong>User ID:</strong> {{ user.id }}</p>
+              <p><strong>Role:</strong> {{ getRoleLabel() }}</p>
+              <p><strong>Status:</strong> {{ getStatusLabel() }}</p>
+              <p><strong>Joined:</strong> {{ formatDateTime(user.created_at) }}</p>
+              <p><strong>Last Updated:</strong> {{ formatDateTime(user.updated_at) }}</p>
             </div>
           </div>
         }

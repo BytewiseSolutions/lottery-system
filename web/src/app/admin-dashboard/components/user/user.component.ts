@@ -86,7 +86,8 @@ export class UserComponent implements OnInit {
     this.currentUser = null;
     this.formError = '';
     this.userForm = {
-      full_name: '',
+      first_name: '',
+      last_name: '',
       email: '',
       phone: '',
       country: '',
@@ -102,7 +103,8 @@ export class UserComponent implements OnInit {
     this.currentUser = user;
     this.formError = '';
     this.userForm = {
-      full_name: user.full_name,
+      first_name: user.first_name || '',
+      last_name: user.last_name || '',
       email: user.email,
       phone: user.phone || '',
       country: user.country || '',
@@ -235,11 +237,9 @@ export class UserComponent implements OnInit {
   }
 
   private buildUserPayload(formValue: UserFormValue): any {
-    const [firstName, lastName] = this.splitFullName(formValue.full_name);
-
     return {
-      first_name: firstName,
-      last_name: lastName,
+      first_name: formValue.first_name.trim(),
+      last_name: formValue.last_name.trim(),
       email: formValue.email.trim(),
       phone: formValue.phone.trim(),
       country: formValue.country.trim(),
@@ -247,14 +247,6 @@ export class UserComponent implements OnInit {
       role: formValue.role,
       is_active: formValue.is_active
     };
-  }
-
-  private splitFullName(fullName: string): [string, string] {
-    const parts = fullName.trim().split(/\s+/).filter(Boolean);
-    const firstName = parts[0] || '';
-    const lastName = parts.length > 1 ? parts.slice(1).join(' ') : '';
-
-    return [firstName, lastName];
   }
 
   private isUserActive(user: User): boolean {
