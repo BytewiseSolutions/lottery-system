@@ -4,8 +4,8 @@ import { SidebarComponent } from '../../sidebar/sidebar.component';
 import { ClaimFormComponent } from '../results/claim-form/claim-form.component';
 import { PayFormComponent } from '../results/pay-form/pay-form.component';
 import { BackendService } from '../../../util/backend.service';
-import { SuccessPopupService } from '../../../services/success-popup.service';
-import { ErrorHandlerService } from '../../../services/error-handler.service';
+import { SuccessPopupService } from '../../../util/success-popup.service';
+import { ErrorHandlerService } from '../../../util/error-handler.service';
 import { FormsModule } from '@angular/forms';
 
 @Component({

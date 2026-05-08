@@ -2,7 +2,7 @@ import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
-import { SuccessPopupService } from '../../../services/success-popup.service';
+import { SuccessPopupService } from '../../../util/success-popup.service';
 import { BackendService } from '../../../util/backend.service';
 import { CountrySelectorComponent } from '../country-selector/country-selector.component';
 

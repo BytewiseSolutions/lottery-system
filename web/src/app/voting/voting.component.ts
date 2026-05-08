@@ -2,7 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { LayoutComponent } from '../layout/layout.component';
-import { ToastService } from '../services/toast.service';
+import { ToastService } from '../util/toast.service';
 import { BackendService } from '../util/backend.service';
 
 @Component({

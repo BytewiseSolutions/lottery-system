@@ -2,7 +2,7 @@ import { CommonModule } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
 import { SidebarComponent } from '../../sidebar/sidebar.component';
 import { BackendService } from '../../../util/backend.service';
-import { SuccessPopupService } from '../../../services/success-popup.service';
+import { SuccessPopupService } from '../../../util/success-popup.service';
 import { UserFormComponent } from '../user/user-form/user-form.component';
 import { UserFormValue } from '../user/value';
 

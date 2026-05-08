@@ -3,8 +3,8 @@ import { Component, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { forkJoin } from 'rxjs';
-import { ErrorHandlerService } from '../../../services/error-handler.service';
-import { SuccessPopupService } from '../../../services/success-popup.service';
+import { ErrorHandlerService } from '../../../util/error-handler.service';
+import { SuccessPopupService } from '../../../util/success-popup.service';
 import { BackendService } from '../../../util/backend.service';
 import { SidebarComponent } from '../../sidebar/sidebar.component';
 

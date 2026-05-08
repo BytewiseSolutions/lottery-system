@@ -2,7 +2,7 @@ import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { LayoutComponent } from '../layout/layout.component';
 import { LotteryService } from '../services/lottery.service';
-import { ToastService } from '../services/toast.service';
+import { ToastService } from '../util/toast.service';
 import { Subscription, interval } from 'rxjs';
 
 interface VoteData {

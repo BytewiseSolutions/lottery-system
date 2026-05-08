@@ -1,7 +1,7 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Subscription } from 'rxjs';
-import { SuccessPopupService, SuccessPopup } from '../../../services/success-popup.service';
+import { SuccessPopupService, SuccessPopup } from '../../../util/success-popup.service';
 
 @Component({
   selector: 'app-success-popup',

@@ -4,8 +4,8 @@ import { CommonModule } from '@angular/common';
 import { WinnerListComponent } from '../winner-list/winner-list.component';
 import { ActivatedRoute, Router } from '@angular/router';
 import { BackendService } from '../../../../util/backend.service';
-import { SuccessPopupService } from '../../../../services/success-popup.service';
-import { ErrorHandlerService } from '../../../../services/error-handler.service';
+import { SuccessPopupService } from '../../../../util/success-popup.service';
+import { ErrorHandlerService } from '../../../../util/error-handler.service';
 import { ResultDetail } from '../../../../util/results';
 
 @Component({

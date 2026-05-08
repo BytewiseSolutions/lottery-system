@@ -1,6 +1,6 @@
 import { Injectable, signal } from '@angular/core';
 import { Title, Meta } from '@angular/platform-browser';
-import { BackendService } from '../util/backend.service';
+import { BackendService } from './backend.service';
 
 interface RuntimeSettings {
   site_name: string;

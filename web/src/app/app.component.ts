@@ -4,7 +4,7 @@ import { GlobalModalComponent } from './shared/components/global-modal/global-mo
 import { SuccessPopupComponent } from './shared/components/success-popup/success-popup.component';
 import { ErrorDisplayComponent } from './shared/components/error-display/error-display.component';
 import { ToastComponent } from './shared/components/toast/toast.component';
-import { SiteSettingsService } from './services/site-settings.service';
+import { SiteSettingsService } from './util/site-settings.service';
 
 @Component({
   selector: 'app-root',

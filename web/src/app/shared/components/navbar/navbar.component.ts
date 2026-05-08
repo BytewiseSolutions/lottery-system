@@ -10,7 +10,7 @@ import { timeout, catchError } from 'rxjs/operators';
 import { BackendService } from '../../../util/backend.service';
 import { ApiResponse } from '../../../util/api-response';
 import { Draw } from '../../../lotteries/draw';
-import { SiteSettingsService } from '../../../services/site-settings.service';
+import { SiteSettingsService } from '../../../util/site-settings.service';
 
 interface UserNotification {
   id: number;

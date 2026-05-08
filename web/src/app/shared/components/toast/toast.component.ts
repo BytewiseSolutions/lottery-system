@@ -1,6 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { Component, OnInit, OnDestroy } from '@angular/core';
-import { ToastService, Toast } from '../../../services/toast.service';
+import { ToastService, Toast } from '../../../util/toast.service';
 import { Subscription } from 'rxjs';
 
 @Component({

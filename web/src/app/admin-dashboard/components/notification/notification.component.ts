@@ -2,7 +2,6 @@ import { CommonModule } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
 import { SidebarComponent } from '../../sidebar/sidebar.component';
 import { BackendService } from '../../../util/backend.service';
-import { LotteryService } from '../../../services/lottery.service';
 import { NotificationFormComponent } from './notification-form/notification-form.component';
 import { Notification } from './notification';
 import { NotificationCreateRequest } from './notification-request';
@@ -25,8 +24,7 @@ export class NotificationComponent implements OnInit {
   creating = false;
 
   constructor(
-    private backendService: BackendService,
-    private lotteryService: LotteryService
+    private backendService: BackendService
   ) {}
 
   ngOnInit() {

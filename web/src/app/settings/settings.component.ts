@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { LayoutComponent } from '../layout/layout.component';
-import { SuccessPopupService } from '../services/success-popup.service';
+import { SuccessPopupService } from '../util/success-popup.service';
 import { environment } from '../../environments/environment';
 
 @Component({

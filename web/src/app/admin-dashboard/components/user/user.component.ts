@@ -5,8 +5,8 @@ import { Router } from '@angular/router';
 import { SidebarComponent } from '../../sidebar/sidebar.component';
 import { BackendService } from '../../../util/backend.service';
 import { UserFormComponent } from './user-form/user-form.component';
-import { SuccessPopupService } from '../../../services/success-popup.service';
-import { ErrorHandlerService } from '../../../services/error-handler.service';
+import { SuccessPopupService } from '../../../util/success-popup.service';
+import { ErrorHandlerService } from '../../../util/error-handler.service';
 import { UserFormValue } from './value';
 import { User } from './user';
 

@@ -1,7 +1,7 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
-import { SiteSettingsService } from '../../../services/site-settings.service';
+import { SiteSettingsService } from '../../../util/site-settings.service';
 
 @Component({
   selector: 'app-footer',

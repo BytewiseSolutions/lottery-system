@@ -2,9 +2,9 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { LayoutComponent } from '../layout/layout.component';
-import { SuccessPopupService } from '../services/success-popup.service';
+import { SuccessPopupService } from '../util/success-popup.service';
 import { BackendService } from '../util/backend.service';
-import { ErrorHandlerService } from '../services/error-handler.service';
+import { ErrorHandlerService } from '../util/error-handler.service';
 import { environment } from '../../environments/environment';
 import { COUNTRIES } from '../shared/data/countries';
 
