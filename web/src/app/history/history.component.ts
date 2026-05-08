@@ -32,8 +32,7 @@ export class HistoryComponent implements OnInit {
     this.setRandomQuote();
     this.startQuoteRotation();
     if (this.isLoggedIn) {
-      this.loadResults();
-      this.loadHistory();
+      this.loadHistoryData();
     }
   }
 
@@ -41,6 +40,11 @@ export class HistoryComponent implements OnInit {
     setInterval(() => {
       this.setRandomQuote();
     }, 5000);
+  }
+
+  async loadHistoryData() {
+    await this.loadResults();
+    await this.loadHistory();
   }
 
   async loadResults() {
@@ -68,10 +72,10 @@ export class HistoryComponent implements OnInit {
     const safeEntries = Array.isArray(entries) ? entries : [];
 
     this.historyEntries = safeEntries.map(entry => {
-      const numbers = typeof entry.numbers === 'string' ? JSON.parse(entry.numbers) : entry.numbers;
-      const bonus_numbers = typeof entry.bonus_numbers === 'string' ? JSON.parse(entry.bonus_numbers) : entry.bonus_numbers;
+      const numbers = this.parseNumberList(entry.numbers);
+      const bonus_numbers = this.parseNumberList(entry.bonus_numbers);
       
-      const matchResult = this.checkMatch(entry.lottery, entry.draw_date, numbers, bonus_numbers);
+      const matchResult = this.checkMatch(entry, numbers, bonus_numbers);
       
       return {
         ...entry,
@@ -90,29 +94,57 @@ export class HistoryComponent implements OnInit {
     this.groupEntriesByDate();
   }
 
-  checkMatch(lottery: string, drawDate: string, numbers: number[], bonusNumbers: number[]) {
+  checkMatch(entry: any, numbers: number[], bonusNumbers: number[]) {
+    const lottery = entry?.lottery;
+    const drawDate = entry?.draw_date;
+    const entryDrawId = Number(entry?.draw_id || 0);
+
     if (!drawDate) {
-      return { matchedNumbers: [], matchedBonus: [], status: 'Pending' as const };
+      return {
+        matchedNumbers: [],
+        matchedBonus: [],
+        unmatchedNumbers: [],
+        unmatchedBonus: [],
+        status: 'Pending' as const
+      };
     }
     
     const entryDrawDate = new Date(drawDate).toISOString().split('T')[0];
     
     const result = this.results.find(r => {
+      const resultDrawId = Number(r.draw_id || 0);
+
+      if (entryDrawId > 0 && resultDrawId > 0) {
+        return resultDrawId === entryDrawId;
+      }
+
       const resultDate = r.drawDate || r.draw_date;
       if (!resultDate) return false;
       const resultDrawDate = new Date(resultDate).toISOString().split('T')[0];
       return r.lottery === lottery && resultDrawDate === entryDrawDate;
     });
 
-    if (!result || result.status !== 'published') {
-      return { matchedNumbers: [], matchedBonus: [], status: 'Pending' as const };
+    if (!result || String(result.status || '').toLowerCase() !== 'published') {
+      return {
+        matchedNumbers: [],
+        matchedBonus: [],
+        unmatchedNumbers: [],
+        unmatchedBonus: [],
+        status: 'Pending' as const
+      };
     }
 
-    const winningNumbers = result.numbers || result.winning_numbers;
-    const winningBonus = result.bonusNumbers || result.bonus_numbers;
+    const winningNumbers = this.parseNumberList(result.numbers || result.winning_numbers);
+    const winningBonus = this.parseNumberList(result.bonusNumbers || result.bonus_numbers);
 
-    if (!winningNumbers || !winningBonus) {
-      return { matchedNumbers: [], matchedBonus: [], status: 'Pending' as const };
+    if (winningNumbers.length === 0 && winningBonus.length === 0) {
+      return {
+        matchedNumbers: [],
+        matchedBonus: [],
+        unmatchedNumbers: [],
+        unmatchedBonus: [],
+        status: 'Pending' as const
+      };
     }
 
     const matchedNumbers = numbers.filter(n => winningNumbers.includes(n));
@@ -123,6 +155,25 @@ export class HistoryComponent implements OnInit {
     const status = (matchedNumbers.length === 5 && matchedBonus.length === 2) ? 'Won' : 'Lost';
 
     return { matchedNumbers, matchedBonus, unmatchedNumbers, unmatchedBonus, status: status as 'Won' | 'Lost' };
+  }
+
+  private parseNumberList(value: any): number[] {
+    if (Array.isArray(value)) {
+      return value.map((item) => Number(item)).filter((item) => !Number.isNaN(item));
+    }
+
+    if (typeof value === 'string') {
+      try {
+        const parsed = JSON.parse(value);
+        if (Array.isArray(parsed)) {
+          return parsed.map((item) => Number(item)).filter((item) => !Number.isNaN(item));
+        }
+      } catch (error) {
+        console.warn('Failed to parse number list:', value, error);
+      }
+    }
+
+    return [];
   }
 
   groupEntriesByDate() {

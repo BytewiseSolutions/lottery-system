@@ -377,16 +377,16 @@ export class VotingComponent implements OnInit {
     ).subscribe({
       next: (response: any) => {
         this.leadingNumbers = response?.data ?? null;
-        // Backend should handle sorting, but keep this for compatibility
-        if (this.leadingNumbers.section1) {
-          this.leadingNumbers.topSection1 = this.leadingNumbers.section1
-            .slice(0, 5)
-            .map((item: any) => item.number);
-        }
-        if (this.leadingNumbers.section2) {
-          this.leadingNumbers.topSection2 = this.leadingNumbers.section2
-            .slice(0, 2)
-            .map((item: any) => item.number);
+        if (this.leadingNumbers) {
+          const topSection1 = this.leadingNumbers.topSection1
+            || this.leadingNumbers.section1?.slice(0, 5).map((item: any) => item.number)
+            || [];
+          const topSection2 = this.leadingNumbers.topSection2
+            || this.leadingNumbers.section2?.slice(0, 2).map((item: any) => item.number)
+            || [];
+
+          this.leadingNumbers.topSection1 = [...topSection1].map((value: any) => Number(value)).sort((left: number, right: number) => left - right);
+          this.leadingNumbers.topSection2 = [...topSection2].map((value: any) => Number(value)).sort((left: number, right: number) => left - right);
         }
       },
       error: (err) => console.error(err)
