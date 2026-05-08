@@ -6,6 +6,13 @@ import { LayoutComponent } from '../layout/layout.component';
 import { BackendService } from '../util/backend.service';
 import { ApiResponse } from '../util/api-response';
 
+interface GroupedEntry {
+  date: string;
+  entries: HistoryEntry[];
+  hasMoreEntries: boolean;
+  showAllEntries: boolean;
+}
+
 @Component({
   selector: 'app-history',
   imports: [CommonModule, FormsModule, LayoutComponent],
