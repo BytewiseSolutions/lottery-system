@@ -3,10 +3,14 @@
 class ResultController
 {
     private $resultService;
+    private $authRepository;
+    private $userRepository;
 
     public function __construct()
     {
         $this->resultService = new ResultService();
+        $this->authRepository = new AuthRepository();
+        $this->userRepository = new UserRepository();
     }
 
     public function getLatestResults()
@@ -73,8 +77,9 @@ class ResultController
     public function createResult()
     {
         try {
+            $currentUser = $this->getCurrentUser();
             $resultDto = ResultDto::fromRequest();
-            $result = $this->resultService->createResult($resultDto);
+            $result = $this->resultService->createResult($resultDto, $currentUser);
 
             if ($result['success']) {
                 Response::json(true, $result['message'], $result['data'] ?? null, HTTP_CREATED);
@@ -94,8 +99,9 @@ class ResultController
     public function updateResult()
     {
         try {
+            $currentUser = $this->getCurrentUser();
             $resultDto = ResultDto::fromRequest();
-            $result = $this->resultService->updateResult($resultDto);
+            $result = $this->resultService->updateResult($resultDto, $currentUser);
 
             if ($result['success']) {
                 Response::json(true, $result['message'], $result['data'] ?? null, HTTP_OK);
@@ -110,5 +116,61 @@ class ResultController
 
             Response::json(false, 'Failed to update result', null, HTTP_INTERNAL_ERROR);
         }
+    }
+
+    private function getCurrentUser()
+    {
+        $header = $_SERVER['HTTP_AUTHORIZATION'] ?? $_SERVER['Authorization'] ?? '';
+
+        if (!$header && function_exists('getallheaders')) {
+            $headers = getallheaders();
+            $header = $headers['Authorization'] ?? $headers['authorization'] ?? '';
+        }
+
+        if (!preg_match('/Bearer\s+(.+)$/i', $header, $matches)) {
+            return null;
+        }
+
+        $token = trim($matches[1]);
+        $user = $this->authRepository->findUserByToken($token);
+
+        if ($user) {
+            return $user;
+        }
+
+        return $this->getUserFromLegacyJwt($token);
+    }
+
+    private function getUserFromLegacyJwt($token)
+    {
+        $jwtPath = dirname(__DIR__, 3) . '/api/config/jwt.php';
+
+        if (!file_exists($jwtPath)) {
+            return null;
+        }
+
+        require_once $jwtPath;
+
+        if (!class_exists('JWT') || !method_exists('JWT', 'decode')) {
+            return null;
+        }
+
+        $payload = JWT::decode($token);
+
+        if (!$payload || !is_array($payload)) {
+            return null;
+        }
+
+        if (isset($payload['exp']) && (int)$payload['exp'] < time()) {
+            return null;
+        }
+
+        $userId = isset($payload['id']) ? (int)$payload['id'] : 0;
+
+        if ($userId <= 0) {
+            return null;
+        }
+
+        return $this->userRepository->findById($userId);
     }
 }

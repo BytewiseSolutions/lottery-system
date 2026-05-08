@@ -3,10 +3,12 @@
 class WinnerService
 {
     private $winnerRepository;
+    private $activityLogService;
 
     public function __construct()
     {
         $this->winnerRepository = new WinnerRepository();
+        $this->activityLogService = new ActivityLogService();
     }
 
     public function getWinners($resultId = null)
@@ -75,7 +77,7 @@ class WinnerService
         }
     }
 
-    public function markClaimed($winnerId)
+    public function markClaimed($winnerId, $currentUser = null)
     {
         if (!$winnerId) {
             return [
@@ -102,6 +104,15 @@ class WinnerService
             }
 
             $updated = $this->winnerRepository->updateClaimStatus($winnerId, CLAIM_CLAIMED);
+
+            if ($updated && $currentUser) {
+                $winnerName = trim((string)($winner->name ?? 'winner'));
+                $this->activityLogService->log(
+                    $currentUser->id,
+                    ACTION_WINNER_CLAIM,
+                    "Marked winner {$winnerName} as claimed"
+                );
+            }
 
             return [
                 'success' => (bool)$updated,

@@ -7,6 +7,7 @@ class ResultService
     private $winnerRepository;
     private $drawRepository;
     private $voteService;
+    private $activityLogService;
 
     public function __construct()
     {
@@ -15,6 +16,7 @@ class ResultService
         $this->winnerRepository = new WinnerRepository();
         $this->drawRepository = new DrawRepository();
         $this->voteService = new VoteService();
+        $this->activityLogService = new ActivityLogService();
     }
 
     public function getLatestResults($limit = 1)
@@ -104,14 +106,14 @@ class ResultService
         }
     }
 
-    public function createResult(ResultDto $resultDto)
+    public function createResult(ResultDto $resultDto, $currentUser = null)
     {
-        return $this->saveResult($resultDto, false);
+        return $this->saveResult($resultDto, false, $currentUser);
     }
 
-    public function updateResult(ResultDto $resultDto)
+    public function updateResult(ResultDto $resultDto, $currentUser = null)
     {
-        return $this->saveResult($resultDto, true);
+        return $this->saveResult($resultDto, true, $currentUser);
     }
 
     public function autoPublishDueResults($asOf = null)
@@ -194,7 +196,7 @@ class ResultService
         }
     }
 
-    private function saveResult(ResultDto $resultDto, $isUpdate)
+    private function saveResult(ResultDto $resultDto, $isUpdate, $currentUser = null)
     {
         if (empty($resultDto->draw_id)) {
             return [
@@ -286,6 +288,14 @@ class ResultService
 
             $this->resultRepository->syncDrawAfterResult($result->draw_id, $result->jackpot);
             $this->resultRepository->commit();
+
+            if ($currentUser) {
+                $this->activityLogService->log(
+                    $currentUser->id,
+                    $isUpdate ? ACTION_RESULT_UPDATE : ACTION_RESULT_CREATE,
+                    ($isUpdate ? 'Updated' : 'Created') . " result for {$savedResult->lottery} draw {$savedResult->draw_date}"
+                );
+            }
 
             return [
                 'success' => true,

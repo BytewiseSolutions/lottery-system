@@ -3,13 +3,15 @@
 class PaymentService
 {
     private $paymentRepository;
+    private $activityLogService;
 
     public function __construct()
     {
         $this->paymentRepository = new PaymentRepository();
+        $this->activityLogService = new ActivityLogService();
     }
 
-    public function processPayment(PaymentDto $paymentDto)
+    public function processPayment(PaymentDto $paymentDto, $currentUser = null)
     {
         if (!$paymentDto->winner_id) {
             return [
@@ -72,6 +74,14 @@ class PaymentService
             $this->paymentRepository->updateWinnerPaymentStatus($winner['id'], PAYMENT_PAID);
 
             $this->paymentRepository->commit();
+
+            if ($currentUser) {
+                $this->activityLogService->log(
+                    $currentUser->id,
+                    ACTION_PAYMENT_PROCESS,
+                    'Processed winner payment of M' . number_format((float)$paymentDto->amount, 2, '.', '') . ' for winner ID ' . $winner['id']
+                );
+            }
 
             return [
                 'success' => true,

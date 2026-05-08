@@ -96,7 +96,12 @@ export class ActivityLogComponent implements OnInit {
       case 'payment_processed':
       case 'payment':
       case 'payment_completed':
+      case 'payment_process':
         return 'fas fa-money-bill';
+      case 'notification_create':
+        return 'fas fa-envelope';
+      case 'winner_claim':
+        return 'fas fa-hand-holding';
       case 'entry_submitted':
       case 'entry':
       case 'lottery_entry':
@@ -128,9 +133,13 @@ export class ActivityLogComponent implements OnInit {
       case 'draw_created':
       case 'draw':
         return 'fas fa-calendar-plus';
+      case 'result_create':
+      case 'result_update':
       case 'result_published':
       case 'result':
         return 'fas fa-bullhorn';
+      case 'settings_update':
+        return 'fas fa-gear';
       default:
         return 'fas fa-info-circle';
     }
@@ -190,6 +199,24 @@ export class ActivityLogComponent implements OnInit {
 
       case 'admin_vote_delete':
         return activity.details || `${userName} deleted an admin vote allocation`;
+
+      case 'result_create':
+        return activity.details || `${userName} created a result`;
+
+      case 'result_update':
+        return activity.details || `${userName} updated a result`;
+
+      case 'winner_claim':
+        return activity.details || `${userName} marked a winner as claimed`;
+
+      case 'payment_process':
+        return activity.details || `${userName} processed a payment`;
+
+      case 'notification_create':
+        return activity.details || `${userName} created a notification`;
+
+      case 'settings_update':
+        return activity.details || `${userName} updated system settings`;
       
       case 'vote_submitted':
       case 'vote':

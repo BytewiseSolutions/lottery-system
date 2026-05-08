@@ -3,10 +3,12 @@
 class NotificationService
 {
     private $notificationRepository;
+    private $activityLogService;
 
     public function __construct()
     {
         $this->notificationRepository = new NotificationRepository();
+        $this->activityLogService = new ActivityLogService();
     }
 
     public function getUnreadCount($userId)
@@ -66,6 +68,12 @@ class NotificationService
             $success = $this->notificationRepository->createNotification($createdBy, $title, $message, $type, $recipientType);
 
             if ($success) {
+                $this->activityLogService->log(
+                    $createdBy,
+                    ACTION_NOTIFICATION_CREATE,
+                    "Created {$type} notification for {$recipientType} recipients: {$title}"
+                );
+
                 return [
                     'success' => true,
                     'message' => 'Notification created successfully'
