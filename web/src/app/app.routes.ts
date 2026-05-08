@@ -25,6 +25,8 @@ import { WinnerComponent } from './admin-dashboard/components/winner/winner.comp
 import { ResultsDetailsComponent } from './admin-dashboard/components/results/results-details/results-details.component';
 import { UserDetailsComponent } from './admin-dashboard/components/user/user-details/user-details.component';
 import { EntryDetailsComponent } from './admin-dashboard/components/entry/entry-details/entry-details.component';
+import { AdminProfileComponent } from './admin-dashboard/components/profile/profile.component';
+import { AdminSettingsComponent } from './admin-dashboard/components/settings/settings.component';
 
 export const routes: Routes = [
   { path: '', component: HomeComponent },
@@ -49,6 +51,8 @@ export const routes: Routes = [
   { path: 'admin-dashboard/entry', component: EntryComponent, canActivate: [adminGuard] },
   { path: 'admin-dashboard/entry/:id', component: EntryDetailsComponent, canActivate: [adminGuard] },
   { path: 'admin-dashboard/notification', component: NotificationComponent, canActivate: [adminGuard] },
+  { path: 'admin-dashboard/profile', component: AdminProfileComponent, canActivate: [adminGuard] },
+  { path: 'admin-dashboard/settings', component: AdminSettingsComponent, canActivate: [adminGuard] },
   { path: 'admin-dashboard/user', component: UserComponent, canActivate: [adminGuard] },
   { path: 'admin-dashboard/user/:id', component: UserDetailsComponent, canActivate: [adminGuard] },
   { path: 'admin-dashboard/winner', component: WinnerComponent, canActivate: [adminGuard] },

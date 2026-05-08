@@ -14,6 +14,10 @@ export class UserFormComponent {
   @Input() isEditMode = false;
   @Input() loading = false;
   @Input() errorMessage = '';
+  @Input() title?: string;
+  @Input() description?: string;
+  @Input() showAccountControls = true;
+  @Input() showPasswordField = true;
 
   @Output() cancel = new EventEmitter<void>();
   @Output() saveForm = new EventEmitter<UserFormValue>();
@@ -38,6 +42,24 @@ export class UserFormComponent {
       phone: this.formModel.phone.trim(),
       country: this.formModel.country.trim()
     });
+  }
+
+  get heading(): string {
+    if (this.title) {
+      return this.title;
+    }
+
+    return this.isEditMode ? 'Edit User' : 'Add New User';
+  }
+
+  get subheading(): string {
+    if (this.description) {
+      return this.description;
+    }
+
+    return this.isEditMode
+      ? 'Update the selected user details.'
+      : 'Create a new account and set the initial access details.';
   }
 
   private createEmptyForm(): UserFormValue {

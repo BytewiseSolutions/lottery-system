@@ -77,14 +77,13 @@ class UserController
     public function getCurrentProfile()
     {
         try {
-            // Get user ID from JWT token or session
-            $userId = $this->getCurrentUserId();
-            
-            if (!$userId) {
+            $currentUser = $this->getCurrentUser();
+
+            if (!$currentUser) {
                 Response::json(false, 'Authentication required', null, HTTP_UNAUTHORIZED);
             }
 
-            $result = $this->userService->getUserById($userId);
+            $result = $this->userService->getUserById($currentUser->id);
             
             if ($result['success']) {
                 Response::json(true, 'Profile retrieved successfully', $result['data'], HTTP_OK);
@@ -96,32 +95,6 @@ class UserController
             error_log("Get current profile controller error: " . $e->getMessage());
             Response::json(false, 'Failed to retrieve profile', null, HTTP_INTERNAL_ERROR);
         }
-    }
-
-    private function getCurrentUserId()
-    {
-        // This should extract user ID from JWT token
-        // For now, return a default admin user ID
-        // You'll need to implement proper JWT token parsing
-        $headers = getallheaders();
-        $authHeader = $headers['Authorization'] ?? '';
-        
-        if (strpos($authHeader, 'Bearer ') === 0) {
-            $token = substr($authHeader, 7);
-            // TODO: Decode JWT token and extract user ID
-            // For now, return admin user ID from database
-            try {
-                $pdo = Connection::get();
-                $stmt = $pdo->prepare('SELECT id FROM user WHERE role = ? LIMIT 1');
-                $stmt->execute([ROLE_ADMIN]);
-                $result = $stmt->fetch(PDO::FETCH_ASSOC);
-                return $result ? $result['id'] : null;
-            } catch (Exception $e) {
-                return null;
-            }
-        }
-        
-        return null;
     }
 
     public function getUsers()
@@ -254,14 +227,113 @@ class UserController
         }
     }
 
+    public function updateUserStatus()
+    {
+        try {
+            $currentUser = $this->getCurrentUser();
+
+            if (!$currentUser) {
+                Response::json(false, 'Unauthorized', null, HTTP_UNAUTHORIZED);
+            }
+
+            if (!$currentUser->isAdmin()) {
+                Response::json(false, 'Admin access required', null, HTTP_FORBIDDEN);
+            }
+
+            $input = json_decode(file_get_contents('php://input'), true) ?? [];
+            $userId = isset($input['id']) ? (int)$input['id'] : 0;
+            $isActive = filter_var($input['is_active'] ?? false, FILTER_VALIDATE_BOOLEAN);
+            $result = $this->userService->updateUserStatus($currentUser, $userId, $isActive);
+
+            if ($result['success']) {
+                Response::json(true, $result['message'], $result['data'] ?? null, HTTP_OK);
+            }
+
+            Response::json(false, $result['message'], null, HTTP_BAD_REQUEST);
+        } catch (Exception $e) {
+            error_log("Update user status controller error: " . $e->getMessage());
+            Response::json(false, 'Failed to update user status', null, HTTP_INTERNAL_ERROR);
+        }
+    }
+
+    public function resetUserPassword()
+    {
+        try {
+            $currentUser = $this->getCurrentUser();
+
+            if (!$currentUser) {
+                Response::json(false, 'Unauthorized', null, HTTP_UNAUTHORIZED);
+            }
+
+            if (!$currentUser->isAdmin()) {
+                Response::json(false, 'Admin access required', null, HTTP_FORBIDDEN);
+            }
+
+            $input = json_decode(file_get_contents('php://input'), true) ?? [];
+            $userId = isset($input['id']) ? (int)$input['id'] : 0;
+            $result = $this->userService->resetUserPassword($currentUser, $userId, $input);
+
+            if ($result['success']) {
+                Response::json(true, $result['message'], null, HTTP_OK);
+            }
+
+            $statusCode = isset($result['errors']) ? HTTP_UNPROCESSABLE_ENTITY : HTTP_BAD_REQUEST;
+            $data = isset($result['errors']) ? ['errors' => $result['errors']] : null;
+            Response::json(false, $result['message'], $data, $statusCode);
+        } catch (Exception $e) {
+            error_log("Reset user password controller error: " . $e->getMessage());
+            Response::json(false, 'Failed to reset user password', null, HTTP_INTERNAL_ERROR);
+        }
+    }
+
     public function updateProfile()
     {
         try {
-            Response::json(false, 'Update profile not implemented yet', null, HTTP_NOT_FOUND);
+            $currentUser = $this->getCurrentUser();
+
+            if (!$currentUser) {
+                Response::json(false, 'Authentication required', null, HTTP_UNAUTHORIZED);
+            }
+
+            $input = json_decode(file_get_contents('php://input'), true) ?? [];
+            $result = $this->userService->updateCurrentProfile($currentUser, $input);
+
+            if ($result['success']) {
+                Response::json(true, $result['message'], $result['data'] ?? null, HTTP_OK);
+            }
+
+            $statusCode = isset($result['errors']) ? HTTP_UNPROCESSABLE_ENTITY : HTTP_BAD_REQUEST;
+            $data = isset($result['errors']) ? ['errors' => $result['errors']] : null;
+            Response::json(false, $result['message'], $data, $statusCode);
             
         } catch (Exception $e) {
             error_log("Update profile controller error: " . $e->getMessage());
             Response::json(false, 'Failed to update profile', null, HTTP_INTERNAL_ERROR);
+        }
+    }
+
+    public function changeCurrentPassword()
+    {
+        try {
+            $currentUser = $this->getCurrentUser();
+
+            if (!$currentUser) {
+                Response::json(false, 'Authentication required', null, HTTP_UNAUTHORIZED);
+            }
+
+            $input = json_decode(file_get_contents('php://input'), true) ?? [];
+            $result = $this->userService->changeCurrentPassword($currentUser, $input);
+
+            if ($result['success']) {
+                Response::json(true, $result['message'], null, HTTP_OK);
+            }
+
+            $statusCode = isset($result['errors']) ? HTTP_UNPROCESSABLE_ENTITY : HTTP_BAD_REQUEST;
+            $data = isset($result['errors']) ? ['errors' => $result['errors']] : null;
+            Response::json(false, $result['message'], $data, $statusCode);
+        } catch (Exception $e) {
+            error_log("Change current password controller error: " . $e->getMessage());
+            Response::json(false, 'Failed to change password', null, HTTP_INTERNAL_ERROR);
         }
     }
 

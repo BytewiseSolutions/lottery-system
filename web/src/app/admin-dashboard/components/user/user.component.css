@@ -218,12 +218,30 @@
   color: rgb(108, 0, 146);
 }
 
+.status-btn {
+  background: #fff7ed;
+  color: #c2410c;
+}
+
+.password-btn {
+  background: #ecfeff;
+  color: #0f766e;
+}
+
 .view-btn:hover {
   background: #dbe4ff;
 }
 
 .edit-btn:hover {
   background: #e9d5ff;
+}
+
+.status-btn:hover {
+  background: #ffedd5;
+}
+
+.password-btn:hover {
+  background: #cffafe;
 }
 
 .table-state {
@@ -309,6 +327,115 @@
   padding: 1.1rem;
   overflow-y: auto;
   max-height: 90vh;
+}
+
+.password-modal,
+.confirm-modal {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.password-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1rem;
+}
+
+.password-modal-header h3,
+.confirm-modal h3 {
+  margin: 0;
+  color: #111827;
+}
+
+.password-modal-header p,
+.confirm-modal p {
+  margin: 0.35rem 0 0;
+  color: #6b7280;
+}
+
+.close-btn {
+  width: 38px;
+  height: 38px;
+  border: none;
+  border-radius: 50%;
+  background: #f5f5f5;
+  color: #374151;
+  cursor: pointer;
+  font-size: 1.4rem;
+  line-height: 1;
+}
+
+.form-error {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  padding: 0.9rem 1rem;
+  border-radius: 10px;
+  background: #fef2f2;
+  color: #b42318;
+}
+
+.password-form {
+  display: grid;
+  gap: 1rem;
+}
+
+.password-form .form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+}
+
+.password-form .form-group label {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #374151;
+}
+
+.password-form .form-group input {
+  width: 100%;
+  height: 44px;
+  border: 1px solid #d0d5dd;
+  border-radius: 10px;
+  padding: 0 0.9rem;
+  font-size: 0.95rem;
+  background: #fff;
+  color: #111827;
+}
+
+.password-form .form-group input:focus {
+  outline: none;
+  border-color: rgb(108, 0, 146);
+  box-shadow: 0 0 0 3px rgba(108, 0, 146, 0.12);
+}
+
+.password-modal-footer,
+.confirm-modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.75rem;
+}
+
+.btn-primary,
+.btn-secondary {
+  height: 44px;
+  padding: 0 1.1rem;
+  border-radius: 10px;
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+}
+
+.btn-primary {
+  background: rgb(108, 0, 146);
+  color: #fff;
+}
+
+.btn-secondary {
+  background: #f3f4f6;
+  color: #374151;
 }
 
 .table-wrapper::-webkit-scrollbar {

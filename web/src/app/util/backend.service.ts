@@ -211,6 +211,22 @@ uploadFile(fileData: FormData): Observable<any> {
     return this.put('user/update', userData);
   }
 
+  updateUserStatus(userId: number | string, isActive: boolean): Observable<any> {
+    return this.post('user/status', { id: userId, is_active: isActive });
+  }
+
+  resetUserPassword(userId: number | string, password: string, confirmPassword: string): Observable<any> {
+    return this.post('user/password', {
+      id: userId,
+      password,
+      confirm_password: confirmPassword
+    });
+  }
+
+  changeCurrentPassword(passwordData: any): Observable<any> {
+    return this.post('user/change-password', passwordData);
+  }
+
   getAnalytics(params?: any): Observable<any> {
     return this.get('analytics/stats', params);
   }

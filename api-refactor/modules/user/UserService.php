@@ -385,6 +385,287 @@ class UserService
         }
     }
 
+    public function resetUserPassword($currentUser, $id, $data)
+    {
+        try {
+            $existingUser = $this->userRepository->findById($id);
+
+            if (!$existingUser) {
+                return [
+                    'success' => false,
+                    'message' => ERROR_USER_NOT_FOUND
+                ];
+            }
+
+            $password = (string)($data['password'] ?? '');
+            $confirmPassword = (string)($data['confirm_password'] ?? '');
+            $errors = [];
+
+            if ($password === '') {
+                $errors['password'] = 'New password is required';
+            } elseif (strlen($password) < MIN_PASSWORD_LENGTH) {
+                $errors['password'] = 'Password must be at least ' . MIN_PASSWORD_LENGTH . ' characters';
+            }
+
+            if ($confirmPassword === '') {
+                $errors['confirm_password'] = 'Please confirm the new password';
+            } elseif ($password !== $confirmPassword) {
+                $errors['confirm_password'] = 'Passwords do not match';
+            }
+
+            if (!empty($errors)) {
+                return [
+                    'success' => false,
+                    'message' => 'Validation failed',
+                    'errors' => $errors
+                ];
+            }
+
+            if (!$this->userRepository->updatePassword($existingUser->id, Hash::make($password))) {
+                return [
+                    'success' => false,
+                    'message' => 'Failed to reset user password'
+                ];
+            }
+
+            $this->activityLogService->log(
+                $currentUser->id,
+                'USER_PASSWORD_RESET',
+                'Reset password for user account ' . $existingUser->email
+            );
+
+            return [
+                'success' => true,
+                'message' => 'User password updated successfully'
+            ];
+        } catch (Exception $e) {
+            Logger::error('Reset user password failed', [
+                'error' => $e->getMessage(),
+                'user_id' => $id
+            ]);
+
+            return [
+                'success' => false,
+                'message' => 'Failed to reset user password'
+            ];
+        }
+    }
+
+    public function updateUserStatus($currentUser, $id, $isActive)
+    {
+        try {
+            $existingUser = $this->userRepository->findById($id);
+
+            if (!$existingUser) {
+                return [
+                    'success' => false,
+                    'message' => ERROR_USER_NOT_FOUND
+                ];
+            }
+
+            $normalizedStatus = $isActive ? 1 : 0;
+
+            if (!$this->userRepository->updateStatus($existingUser->id, $normalizedStatus)) {
+                return [
+                    'success' => false,
+                    'message' => 'Failed to update user status'
+                ];
+            }
+
+            $updatedUser = $this->userRepository->findById($existingUser->id);
+
+            $this->activityLogService->log(
+                $currentUser->id,
+                'USER_STATUS_UPDATE',
+                ($normalizedStatus === 1 ? 'Activated' : 'Deactivated') . ' user account ' . $existingUser->email
+            );
+
+            return [
+                'success' => true,
+                'message' => $normalizedStatus === 1 ? 'User activated successfully' : 'User deactivated successfully',
+                'data' => $updatedUser ? $updatedUser->toArray() : null
+            ];
+        } catch (Exception $e) {
+            Logger::error('Update user status failed', [
+                'error' => $e->getMessage(),
+                'user_id' => $id
+            ]);
+
+            return [
+                'success' => false,
+                'message' => 'Failed to update user status'
+            ];
+        }
+    }
+
+    public function updateCurrentProfile($currentUser, $data)
+    {
+        try {
+            $firstName = trim((string)($data['first_name'] ?? ''));
+            $lastName = trim((string)($data['last_name'] ?? ''));
+            $fullName = trim((string)($data['full_name'] ?? ''));
+
+            if (($firstName === '' || $lastName === '') && $fullName !== '') {
+                [$firstName, $lastName] = $this->splitFullName($fullName);
+            }
+
+            $email = trim((string)($data['email'] ?? ''));
+            $phone = trim((string)($data['phone'] ?? ''));
+            $country = trim((string)($data['country'] ?? ''));
+
+            $errors = [];
+
+            if ($firstName === '') {
+                $errors['first_name'] = 'First name is required';
+            }
+
+            if ($lastName === '') {
+                $errors['last_name'] = 'Last name is required';
+            }
+
+            if ($email === '') {
+                $errors['email'] = 'Email is required';
+            } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+                $errors['email'] = 'Invalid email address';
+            }
+
+            if ($phone !== '' && strlen($phone) > MAX_PHONE_LENGTH) {
+                $errors['phone'] = 'Phone number is too long';
+            }
+
+            if (!empty($errors)) {
+                return [
+                    'success' => false,
+                    'message' => 'Validation failed',
+                    'errors' => $errors
+                ];
+            }
+
+            if ($this->userRepository->emailExists($email, $currentUser->id)) {
+                return [
+                    'success' => false,
+                    'message' => 'Email already exists',
+                    'errors' => ['email' => 'This email is already registered']
+                ];
+            }
+
+            if ($phone !== '' && $this->userRepository->phoneExists($phone, $currentUser->id)) {
+                return [
+                    'success' => false,
+                    'message' => 'Phone number already exists',
+                    'errors' => ['phone' => 'This phone number is already registered']
+                ];
+            }
+
+            $currentUser->first_name = $firstName;
+            $currentUser->last_name = $lastName;
+            $currentUser->email = $email;
+            $currentUser->phone = $phone;
+            $currentUser->country = $country;
+
+            if (!$this->userRepository->update($currentUser)) {
+                return [
+                    'success' => false,
+                    'message' => 'Failed to update profile'
+                ];
+            }
+
+            $updatedUser = $this->userRepository->findById($currentUser->id);
+
+            $this->activityLogService->log(
+                $currentUser->id,
+                ACTION_PROFILE_UPDATE,
+                'Profile updated successfully'
+            );
+
+            return [
+                'success' => true,
+                'message' => SUCCESS_PROFILE_UPDATE,
+                'data' => $updatedUser ? $updatedUser->toArray() : $currentUser->toArray()
+            ];
+        } catch (Exception $e) {
+            Logger::error('Update current profile failed', [
+                'error' => $e->getMessage(),
+                'user_id' => $currentUser->id ?? null
+            ]);
+
+            return [
+                'success' => false,
+                'message' => 'Failed to update profile'
+            ];
+        }
+    }
+
+    public function changeCurrentPassword($currentUser, $data)
+    {
+        try {
+            $currentPassword = (string)($data['current_password'] ?? '');
+            $newPassword = (string)($data['new_password'] ?? '');
+            $confirmPassword = (string)($data['confirm_password'] ?? '');
+            $errors = [];
+
+            if ($currentPassword === '') {
+                $errors['current_password'] = 'Current password is required';
+            }
+
+            if ($newPassword === '') {
+                $errors['new_password'] = 'New password is required';
+            } elseif (strlen($newPassword) < MIN_PASSWORD_LENGTH) {
+                $errors['new_password'] = 'Password must be at least ' . MIN_PASSWORD_LENGTH . ' characters';
+            }
+
+            if ($confirmPassword === '') {
+                $errors['confirm_password'] = 'Please confirm the new password';
+            } elseif ($newPassword !== $confirmPassword) {
+                $errors['confirm_password'] = 'Passwords do not match';
+            }
+
+            if (!empty($errors)) {
+                return [
+                    'success' => false,
+                    'message' => 'Validation failed',
+                    'errors' => $errors
+                ];
+            }
+
+            if (!Hash::check($currentPassword, $currentUser->password)) {
+                return [
+                    'success' => false,
+                    'message' => 'Current password is incorrect',
+                    'errors' => ['current_password' => 'Current password is incorrect']
+                ];
+            }
+
+            if (!$this->userRepository->updatePassword($currentUser->id, Hash::make($newPassword))) {
+                return [
+                    'success' => false,
+                    'message' => 'Failed to change password'
+                ];
+            }
+
+            $this->activityLogService->log(
+                $currentUser->id,
+                ACTION_PASSWORD_CHANGE,
+                'Changed account password'
+            );
+
+            return [
+                'success' => true,
+                'message' => 'Password changed successfully'
+            ];
+        } catch (Exception $e) {
+            Logger::error('Change current password failed', [
+                'error' => $e->getMessage(),
+                'user_id' => $currentUser->id ?? null
+            ]);
+
+            return [
+                'success' => false,
+                'message' => 'Failed to change password'
+            ];
+        }
+    }
+
     private function validateAdminUserPayload($data, $isEdit = false)
     {
         $errors = [];
@@ -400,7 +681,6 @@ class UserService
         $email = trim((string)($data['email'] ?? ''));
         $phone = trim((string)($data['phone'] ?? ''));
         $country = trim((string)($data['country'] ?? ''));
-        $password = (string)($data['password'] ?? '');
         $role = trim((string)($data['role'] ?? ROLE_USER));
         $isActive = isset($data['is_active']) ? (int)(filter_var($data['is_active'], FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE) ?? ((int)$data['is_active'])) : 1;
 
@@ -423,6 +703,8 @@ class UserService
         if ($phone !== '' && strlen($phone) > MAX_PHONE_LENGTH) {
             $errors['phone'] = 'Phone number is too long';
         }
+
+        $password = (string)($data['password'] ?? '');
 
         if (!$isEdit && $password === '') {
             $errors['password'] = 'Password is required';

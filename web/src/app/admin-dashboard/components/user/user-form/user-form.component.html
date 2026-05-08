@@ -3,9 +3,9 @@
     <div>
       <h3>
         <i class="fas fa-user"></i>
-        {{ isEditMode ? 'Edit User' : 'Add New User' }}
+        {{ heading }}
       </h3>
-      <p>{{ isEditMode ? 'Update the selected user details.' : 'Create a new account and set the initial access details.' }}</p>
+      <p>{{ subheading }}</p>
     </div>
     <button type="button" class="close-btn" (click)="cancel.emit()" aria-label="Close user form">×</button>
   </div>
@@ -72,37 +72,43 @@
       </div>
     </div>
 
-    @if (!isEditMode) {
+    @if (showPasswordField) {
       <div class="form-group">
-        <label for="user-password">Password *</label>
+        <label for="user-password">{{ isEditMode ? 'New Password' : 'Password *' }}</label>
         <input
           id="user-password"
           type="password"
           [(ngModel)]="formModel.password"
           name="password"
-          required>
+          [required]="!isEditMode">
+
+        @if (isEditMode) {
+          <small class="field-hint">Leave blank to keep the current password.</small>
+        }
       </div>
     }
 
-    <div class="form-row">
-      <div class="form-group">
-        <label for="user-role">Role</label>
-        <select id="user-role" [(ngModel)]="formModel.role" name="role">
-          <option value="user">User</option>
-          <option value="admin">Admin</option>
-        </select>
-      </div>
+    @if (showAccountControls) {
+      <div class="form-row">
+        <div class="form-group">
+          <label for="user-role">Role</label>
+          <select id="user-role" [(ngModel)]="formModel.role" name="role">
+            <option value="user">User</option>
+            <option value="admin">Admin</option>
+          </select>
+        </div>
 
-      <div class="form-group checkbox-group single-checkbox-group">
-        <label>
-          <input
-            type="checkbox"
-            [(ngModel)]="formModel.is_active"
-            name="is_active">
-          Active
-        </label>
+        <div class="form-group checkbox-group single-checkbox-group">
+          <label>
+            <input
+              type="checkbox"
+              [(ngModel)]="formModel.is_active"
+              name="is_active">
+            Active
+          </label>
+        </div>
       </div>
-    </div>
+    }
 
     <div class="user-form-footer">
       <button type="button" class="btn btn-secondary" (click)="cancel.emit()">Cancel</button>

@@ -144,6 +144,28 @@ class UserRepository
         ]);
     }
 
+    public function updatePassword($userId, $hashedPassword)
+    {
+        $sql = "UPDATE user SET password = :password, updated_at = NOW() WHERE id = :id";
+        $stmt = $this->pdo->prepare($sql);
+
+        return $stmt->execute([
+            ':password' => $hashedPassword,
+            ':id' => $userId
+        ]);
+    }
+
+    public function updateStatus($userId, $isActive)
+    {
+        $sql = "UPDATE user SET is_active = :is_active, updated_at = NOW() WHERE id = :id";
+        $stmt = $this->pdo->prepare($sql);
+
+        return $stmt->execute([
+            ':is_active' => $isActive,
+            ':id' => $userId
+        ]);
+    }
+
     public function getAll($page = 1, $limit = 20, $filters = [])
     {
         $offset = ($page - 1) * $limit;

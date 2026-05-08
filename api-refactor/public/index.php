@@ -190,6 +190,30 @@ function handleUserRoutes($method, $action) {
                 Response::json(false, 'Method not allowed', null, 405);
             }
             break;
+
+        case 'status':
+            if ($method === 'POST') {
+                $controller->updateUserStatus();
+            } else {
+                Response::json(false, 'Method not allowed', null, 405);
+            }
+            break;
+
+        case 'password':
+            if ($method === 'POST') {
+                $controller->resetUserPassword();
+            } else {
+                Response::json(false, 'Method not allowed', null, 405);
+            }
+            break;
+
+        case 'change-password':
+            if ($method === 'POST') {
+                $controller->changeCurrentPassword();
+            } else {
+                Response::json(false, 'Method not allowed', null, 405);
+            }
+            break;
             
         default:
             Response::json(false, 'User endpoint not found', null, 404);

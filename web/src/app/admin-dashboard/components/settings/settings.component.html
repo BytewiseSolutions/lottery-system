@@ -1,0 +1,37 @@
+<div class="admin-dashboard">
+  <app-sidebar></app-sidebar>
+
+  <main class="main-content">
+    <div class="settings-page">
+      <div class="page-header">
+        <h1>Settings</h1>
+      </div>
+
+      <div class="settings-card">
+        <h3>Change Password</h3>
+        <p>Update your admin account password to keep the dashboard secure.</p>
+
+        <form class="settings-form" (ngSubmit)="changePassword()">
+          <div class="form-group">
+            <label for="current-password">Current Password</label>
+            <input id="current-password" type="password" [(ngModel)]="passwordForm.current_password" name="current_password" required>
+          </div>
+
+          <div class="form-group">
+            <label for="new-password">New Password</label>
+            <input id="new-password" type="password" [(ngModel)]="passwordForm.new_password" name="new_password" required>
+          </div>
+
+          <div class="form-group">
+            <label for="confirm-password">Confirm New Password</label>
+            <input id="confirm-password" type="password" [(ngModel)]="passwordForm.confirm_password" name="confirm_password" required>
+          </div>
+
+          <button type="submit" class="primary-btn" [disabled]="isChangingPassword">
+            {{ isChangingPassword ? 'Changing...' : 'Change Password' }}
+          </button>
+        </form>
+      </div>
+    </div>
+  </main>
+</div>

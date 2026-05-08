@@ -111,6 +111,16 @@ export class ActivityLogComponent implements OnInit {
       case 'logout':
       case 'user_logout':
         return 'fas fa-sign-out-alt';
+      case 'user_create':
+        return 'fas fa-user-plus';
+      case 'user_update':
+      case 'profile_update':
+        return 'fas fa-user-pen';
+      case 'user_password_reset':
+      case 'password_change':
+        return 'fas fa-key';
+      case 'user_status_update':
+        return 'fas fa-user-lock';
       case 'draw_created':
       case 'draw':
         return 'fas fa-calendar-plus';
@@ -149,6 +159,24 @@ export class ActivityLogComponent implements OnInit {
       case 'logout':
       case 'user_logout':
         return `${userName} logged out`;
+
+      case 'user_create':
+        return activity.details || `${userName} created a user account`;
+
+      case 'user_update':
+        return activity.details || `${userName} updated a user account`;
+
+      case 'user_password_reset':
+        return activity.details || `${userName} reset a user password`;
+
+      case 'user_status_update':
+        return activity.details || `${userName} updated a user status`;
+
+      case 'profile_update':
+        return activity.details || `${userName} updated their profile`;
+
+      case 'password_change':
+        return activity.details || `${userName} changed their password`;
       
       case 'vote_submitted':
       case 'vote':
@@ -212,7 +240,24 @@ export class ActivityLogComponent implements OnInit {
   }
 
   formatAction(action: string): string {
-    return action.replace(/_/g, ' ').toLowerCase().replace(/\b\w/g, l => l.toUpperCase());
+    const actionLower = action.toLowerCase();
+
+    switch (actionLower) {
+      case 'user_create':
+        return 'User Created';
+      case 'user_update':
+        return 'User Updated';
+      case 'user_password_reset':
+        return 'Password Reset';
+      case 'user_status_update':
+        return 'User Status Updated';
+      case 'profile_update':
+        return 'Profile Updated';
+      case 'password_change':
+        return 'Password Changed';
+      default:
+        return action.replace(/_/g, ' ').toLowerCase().replace(/\b\w/g, l => l.toUpperCase());
+    }
   }
 
   getActionClass(action: string): string {
@@ -223,6 +268,8 @@ export class ActivityLogComponent implements OnInit {
     if (actionLower.includes('play') || actionLower.includes('entry')) return 'play';
     if (actionLower.includes('delete')) return 'delete';
     if (actionLower.includes('update') || actionLower.includes('edit')) return 'update';
+    if (actionLower.includes('password')) return 'update';
+    if (actionLower.includes('profile')) return 'update';
     if (actionLower.includes('payment')) return 'payment';
     if (actionLower.includes('winner')) return 'winner';
     return 'default';

@@ -22,11 +22,22 @@ export class UserComponent implements OnInit {
   error = false;
   saving = false;
   exporting = false;
+  processingUserId: number | null = null;
   showUserModal = false;
+  showStatusModal = false;
+  showPasswordModal = false;
   isEditMode = false;
   currentUser: User | null = null;
   formError = '';
   userForm: Partial<UserFormValue> | null = null;
+  statusActionTarget: User | null = null;
+  passwordActionTarget: User | null = null;
+  statusActionMessage = '';
+  passwordForm = {
+    password: '',
+    confirmPassword: ''
+  };
+  passwordError = '';
 
   currentPage = 1;
   itemsPerPage = 10;
@@ -91,7 +102,6 @@ export class UserComponent implements OnInit {
       email: '',
       phone: '',
       country: '',
-      password: '',
       role: 'user',
       is_active: true
     };
@@ -108,7 +118,6 @@ export class UserComponent implements OnInit {
       email: user.email,
       phone: user.phone || '',
       country: user.country || '',
-      password: '',
       role: user.role || 'user',
       is_active: this.isUserActive(user)
     };
@@ -124,6 +133,30 @@ export class UserComponent implements OnInit {
     this.formError = '';
     this.currentUser = null;
     this.userForm = null;
+  }
+
+  openPasswordModal(user: User): void {
+    this.passwordActionTarget = user;
+    this.passwordForm = {
+      password: '',
+      confirmPassword: ''
+    };
+    this.passwordError = '';
+    this.showPasswordModal = true;
+  }
+
+  closePasswordModal(): void {
+    if (this.saving) {
+      return;
+    }
+
+    this.passwordActionTarget = null;
+    this.passwordForm = {
+      password: '',
+      confirmPassword: ''
+    };
+    this.passwordError = '';
+    this.showPasswordModal = false;
   }
 
   saveUser(formValue: UserFormValue): void {
@@ -163,6 +196,90 @@ export class UserComponent implements OnInit {
 
   viewUser(user: User): void {
     this.router.navigate(['/admin-dashboard/user', user.id]);
+  }
+
+  openStatusModal(user: User): void {
+    this.statusActionTarget = user;
+    this.statusActionMessage = this.isUserActive(user)
+      ? `Deactivate ${user.full_name}? They will no longer be able to access their account until reactivated.`
+      : `Activate ${user.full_name}? They will be able to access their account again.`;
+    this.showStatusModal = true;
+  }
+
+  closeStatusModal(): void {
+    if (this.processingUserId !== null) {
+      return;
+    }
+
+    this.statusActionTarget = null;
+    this.statusActionMessage = '';
+    this.showStatusModal = false;
+  }
+
+  confirmToggleUserStatus(): void {
+    if (!this.statusActionTarget) {
+      return;
+    }
+
+    const user = this.statusActionTarget;
+    const nextStatus = !this.isUserActive(user);
+    this.processingUserId = user.id;
+
+    this.backendService.updateUserStatus(user.id, nextStatus).subscribe({
+      next: (response: any) => {
+        this.processingUserId = null;
+
+        if (response?.success) {
+          this.closeStatusModal();
+          this.successPopupService.show(
+            nextStatus ? 'User activated successfully.' : 'User deactivated successfully.',
+            nextStatus ? 'User Activated' : 'User Deactivated'
+          );
+          this.loadUsers();
+          return;
+        }
+
+        this.errorHandlerService.showError(response?.message || 'Failed to update user status');
+      },
+      error: (error) => {
+        console.error('Failed to update user status:', error);
+        this.processingUserId = null;
+        this.errorHandlerService.showError(this.getErrorMessage(error, 'Failed to update user status'));
+      }
+    });
+  }
+
+  submitPasswordReset(): void {
+    if (!this.passwordActionTarget) {
+      return;
+    }
+
+    this.saving = true;
+    this.passwordError = '';
+
+    this.backendService.resetUserPassword(
+      this.passwordActionTarget.id,
+      this.passwordForm.password,
+      this.passwordForm.confirmPassword
+    ).subscribe({
+      next: (response: any) => {
+        this.saving = false;
+
+        if (response?.success) {
+          const targetName = this.passwordActionTarget?.full_name || 'User';
+          this.closePasswordModal();
+          this.successPopupService.show(`Password updated successfully for ${targetName}.`, 'Password Updated');
+          return;
+        }
+
+        this.passwordError = response?.message || 'Failed to update password';
+      },
+      error: (error) => {
+        console.error('Failed to reset user password:', error);
+        this.saving = false;
+        this.passwordError = this.getErrorMessage(error, 'Failed to update password');
+      }
+    });
   }
 
   onFiltersChange(): void {
@@ -213,6 +330,22 @@ export class UserComponent implements OnInit {
   getContactLabel(user: User): string {
     const details = [user.email, user.phone].filter(Boolean);
     return details.length > 0 ? details.join(' | ') : 'Not available';
+  }
+
+  getStatusActionLabel(user: User): string {
+    if (this.processingUserId === user.id) {
+      return this.isUserActive(user) ? 'Deactivating...' : 'Activating...';
+    }
+
+    return this.isUserActive(user) ? 'Deactivate' : 'Activate';
+  }
+
+  getStatusModalTitle(): string {
+    if (!this.statusActionTarget) {
+      return 'Update User Status';
+    }
+
+    return this.isUserActive(this.statusActionTarget) ? 'Deactivate User' : 'Activate User';
   }
 
   formatDateTime(value?: string): string {

@@ -3,6 +3,8 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { LayoutComponent } from '../layout/layout.component';
 import { SuccessPopupService } from '../services/success-popup.service';
+import { BackendService } from '../util/backend.service';
+import { ErrorHandlerService } from '../services/error-handler.service';
 import { environment } from '../../environments/environment';
 import { COUNTRIES } from '../shared/data/countries';
 
@@ -38,7 +40,11 @@ export class ProfileComponent implements OnInit {
   previewUrl: string | null = null;
   isUploadingPicture = false;
 
-  constructor(private successPopupService: SuccessPopupService) {}
+  constructor(
+    private successPopupService: SuccessPopupService,
+    private backendService: BackendService,
+    private errorHandlerService: ErrorHandlerService
+  ) {}
 
   ngOnInit() {
     this.loadProfile();
@@ -46,20 +52,25 @@ export class ProfileComponent implements OnInit {
   }
 
   loadProfile() {
+    this.loadProfileFromStorage();
+
+    this.backendService.getUserProfile().subscribe({
+      next: (response: any) => {
+        if (response?.success && response.data) {
+          this.applyProfileData(response.data);
+        }
+      },
+      error: (error) => {
+        console.error('Failed to load profile from api-refactor:', error);
+      }
+    });
+  }
+
+  private loadProfileFromStorage() {
     const user = localStorage.getItem('user');
     if (user) {
       const userData = JSON.parse(user);
-      const names = userData.fullName?.split(' ') || ['', ''];
-      this.profile = {
-        firstName: names[0] || '',
-        lastName: names.slice(1).join(' ') || '',
-        email: userData.email || '',
-        phone: userData.phone || '',
-        country: userData.country || '',
-        profilePicture: userData.profilePicture || ''
-      };
-      this.originalProfile = { ...this.profile };
-      this.previewUrl = this.profile.profilePicture || null;
+      this.applyProfileData(userData, false);
     }
   }
 
@@ -202,45 +213,76 @@ export class ProfileComponent implements OnInit {
 
   async updateProfile() {
     this.isSaving = true;
-    const token = localStorage.getItem('token');
     const user = JSON.parse(localStorage.getItem('user') || '{}');
 
-    try {
-      const response = await fetch(`${environment.apiUrl}/update-profile`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify({
-          userId: user.id,
-          fullName: `${this.profile.firstName} ${this.profile.lastName}`.trim(),
-          email: this.profile.email,
-          phone: this.profile.phone,
-          country: this.profile.country
-        })
-      });
+    this.backendService.updateUserProfile({
+      first_name: this.profile.firstName,
+      last_name: this.profile.lastName,
+      email: this.profile.email,
+      phone: this.profile.phone,
+      country: this.profile.country
+    }).subscribe({
+      next: (response: any) => {
+        this.isSaving = false;
 
-      const result = await response.json();
-      console.log('Update profile response:', result);
+        if (response?.success && response.data) {
+          this.successPopupService.show('Your profile information has been updated successfully!', 'Profile Updated');
+          this.applyProfileData(response.data);
+          this.isEditing = false;
 
-      if (result.success) {
-        this.successPopupService.show('Your profile information has been updated successfully!', 'Profile Updated');
-        this.originalProfile = { ...this.profile };
-        this.isEditing = false;
-        
-        user.fullName = `${this.profile.firstName} ${this.profile.lastName}`.trim();
-        user.email = this.profile.email;
-        user.phone = this.profile.phone;
-        user.country = this.profile.country;
-        localStorage.setItem('user', JSON.stringify(user));
-      } else {
-        alert(result.error || 'Failed to update profile');
+          const updatedUser = {
+            ...user,
+            first_name: response.data.first_name,
+            last_name: response.data.last_name,
+            full_name: response.data.full_name,
+            fullName: response.data.full_name,
+            email: response.data.email,
+            phone: response.data.phone,
+            country: response.data.country
+          };
+
+          localStorage.setItem('user', JSON.stringify(updatedUser));
+          return;
+        }
+
+        this.errorHandlerService.showError(response?.message || 'Failed to update profile');
+      },
+      error: (error) => {
+        this.isSaving = false;
+        console.error('Update profile failed:', error);
+        this.errorHandlerService.showError(error?.error?.message || 'Failed to update profile');
       }
-    } catch (error) {
-      alert('Network error. Please try again.');
-    } finally {
-      this.isSaving = false;
+    });
+  }
+
+  private applyProfileData(userData: any, updateStorage: boolean = true) {
+    const firstName = userData.first_name || userData.firstName || '';
+    const lastName = userData.last_name || userData.lastName || '';
+    const fullName = userData.full_name || userData.fullName || `${firstName} ${lastName}`.trim();
+
+    this.profile = {
+      firstName: firstName || fullName.split(' ')[0] || '',
+      lastName: lastName || fullName.split(' ').slice(1).join(' ') || '',
+      email: userData.email || '',
+      phone: userData.phone || '',
+      country: userData.country || '',
+      profilePicture: userData.profilePicture || userData.profile_picture || ''
+    };
+    this.originalProfile = { ...this.profile };
+    this.previewUrl = this.profile.profilePicture || null;
+
+    if (updateStorage) {
+      const storedUser = JSON.parse(localStorage.getItem('user') || '{}');
+      localStorage.setItem('user', JSON.stringify({
+        ...storedUser,
+        first_name: this.profile.firstName,
+        last_name: this.profile.lastName,
+        full_name: `${this.profile.firstName} ${this.profile.lastName}`.trim(),
+        fullName: `${this.profile.firstName} ${this.profile.lastName}`.trim(),
+        email: this.profile.email,
+        phone: this.profile.phone,
+        country: this.profile.country
+      }));
     }
   }
 }
