@@ -17,6 +17,8 @@ import { adminGuard } from './guards/admin.guard';
 import { AdminDashboardComponent } from './admin-dashboard/admin-dashboard.component';
 import { ActivityLogComponent } from './admin-dashboard/components/activity-log/activity-log.component';
 import { VotingComponent } from './admin-dashboard/components/voting/voting.component';
+import { VoteAllocationFormComponent } from './admin-dashboard/components/voting/vote-allocation-form/vote-allocation-form.component';
+import { VoteAllocationDetailsComponent } from './admin-dashboard/components/voting/vote-allocation-details/vote-allocation-details.component';
 import { ResultsComponent } from './admin-dashboard/components/results/results.component';
 import { EntryComponent } from './admin-dashboard/components/entry/entry.component';
 import { NotificationComponent } from './admin-dashboard/components/notification/notification.component';
@@ -46,6 +48,9 @@ export const routes: Routes = [
   { path: 'admin-dashboard', component: AdminDashboardComponent, canActivate: [adminGuard] },
   { path: 'admin-dashboard/activity-log', component: ActivityLogComponent, canActivate: [adminGuard] },
   { path: 'admin-dashboard/voting', component: VotingComponent, canActivate: [adminGuard] },
+  { path: 'admin-dashboard/voting/new', component: VoteAllocationFormComponent, canActivate: [adminGuard] },
+  { path: 'admin-dashboard/voting/:id/edit', component: VoteAllocationFormComponent, canActivate: [adminGuard] },
+  { path: 'admin-dashboard/voting/:id', component: VoteAllocationDetailsComponent, canActivate: [adminGuard] },
   { path: 'admin-dashboard/results', component: ResultsComponent, canActivate: [adminGuard] },
   { path: 'admin-dashboard/results/:id', component: ResultsDetailsComponent, canActivate: [adminGuard] },
   { path: 'admin-dashboard/entry', component: EntryComponent, canActivate: [adminGuard] },

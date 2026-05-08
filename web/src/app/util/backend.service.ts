@@ -119,6 +119,26 @@ export class BackendService {
     return this.get('vote/history');
   }
 
+  getAdminVotes(params?: any): Observable<any> {
+    return this.get('vote/list', params);
+  }
+
+  getAdminVoteById(voteId: number | string): Observable<any> {
+    return this.get('vote/details', { id: voteId });
+  }
+
+  createAdminVote(voteData: any): Observable<any> {
+    return this.post('vote/create', voteData);
+  }
+
+  updateAdminVote(voteData: any): Observable<any> {
+    return this.put('vote/update', voteData);
+  }
+
+  deleteAdminVote(voteId: number | string): Observable<any> {
+    return this.delete(`vote/delete?id=${voteId}`);
+  }
+
   getCurrentDraw(): Observable<any> {
     return this.get('draw/current');
   }

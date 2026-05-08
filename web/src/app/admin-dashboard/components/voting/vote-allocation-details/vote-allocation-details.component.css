@@ -1,0 +1,272 @@
+.admin-dashboard {
+  min-height: 100vh;
+  background-color: #f2f2f7;
+}
+
+.main-content {
+  margin-top: 100px;
+  min-height: calc(100vh - 100px);
+  padding-top: 2rem;
+}
+
+.detail-page {
+  padding: 0 2rem 2rem;
+}
+
+.back-btn,
+.state-btn {
+  border: none;
+  border-radius: 8px;
+  padding: 0.65rem 1rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: 0.2s ease;
+}
+
+.back-btn {
+  background: #ede9fe;
+  color: #5b21b6;
+  width: 200px;
+}
+
+.back-btn:hover,
+.state-btn:hover {
+  filter: brightness(0.97);
+}
+
+.state-btn {
+  background: rgb(108, 0, 146);
+  color: #fff;
+}
+
+.state-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.header-card {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+  background: #fff;
+  padding: 1.2rem;
+  border-radius: 14px;
+}
+
+.header-item label {
+  font-size: 0.75rem;
+  color: #777;
+}
+
+.header-item h2,
+.header-item h3 {
+  margin: 0.2rem 0 0;
+  font-size: 1rem;
+}
+
+.tabs {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 1.5rem;
+  overflow-x: auto;
+  overflow-y: hidden;
+  flex-wrap: nowrap;
+  white-space: nowrap;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+  padding-bottom: 4px;
+}
+
+.tabs::-webkit-scrollbar {
+  display: none;
+}
+
+.tabs button {
+  flex: 0 0 auto !important;
+  width: auto !important;
+  min-width: fit-content;
+  padding: 0.55rem 1rem;
+  border: none;
+  background: #fff;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 13px;
+  line-height: 1;
+  white-space: nowrap;
+  transition: 0.2s ease;
+}
+
+.tabs button:hover {
+  background: #f3f4f6;
+}
+
+.tabs button.active {
+  background: rgb(108, 0, 146);
+  color: #fff;
+}
+
+.tab-content {
+  margin-top: 1rem;
+  background: #fff;
+  padding: 1.2rem;
+  border-radius: 12px;
+}
+
+.tab-content h3 {
+  margin: 0 0 1rem;
+  color: #111827;
+}
+
+.vote-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.vote-item {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.number-chip {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 40px;
+  height: 40px;
+  border-radius: 999px;
+  background: #eef2ff;
+  color: #4338ca;
+  font-weight: 700;
+  font-size: 0.9rem;
+  flex-shrink: 0;
+}
+
+.bonus-chip {
+  background: #fff7ed;
+  color: #c2410c;
+}
+
+.vote-bar-wrap {
+  flex: 1;
+  height: 10px;
+  background: #f3f4f6;
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.vote-bar {
+  height: 100%;
+  background: #4338ca;
+  border-radius: 999px;
+  transition: width 0.3s ease;
+  min-width: 4px;
+}
+
+.bonus-bar {
+  background: #c2410c;
+}
+
+.vote-value {
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: #374151;
+  white-space: nowrap;
+  min-width: 80px;
+  text-align: right;
+}
+
+.numbers-display {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+}
+
+.meta-info p {
+  margin: 0 0 0.75rem;
+  color: #222;
+  line-height: 1.6;
+}
+
+.meta-info p:last-child {
+  margin-bottom: 0;
+}
+
+.detail-footer {
+  margin-top: 1rem;
+}
+
+@media (max-width: 992px) {
+  .header-card {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .detail-page {
+    padding: 0 1rem 1.5rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .main-content {
+    margin-top: 60px;
+    padding-top: 1rem;
+  }
+
+  .detail-page {
+    padding: 0 0.8rem 1rem;
+  }
+
+  .header-card {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.8rem;
+    padding: 1rem;
+  }
+
+  .tab-content {
+    padding: 1rem;
+  }
+
+  .state-card {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .tabs {
+    gap: 0.4rem;
+    margin-top: 1rem;
+  }
+
+  .tabs button {
+    font-size: 12px;
+    padding: 0.45rem 0.8rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .detail-page {
+    padding: 0 0.6rem 1rem;
+  }
+
+  .header-card {
+    grid-template-columns: repeat(2, 1fr);
+    padding: 0.8rem;
+    gap: 0.6rem;
+  }
+
+  .vote-item {
+    flex-wrap: wrap;
+  }
+
+  .vote-bar-wrap {
+    width: 100%;
+    flex: none;
+  }
+
+  .vote-value {
+    min-width: unset;
+  }
+}

@@ -1,11 +1,415 @@
 <div class="admin-dashboard">
-     <app-sidebar></app-sidebar>
+  <app-sidebar></app-sidebar>
 
-     <main class="main-content">
-          <div class="user-page">
-               <div class="page-header">
-                    <h1>Allocate Votes</h1>
-               </div>
+  <main class="main-content">
+    <div class="voting-page">
+      <div class="page-header">
+        <h1>Voting Management</h1>
+
+        <div class="header-actions">
+          <button class="export-btn" type="button" (click)="exportCsv()" [disabled]="exporting || totalItems === 0">
+            <i class="fas fa-file-csv"></i>
+            {{ exporting ? 'Exporting...' : 'Export CSV' }}
+          </button>
+
+          <button class="add-btn" type="button" (click)="openAllocationModal()">
+            <i class="fas fa-plus"></i>
+            Add Allocation
+          </button>
+        </div>
+      </div>
+
+      <div class="summary-panel">
+        <div class="summary-card">
+          <span class="summary-value">{{ totalAllocatedVotes }}</span>
+          <span class="summary-label">Total Allocated Votes</span>
+        </div>
+        <div class="summary-card">
+          <span class="summary-value">{{ totalAllocations }}</span>
+          <span class="summary-label">Saved Allocations</span>
+        </div>
+        <div class="summary-card">
+          <span class="summary-value">{{ getLatestAllocationLabel() }}</span>
+          <span class="summary-label">Latest Allocation</span>
+        </div>
+      </div>
+
+      <div class="filters-bar">
+        <div class="filter-group search-group">
+          <label for="vote-search">Search</label>
+          <input
+            id="vote-search"
+            type="text"
+            [(ngModel)]="searchTerm"
+            placeholder="Search by ID, lottery, draw date, admin..."
+            (keyup.enter)="onFiltersChange()">
+        </div>
+
+        <div class="filter-group">
+          <label for="vote-lottery-filter">Lottery</label>
+          <select id="vote-lottery-filter" [(ngModel)]="selectedLottery" (change)="onFiltersChange()">
+            <option value="all">All Lotteries</option>
+            @for (lottery of lotteryOptions; track lottery) {
+              <option [value]="lottery">{{ lottery }}</option>
+            }
+          </select>
+        </div>
+
+        <div class="filter-group">
+          <label for="vote-sort-order">Sort</label>
+          <select id="vote-sort-order" [(ngModel)]="sortOrder" (change)="onFiltersChange()">
+            <option value="newest">Newest first</option>
+            <option value="oldest">Oldest first</option>
+          </select>
+        </div>
+
+        <div class="filter-actions">
+          <button class="search-btn" type="button" (click)="onFiltersChange()">Apply</button>
+          <button class="clear-btn" type="button" (click)="clearFilters()" [disabled]="!hasActiveFilters()">Clear</button>
+        </div>
+      </div>
+
+      <div class="table-panel">
+        @if (loading) {
+          <div class="table-state">
+            <p>Loading vote allocations...</p>
           </div>
-     </main>
+        }
+
+        @if (error && !loading) {
+          <div class="table-state table-state-error">
+            <p>Vote allocations could not be loaded.</p>
+            <button class="retry-btn" type="button" (click)="retryLoad()">Retry</button>
+          </div>
+        }
+
+        @if (!loading && !error && allocations.length === 0) {
+          <div class="table-state">
+            <p>No vote allocations found.</p>
+          </div>
+        }
+
+        @if (!loading && !error && allocations.length > 0) {
+          <div class="table-wrapper">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>#</th>
+                  <th>Draw</th>
+                  <th>Main Numbers</th>
+                  <th>Bonus Numbers</th>
+                  <th>Total Votes</th>
+                  <th>Created By</th>
+                  <th>Created At</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+
+              <tbody>
+                @for (allocation of allocations; track allocation.id; let index = $index) {
+                  <tr>
+                    <td>{{ ((currentPage - 1) * itemsPerPage) + index + 1 }}</td>
+                    <td>
+                      <div class="draw-cell">
+                        <strong>{{ allocation.lottery }}</strong>
+                        <span>{{ formatDateTime(allocation.drawDate) }}</span>
+                      </div>
+                    </td>
+                    <td>{{ formatNumbers(allocation.numbers) }}</td>
+                    <td>{{ formatNumbers(allocation.bonusNumbers || allocation.bonus_numbers || []) }}</td>
+                    <td class="votes-cell">{{ allocation.allocated_votes || allocation.total_votes }}</td>
+                    <td>
+                      <div class="admin-cell">
+                        <strong>{{ allocation.admin_name || 'Admin' }}</strong>
+                        <span>{{ allocation.admin_email || 'Not available' }}</span>
+                      </div>
+                    </td>
+                    <td>{{ formatDateTime(allocation.createdAt) }}</td>
+                    <td>
+                      <div class="actions">
+                        <button class="view-btn" type="button" (click)="viewAllocation(allocation)">View</button>
+                        <button class="edit-btn" type="button" (click)="editAllocation(allocation)">Edit</button>
+                        <button class="delete-btn" type="button" (click)="requestDelete(allocation)">Delete</button>
+                      </div>
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+
+          <div class="table-footer">
+            <div class="table-info">
+              Showing {{ allocations.length }} of {{ totalItems }} vote allocations
+            </div>
+
+            <div class="pagination">
+              <button class="btn-icon" type="button" (click)="onPageChange(currentPage - 1)" [disabled]="currentPage === 1">
+                <i class="fas fa-chevron-left"></i>
+              </button>
+              <span class="page-info">Page {{ currentPage }} of {{ totalPages || 1 }}</span>
+              <button class="btn-icon" type="button" (click)="onPageChange(currentPage + 1)" [disabled]="currentPage === totalPages || totalPages === 0">
+                <i class="fas fa-chevron-right"></i>
+              </button>
+            </div>
+          </div>
+        }
+      </div>
+    </div>
+
+    @if (showAllocationModal) {
+      <div class="modal-overlay" (click)="closeAllocationModal()">
+        <div class="modal-content allocation-modal" (click)="$event.stopPropagation()">
+          <div class="modal-header">
+            <h2>{{ isEditMode ? 'Edit Vote Allocation' : 'Create Vote Allocation' }}</h2>
+            <button class="close-btn" type="button" (click)="closeAllocationModal()">×</button>
+          </div>
+
+          <div class="modal-body">
+            @if (drawOptions.length === 0) {
+              <div class="panel-state">
+                <p>No eligible draws are available right now.</p>
+              </div>
+            } @else {
+              <div class="form-group">
+                <label for="draw-id">Select Draw</label>
+                <select id="draw-id" [(ngModel)]="selectedDrawId" (ngModelChange)="onDrawChange()">
+                  @for (draw of drawOptions; track draw.id) {
+                    <option [ngValue]="draw.id">{{ getDrawOptionLabel(draw) }}</option>
+                  }
+                </select>
+              </div>
+
+              @if (formError) {
+                <div class="form-error">
+                  <i class="fas fa-circle-exclamation"></i>
+                  <span>{{ formError }}</span>
+                </div>
+              }
+
+              @if (currentStep === 'main') {
+                <div class="section-block">
+                  <div class="section-heading">
+                    <div>
+                      <h3>Section 1: Main Numbers</h3>
+                      <p>Click a number to assign votes. You must allocate votes to exactly 5 main numbers.</p>
+                    </div>
+                    <div class="section-stats">
+                      <span>{{ getMainCount() }}/5 numbers</span>
+                      <strong>{{ getMainVotesTotal() }} votes</strong>
+                    </div>
+                  </div>
+
+                  <div class="number-grid">
+                    @for (number of numbers; track number) {
+                      <button
+                        type="button"
+                        class="number-btn"
+                        [class.selected]="mainNumberVotes[number] > 0"
+                        (click)="openVotePopup(number, 'main')">
+                        <span>{{ number }}</span>
+                        @if (mainNumberVotes[number] > 0) {
+                          <span class="vote-count">{{ mainNumberVotes[number] }}</span>
+                        }
+                      </button>
+                    }
+                  </div>
+
+                  @if (getMainCount() > 0) {
+                    <div class="allocation-summary">
+                      <h4>Section 1 Allocations</h4>
+                      <div class="allocation-list">
+                        @for (entry of mainNumberVotes | keyvalue; track entry.key) {
+                          <div class="allocation-item">
+                            <span class="number-chip">{{ entry.key }}</span>
+                            <span class="allocation-votes">{{ entry.value }} votes</span>
+                            <button type="button" class="remove-btn" (click)="removeMainVotes(+$any(entry.key))">×</button>
+                          </div>
+                        }
+                      </div>
+                    </div>
+                  }
+
+                  <div class="form-actions">
+                    <button class="save-btn" type="button" (click)="nextToBonus()">Next: Section 2</button>
+                    <button class="cancel-btn" type="button" (click)="closeAllocationModal()">Cancel</button>
+                  </div>
+                </div>
+              }
+
+              @if (currentStep === 'bonus') {
+                <div class="section-block">
+                  <div class="section-heading">
+                    <div>
+                      <h3>Section 2: Bonus Numbers</h3>
+                      <p>Click a number to assign votes. Bonus numbers cannot overlap with main numbers.</p>
+                    </div>
+                    <div class="section-stats">
+                      <span>{{ getBonusCount() }}/2 numbers</span>
+                      <strong>{{ getBonusVotesTotal() }} votes</strong>
+                    </div>
+                  </div>
+
+                  <div class="number-grid">
+                    @for (number of numbers; track number) {
+                      <button
+                        type="button"
+                        class="number-btn"
+                        [class.selected]="bonusNumberVotes[number] > 0"
+                        [class.disabled]="mainNumberVotes[number] > 0"
+                        [disabled]="mainNumberVotes[number] > 0"
+                        (click)="openVotePopup(number, 'bonus')">
+                        <span>{{ number }}</span>
+                        @if (bonusNumberVotes[number] > 0) {
+                          <span class="vote-count bonus-count">{{ bonusNumberVotes[number] }}</span>
+                        }
+                      </button>
+                    }
+                  </div>
+
+                  @if (getBonusCount() > 0) {
+                    <div class="allocation-summary">
+                      <h4>Section 2 Allocations</h4>
+                      <div class="allocation-list">
+                        @for (entry of bonusNumberVotes | keyvalue; track entry.key) {
+                          <div class="allocation-item">
+                            <span class="number-chip bonus-chip">{{ entry.key }}</span>
+                            <span class="allocation-votes">{{ entry.value }} votes</span>
+                            <button type="button" class="remove-btn" (click)="removeBonusVotes(+$any(entry.key))">×</button>
+                          </div>
+                        }
+                      </div>
+                    </div>
+                  }
+
+                  <div class="totals-card">
+                    <span>Total Allocation Weight</span>
+                    <strong>{{ getTotalAllocatedVotes() }} votes</strong>
+                  </div>
+
+                  <div class="form-actions">
+                    <button class="save-btn" type="button" (click)="saveAllocation()" [disabled]="saving">
+                      {{ saving ? 'Saving...' : (isEditMode ? 'Update Allocation' : 'Save Allocation') }}
+                    </button>
+                    <button class="cancel-btn" type="button" (click)="backToMain()" [disabled]="saving">Back to Section 1</button>
+                    @if (isEditMode) {
+                      <button class="cancel-btn" type="button" (click)="closeAllocationModal()" [disabled]="saving">Cancel</button>
+                    }
+                  </div>
+                </div>
+              }
+            }
+          </div>
+        </div>
+      </div>
+    }
+
+    @if (showVotePopup) {
+      <div class="modal-overlay" (click)="closeVotePopup()">
+        <div class="modal-content vote-modal" (click)="$event.stopPropagation()">
+          <div class="modal-header">
+            <h2>Allocate Votes to Number {{ selectedNumberForVoting }}</h2>
+            <button class="close-btn" type="button" (click)="closeVotePopup()">×</button>
+          </div>
+
+          <div class="modal-body">
+            <div class="form-group">
+              <label for="vote-amount">Vote Amount</label>
+              <input id="vote-amount" type="number" min="0" step="1" [(ngModel)]="voteAmount">
+            </div>
+            <p class="modal-help">Enter 0 to remove this number from the allocation.</p>
+          </div>
+
+          <div class="modal-footer">
+            <button class="cancel-btn" type="button" (click)="closeVotePopup()">Cancel</button>
+            <button class="save-btn" type="button" (click)="saveVoteAmount()">Save Votes</button>
+          </div>
+        </div>
+      </div>
+    }
+
+    @if (showDetailsModal) {
+      <div class="modal-overlay" (click)="closeDetailsModal()">
+        <div class="modal-content details-modal" (click)="$event.stopPropagation()">
+          <div class="modal-header">
+            <h2>Vote Allocation Details</h2>
+            <button class="close-btn" type="button" (click)="closeDetailsModal()">×</button>
+          </div>
+
+          <div class="modal-body">
+            @if (detailLoading) {
+              <div class="panel-state">
+                <p>Loading allocation details...</p>
+              </div>
+            } @else if (selectedAllocation) {
+              <div class="details-grid">
+                <div class="detail-row">
+                  <span class="detail-label">Lottery</span>
+                  <span class="detail-value">{{ selectedAllocation.lottery }}</span>
+                </div>
+                <div class="detail-row">
+                  <span class="detail-label">Draw</span>
+                  <span class="detail-value">{{ formatDateTime(selectedAllocation.drawDate) }}</span>
+                </div>
+                <div class="detail-row">
+                  <span class="detail-label">Allocated Votes</span>
+                  <span class="detail-value">{{ selectedAllocation.allocated_votes || selectedAllocation.total_votes }}</span>
+                </div>
+              </div>
+
+              <div class="breakdown-section">
+                <h3>Main Number Distribution</h3>
+                <div class="breakdown-list">
+                  @for (entry of getDetailVoteMap('main'); track entry[0]) {
+                    <div class="breakdown-item">
+                      <span class="number-chip">{{ entry[0] }}</span>
+                      <span>{{ entry[1] }} votes</span>
+                    </div>
+                  }
+                </div>
+              </div>
+
+              <div class="breakdown-section">
+                <h3>Bonus Number Distribution</h3>
+                <div class="breakdown-list">
+                  @for (entry of getDetailVoteMap('bonus'); track entry[0]) {
+                    <div class="breakdown-item">
+                      <span class="number-chip bonus-chip">{{ entry[0] }}</span>
+                      <span>{{ entry[1] }} votes</span>
+                    </div>
+                  }
+                </div>
+              </div>
+            }
+          </div>
+        </div>
+      </div>
+    }
+
+    @if (showDeleteModal && selectedAllocation) {
+      <div class="modal-overlay" (click)="closeDeleteModal()">
+        <div class="modal-content confirm-modal-content" (click)="$event.stopPropagation()">
+          <div class="modal-body">
+            <div class="confirm-modal">
+              <h3>Delete Vote Allocation</h3>
+              <p>Delete the allocation for {{ selectedAllocation.lottery }} on {{ formatDateTime(selectedAllocation.drawDate) }}?</p>
+
+              <div class="confirm-summary">
+                <span>Main: {{ formatNumbers(selectedAllocation.numbers) }}</span>
+                <span>Bonus: {{ formatNumbers(selectedAllocation.bonusNumbers || selectedAllocation.bonus_numbers || []) }}</span>
+                <span>Votes: {{ selectedAllocation.allocated_votes || selectedAllocation.total_votes }}</span>
+              </div>
+
+              <div class="confirm-modal-footer">
+                <button type="button" class="cancel-btn" (click)="closeDeleteModal()" [disabled]="deleting">Cancel</button>
+                <button type="button" class="delete-confirm-btn" (click)="confirmDelete()" [disabled]="deleting">
+                  {{ deleting ? 'Deleting...' : 'Delete Allocation' }}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    }
+  </main>
 </div>

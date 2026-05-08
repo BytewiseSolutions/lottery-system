@@ -263,6 +263,46 @@ function handleVoteRoutes($method, $action) {
                 Response::json(false, 'Method not allowed', null, 405);
             }
             break;
+
+        case 'list':
+            if ($method === 'GET') {
+                $controller->getAdminVotes();
+            } else {
+                Response::json(false, 'Method not allowed', null, 405);
+            }
+            break;
+
+        case 'details':
+            if ($method === 'GET') {
+                $controller->getAdminVoteDetails();
+            } else {
+                Response::json(false, 'Method not allowed', null, 405);
+            }
+            break;
+
+        case 'create':
+            if ($method === 'POST') {
+                $controller->createAdminVote();
+            } else {
+                Response::json(false, 'Method not allowed', null, 405);
+            }
+            break;
+
+        case 'update':
+            if ($method === 'PUT') {
+                $controller->updateAdminVote();
+            } else {
+                Response::json(false, 'Method not allowed', null, 405);
+            }
+            break;
+
+        case 'delete':
+            if ($method === 'DELETE') {
+                $controller->deleteAdminVote();
+            } else {
+                Response::json(false, 'Method not allowed', null, 405);
+            }
+            break;
             
         default:
             Response::json(false, 'Vote endpoint not found', null, 404);

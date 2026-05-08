@@ -121,6 +121,10 @@ export class ActivityLogComponent implements OnInit {
         return 'fas fa-key';
       case 'user_status_update':
         return 'fas fa-user-lock';
+      case 'admin_vote_create':
+      case 'admin_vote_update':
+      case 'admin_vote_delete':
+        return 'fas fa-vote-yea';
       case 'draw_created':
       case 'draw':
         return 'fas fa-calendar-plus';
@@ -177,6 +181,15 @@ export class ActivityLogComponent implements OnInit {
 
       case 'password_change':
         return activity.details || `${userName} changed their password`;
+
+      case 'admin_vote_create':
+        return activity.details || `${userName} created an admin vote allocation`;
+
+      case 'admin_vote_update':
+        return activity.details || `${userName} updated an admin vote allocation`;
+
+      case 'admin_vote_delete':
+        return activity.details || `${userName} deleted an admin vote allocation`;
       
       case 'vote_submitted':
       case 'vote':
@@ -255,6 +268,12 @@ export class ActivityLogComponent implements OnInit {
         return 'Profile Updated';
       case 'password_change':
         return 'Password Changed';
+      case 'admin_vote_create':
+        return 'Vote Allocation Created';
+      case 'admin_vote_update':
+        return 'Vote Allocation Updated';
+      case 'admin_vote_delete':
+        return 'Vote Allocation Deleted';
       default:
         return action.replace(/_/g, ' ').toLowerCase().replace(/\b\w/g, l => l.toUpperCase());
     }
