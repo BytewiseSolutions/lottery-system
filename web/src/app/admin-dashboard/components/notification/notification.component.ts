@@ -17,9 +17,8 @@ export class NotificationComponent implements OnInit {
   unreadCount = 0;
   loading = true;
   error = false;
-  selectedTab = 'all'; // 'all', 'unread', 'read'
+  selectedTab = 'all'; 
   
-  // Create notification modal
   isCreateModalOpen = false;
   creating = false;
 
@@ -40,7 +39,6 @@ export class NotificationComponent implements OnInit {
       next: (response: any) => {
         if (response.success) {
           this.notifications = response.data || [];
-          // Recalculate unread count from actual notifications
           this.recalculateUnreadCount();
         } else {
           this.notifications = [];
@@ -65,9 +63,6 @@ export class NotificationComponent implements OnInit {
       next: (response: any) => {
         if (response.success && response.data) {
           const serverUnreadCount = response.data.count || 0;
-          console.log('Server unread count:', serverUnreadCount);
-          console.log('Local unread count:', this.unreadCount);
-          // Use server count as the source of truth
           this.unreadCount = serverUnreadCount;
         }
       },
@@ -84,7 +79,6 @@ export class NotificationComponent implements OnInit {
           if (response.success) {
             notification.is_read = true;
             this.unreadCount = Math.max(0, this.unreadCount - 1);
-            // Also reload unread count from server to ensure accuracy
             this.loadUnreadCount();
           } else {
             console.error('Failed to mark notification as read:', response.message);
@@ -104,21 +98,15 @@ export class NotificationComponent implements OnInit {
       return;
     }
 
-    // Mark all unread notifications as read locally first
     unreadNotifications.forEach(notification => {
       notification.is_read = true;
     });
     
-    // Update unread count
     this.unreadCount = 0;
     
-    // TODO: Implement bulk mark as read API endpoint
-    // For now, mark each one individually
     unreadNotifications.forEach(notification => {
       this.backendService.markNotificationAsRead(notification.id).subscribe({
         error: (error) => {
-          console.error('Error marking notification as read:', error);
-          // Revert on error
           notification.is_read = false;
           this.loadUnreadCount();
         }
