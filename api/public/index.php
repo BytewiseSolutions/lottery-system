@@ -13,7 +13,7 @@ try {
     $uri = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
     
     // Clean the URI for routing
-    $uri = str_replace('/api-refactor', '', $uri);
+    $uri = str_replace('/api', '', $uri);
     $uri = trim($uri, '/');
     
     $routes = explode('/', $uri);

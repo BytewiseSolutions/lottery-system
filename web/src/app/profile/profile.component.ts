@@ -60,7 +60,7 @@ export class ProfileComponent implements OnInit {
         }
       },
       error: (error) => {
-        console.error('Failed to load profile from api-refactor:', error);
+        console.error('Failed to load profile from api:', error);
       }
     });
   }
