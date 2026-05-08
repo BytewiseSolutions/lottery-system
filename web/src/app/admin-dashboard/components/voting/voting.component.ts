@@ -132,38 +132,20 @@ export class VotingComponent implements OnInit {
   }
 
   loadDrawOptions(): void {
-    forkJoin({
-      upcoming: this.backendService.getUpcomingDraws(),
-      past: this.backendService.getPastDraws()
-    }).subscribe({
-      next: ({ upcoming, past }) => {
-        const optionMap = new Map<number, AdminDrawOption>();
+    this.backendService.getUpcomingDraws().subscribe({
+      next: (upcoming) => {
         const upcomingDraws = Array.isArray(upcoming?.data) ? upcoming.data : [];
-        const pastDraws = Array.isArray(past?.data) ? past.data : [];
 
-        upcomingDraws.forEach((draw: any) => {
-          optionMap.set(Number(draw.id), {
+        this.drawOptions = upcomingDraws
+          .map((draw: any) => ({
             id: Number(draw.id),
             lottery: draw.lottery || draw.lottery_type || 'Lottery',
             draw_date: draw.draw_date || draw.drawDate,
             status: draw.status,
             bucket: 'Upcoming Draws'
-          });
-        });
-
-        pastDraws.forEach((draw: any) => {
-          optionMap.set(Number(draw.id), {
-            id: Number(draw.id),
-            lottery: draw.lottery || draw.lottery_type || 'Lottery',
-            draw_date: draw.draw_date || draw.drawDate,
-            status: draw.status,
-            bucket: 'Pending Result Draws'
-          });
-        });
-
-        this.drawOptions = Array.from(optionMap.values()).sort((left, right) => {
-          return new Date(left.draw_date).getTime() - new Date(right.draw_date).getTime();
-        });
+          }))
+          .sort((left: AdminDrawOption, right: AdminDrawOption) => new Date(left.draw_date).getTime() - new Date(right.draw_date).getTime())
+          .slice(0, 3);
 
         if (!this.selectedDrawId && this.drawOptions.length > 0) {
           this.selectedDrawId = this.drawOptions[0].id;

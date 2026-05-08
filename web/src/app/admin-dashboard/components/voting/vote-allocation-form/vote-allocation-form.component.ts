@@ -104,11 +104,10 @@ export class VoteAllocationFormComponent implements OnInit {
   private loadForEdit(voteId: number): void {
     forkJoin({
       vote: this.backendService.getAdminVoteById(voteId),
-      upcoming: this.backendService.getUpcomingDraws(),
-      past: this.backendService.getPastDraws()
+      upcoming: this.backendService.getUpcomingDraws()
     }).subscribe({
-      next: ({ vote, upcoming, past }) => {
-        this.buildDrawOptions(upcoming, past);
+      next: ({ vote, upcoming }) => {
+        this.buildDrawOptions(upcoming);
 
         if (vote?.success && vote.data) {
           const allocation = vote.data as VoteAllocation;
@@ -133,12 +132,9 @@ export class VoteAllocationFormComponent implements OnInit {
   }
 
   private loadDrawOptions(): void {
-    forkJoin({
-      upcoming: this.backendService.getUpcomingDraws(),
-      past: this.backendService.getPastDraws()
-    }).subscribe({
-      next: ({ upcoming, past }) => {
-        this.buildDrawOptions(upcoming, past);
+    this.backendService.getUpcomingDraws().subscribe({
+      next: (upcoming) => {
+        this.buildDrawOptions(upcoming);
 
         if (this.drawOptions.length > 0) {
           this.selectedDrawId = this.drawOptions[0].id;
@@ -154,34 +150,19 @@ export class VoteAllocationFormComponent implements OnInit {
     });
   }
 
-  private buildDrawOptions(upcoming: any, past: any): void {
-    const optionMap = new Map<number, AdminDrawOption>();
+  private buildDrawOptions(upcoming: any): void {
     const upcomingDraws = Array.isArray(upcoming?.data) ? upcoming.data : [];
-    const pastDraws = Array.isArray(past?.data) ? past.data : [];
 
-    upcomingDraws.forEach((draw: any) => {
-      optionMap.set(Number(draw.id), {
+    this.drawOptions = upcomingDraws
+      .map((draw: any) => ({
         id: Number(draw.id),
         lottery: draw.lottery || draw.lottery_type || 'Lottery',
         draw_date: draw.draw_date || draw.drawDate,
         status: draw.status,
         bucket: 'Upcoming Draws'
-      });
-    });
-
-    pastDraws.forEach((draw: any) => {
-      optionMap.set(Number(draw.id), {
-        id: Number(draw.id),
-        lottery: draw.lottery || draw.lottery_type || 'Lottery',
-        draw_date: draw.draw_date || draw.drawDate,
-        status: draw.status,
-        bucket: 'Pending Result Draws'
-      });
-    });
-
-    this.drawOptions = Array.from(optionMap.values()).sort((left, right) => {
-      return new Date(left.draw_date).getTime() - new Date(right.draw_date).getTime();
-    });
+      }))
+      .sort((left: AdminDrawOption, right: AdminDrawOption) => new Date(left.draw_date).getTime() - new Date(right.draw_date).getTime())
+      .slice(0, 3);
   }
 
   onDrawChange(): void {

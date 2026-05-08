@@ -9,7 +9,6 @@ import { PlayLotteryComponent } from './play-lottery/play-lottery.component';
 import { LoginPageComponent } from './login-page/login-page.component';
 import { TermsComponent } from './terms/terms.component';
 import { PrivacyComponent } from './privacy/privacy.component';
-import { AdminComponent } from './admin/admin.component';
 import { ProfileComponent } from './profile/profile.component';
 import { SettingsComponent } from './settings/settings.component';
 import { WinningsComponent } from './winnings/winnings.component';
@@ -61,6 +60,5 @@ export const routes: Routes = [
   { path: 'admin-dashboard/user', component: UserComponent, canActivate: [adminGuard] },
   { path: 'admin-dashboard/user/:id', component: UserDetailsComponent, canActivate: [adminGuard] },
   { path: 'admin-dashboard/winner', component: WinnerComponent, canActivate: [adminGuard] },
-  { path: 'dashboard', component: AdminComponent, canActivate: [adminGuard] },
   { path: '**', redirectTo: '' }
 ];

@@ -131,6 +131,7 @@
 .table-wrapper {
   width: 100%;
   overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
   background: #fff;
   border-radius: 14px;
   box-shadow: 0 10px 25px rgba(0,0,0,.06);
@@ -170,6 +171,7 @@
   text-align: left;
   font-size: 14px;
   vertical-align: middle;
+  word-break: break-word;
 }
 .entries-table th {
   background: #f8f8f8;
@@ -293,5 +295,150 @@
     flex-direction: column;
     align-items: flex-start;
     gap: 0.75rem;
+  }
+}
+
+@media (max-width: 680px) {
+  .table-wrapper {
+    overflow: visible;
+  }
+
+  .entries-table {
+    min-width: 0;
+  }
+
+  .entries-table thead {
+    display: none;
+  }
+
+  .entries-table,
+  .entries-table tbody,
+  .entries-table tr,
+  .entries-table td {
+    display: block;
+    width: 100%;
+  }
+
+  .entries-table tbody {
+    padding: 0.85rem;
+  }
+
+  .entries-table tr {
+    margin-bottom: 0.85rem;
+    border: 1px solid #ececec;
+    border-radius: 14px;
+    background: #fff;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.05);
+    overflow: hidden;
+  }
+
+  .entries-table tr:last-child {
+    margin-bottom: 0;
+  }
+
+  .entries-table td {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 0.9rem;
+    padding: 0.85rem 0.95rem;
+    text-align: right;
+    border-bottom: 1px solid #f2f4f7;
+  }
+
+  .entries-table td:last-child {
+    border-bottom: none;
+  }
+
+  .entries-table td::before {
+    flex: 0 0 42%;
+    max-width: 42%;
+    text-align: left;
+    color: #667085;
+    font-size: 0.8rem;
+    font-weight: 700;
+    line-height: 1.35;
+    content: "";
+  }
+
+  .entries-table td:nth-child(1)::before { content: "#"; }
+  .entries-table td:nth-child(2)::before { content: "User"; }
+  .entries-table td:nth-child(3)::before { content: "Draw"; }
+  .entries-table td:nth-child(4)::before { content: "Submitted"; }
+  .entries-table td:nth-child(5)::before { content: "Action"; }
+
+  .entries-table td:nth-child(1) {
+    display: none;
+  }
+
+  .entries-table td:nth-child(2)::before {
+    display: none;
+  }
+
+  .entries-table td:nth-child(2) {
+    padding-bottom: 0.7rem;
+    font-size: 0.95rem;
+    font-weight: 600;
+    text-align: left;
+  }
+
+  .entries-table td:nth-child(3),
+  .entries-table td:nth-child(4) {
+    color: #667085;
+    font-size: 0.84rem;
+  }
+
+  .actions {
+    width: 100%;
+    justify-content: flex-end;
+  }
+
+  .actions button {
+    width: 100%;
+    min-width: 0;
+  }
+}
+
+@media (max-width: 560px) {
+  .page-header h1 {
+    font-size: 1.6rem;
+  }
+
+  .entries-table tbody {
+    padding: 0.7rem;
+  }
+
+  .entries-table td {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.35rem;
+    text-align: left;
+  }
+
+  .entries-table td::before {
+    flex: none;
+    max-width: none;
+  }
+
+  .actions {
+    justify-content: flex-start;
+  }
+
+  .pagination {
+    justify-content: space-between;
+    width: 100%;
+  }
+}
+
+@media (max-width: 420px) {
+  .page-header,
+  .filter-bar {
+    padding-left: 0.8rem;
+    padding-right: 0.8rem;
+  }
+
+  .view-entries {
+    padding-left: 0.8rem;
+    padding-right: 0.8rem;
   }
 }

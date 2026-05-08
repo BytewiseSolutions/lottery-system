@@ -146,6 +146,7 @@
 .table-wrapper {
   width: 100%;
   overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
 .user-table {
@@ -161,6 +162,7 @@
   text-align: left;
   font-size: 0.9rem;
   vertical-align: middle;
+  word-break: break-word;
 }
 
 .user-table th {
@@ -472,9 +474,18 @@
     align-items: stretch;
   }
 
-  .header-actions,
+  .header-actions {
+    flex-wrap: nowrap;
+  }
+
   .filter-actions {
     flex-wrap: wrap;
+  }
+
+  .filter-actions button,
+  .password-modal-footer button,
+  .confirm-modal-footer button {
+    width: 100%;
   }
 
   .filters-bar {
@@ -484,5 +495,201 @@
   .table-footer {
     flex-direction: column;
     align-items: flex-start;
+  }
+
+  .modal-overlay {
+    padding: 0.75rem;
+    align-items: flex-end;
+  }
+
+  .modal-content,
+  .password-modal-content,
+  .confirm-modal-content {
+    max-width: none;
+    max-height: 92vh;
+    border-radius: 18px 18px 0 0;
+  }
+}
+
+@media (max-width: 680px) {
+  .header-actions {
+    width: 100%;
+    flex-wrap: wrap;
+  }
+
+  .header-actions button {
+    width: 100%;
+  }
+
+  .table-panel {
+    overflow: visible;
+  }
+
+  .table-wrapper {
+    overflow: visible;
+  }
+
+  .user-table {
+    min-width: 0;
+  }
+
+  .user-table thead {
+    display: none;
+  }
+
+  .user-table,
+  .user-table tbody,
+  .user-table tr,
+  .user-table td {
+    display: block;
+    width: 100%;
+  }
+
+  .user-table tbody {
+    padding: 0.85rem;
+  }
+
+  .user-table tr {
+    margin-bottom: 0.85rem;
+    border: 1px solid #ececec;
+    border-radius: 14px;
+    background: #fff;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.05);
+    overflow: hidden;
+  }
+
+  .user-table tr:last-child {
+    margin-bottom: 0;
+  }
+
+  .user-table td {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 0.9rem;
+    padding: 0.85rem 0.95rem;
+    text-align: right;
+    border-bottom: 1px solid #f2f4f7;
+  }
+
+  .user-table td:last-child {
+    border-bottom: none;
+  }
+
+  .user-table td::before {
+    flex: 0 0 42%;
+    max-width: 42%;
+    text-align: left;
+    color: #667085;
+    font-size: 0.8rem;
+    font-weight: 700;
+    line-height: 1.35;
+    content: "";
+  }
+
+  .user-table td:nth-child(1)::before { content: "#"; }
+  .user-table td:nth-child(2)::before { content: "User"; }
+  .user-table td:nth-child(3)::before { content: "Contact"; }
+  .user-table td:nth-child(4)::before { content: "Country"; }
+  .user-table td:nth-child(5)::before { content: "Role"; }
+  .user-table td:nth-child(6)::before { content: "Status"; }
+  .user-table td:nth-child(7)::before { content: "Actions"; }
+
+  .user-table td:nth-child(1),
+  .user-table td:nth-child(4),
+  .user-table td:nth-child(5),
+  .user-table td:nth-child(6) {
+    display: none;
+  }
+
+  .user-table td:nth-child(2)::before {
+    display: none;
+  }
+
+  .user-table td:nth-child(2) {
+    padding-bottom: 0.7rem;
+    font-size: 0.95rem;
+    font-weight: 600;
+    text-align: left;
+  }
+
+  .user-table td:nth-child(3)::before {
+    display: none;
+  }
+
+  .user-table td:nth-child(3) {
+    padding-top: 0;
+    color: #667085;
+    font-size: 0.84rem;
+    font-weight: 500;
+    text-align: left;
+  }
+
+  .actions {
+    width: 100%;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.45rem;
+    justify-content: initial;
+  }
+
+  .actions button {
+    width: 100%;
+    min-width: 0;
+  }
+}
+
+@media (max-width: 560px) {
+  .page-header h1 {
+    font-size: 1.6rem;
+  }
+
+  .user-table tbody {
+    padding: 0.7rem;
+  }
+
+  .user-table td {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.35rem;
+    text-align: left;
+  }
+
+  .user-table td::before {
+    flex: none;
+    max-width: none;
+  }
+
+  .actions {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    justify-content: initial;
+  }
+
+  .actions button {
+    width: 100%;
+  }
+
+  .pagination {
+    justify-content: space-between;
+    width: 100%;
+  }
+}
+
+@media (max-width: 420px) {
+  .page-header,
+  .filters-bar {
+    padding: 0 0.8rem;
+  }
+
+  .table-panel {
+    margin: 0 0.8rem 1rem;
+  }
+
+  .modal-overlay {
+    padding: 0.35rem;
+  }
+
+  .modal-body {
+    padding: 1rem 0.9rem;
   }
 }

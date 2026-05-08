@@ -56,15 +56,22 @@
   border-radius: 14px;
 }
 
+.header-item {
+  min-width: 0;
+}
+
 .header-item label {
   font-size: 0.75rem;
   color: #777;
+  display: block;
 }
 
 .header-item h2,
 .header-item h3 {
   margin: 0.2rem 0 0;
   font-size: 1rem;
+  line-height: 1.4;
+  word-break: break-word;
 }
 
 .tabs {
@@ -113,6 +120,7 @@
   background: #fff;
   padding: 1.2rem;
   border-radius: 12px;
+  overflow: hidden;
 }
 
 .tab-content h3 {
@@ -130,6 +138,7 @@
   display: flex;
   align-items: center;
   gap: 1rem;
+  min-width: 0;
 }
 
 .number-chip {
@@ -157,6 +166,7 @@
   background: #f3f4f6;
   border-radius: 999px;
   overflow: hidden;
+  min-width: 0;
 }
 
 .vote-bar {
@@ -230,6 +240,11 @@
     padding: 1rem;
   }
 
+  .header-item h2,
+  .header-item h3 {
+    font-size: 0.96rem;
+  }
+
   .state-card {
     flex-direction: column;
     align-items: flex-start;
@@ -244,29 +259,106 @@
     font-size: 12px;
     padding: 0.45rem 0.8rem;
   }
+
+  .vote-item {
+    gap: 0.8rem;
+  }
+
+  .number-chip {
+    min-width: 38px;
+    height: 38px;
+    font-size: 0.86rem;
+  }
 }
 
 @media (max-width: 480px) {
+  .tab-content h3 {
+    font-size: 1rem;
+  }
+
   .detail-page {
     padding: 0 0.6rem 1rem;
   }
 
   .header-card {
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: 1fr;
     padding: 0.8rem;
     gap: 0.6rem;
   }
 
+  .tabs {
+    margin-top: 0.9rem;
+  }
+
+  .tabs button {
+    padding: 0.5rem 0.75rem;
+  }
+
+  .tab-content {
+    padding: 0.9rem;
+  }
+
   .vote-item {
-    flex-wrap: wrap;
+    display: grid;
+    grid-template-columns: 40px minmax(0, 1fr);
+    gap: 0.7rem 0.85rem;
+    align-items: center;
   }
 
   .vote-bar-wrap {
     width: 100%;
+    grid-column: 2;
     flex: none;
   }
 
   .vote-value {
     min-width: unset;
+    white-space: normal;
+    text-align: left;
+    grid-column: 2;
+    font-size: 0.85rem;
+  }
+
+  .meta-info p {
+    font-size: 0.88rem;
+    line-height: 1.45;
+  }
+
+  .detail-footer {
+    display: flex;
+  }
+
+  .back-btn,
+  .state-btn {
+    width: 100%;
+  }
+}
+
+@media (max-width: 380px) {
+  .detail-page {
+    padding: 0 0.5rem 0.9rem;
+  }
+
+  .tab-content {
+    padding: 0.85rem;
+  }
+
+  .tab-content h3 {
+    font-size: 0.94rem;
+  }
+
+  .number-chip {
+    min-width: 34px;
+    height: 34px;
+    font-size: 0.8rem;
+  }
+
+  .vote-value {
+    font-size: 0.84rem;
+  }
+
+  .meta-info p {
+    font-size: 0.83rem;
+    line-height: 1.4;
   }
 }

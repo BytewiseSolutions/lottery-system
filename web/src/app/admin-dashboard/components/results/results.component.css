@@ -142,6 +142,7 @@
 .table-responsive {
   width: 100%;
   overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
   background: #fff;
   border-radius: 14px;
   box-shadow: 0 10px 25px rgba(0,0,0,.06);
@@ -207,6 +208,7 @@
   font-size: 0.88rem;
   color: #333;
   vertical-align: middle;
+  word-break: break-word;
 }
 
 .data-table tbody td:nth-child(5) {
@@ -354,8 +356,178 @@
   }
 }
 
-@media (max-width: 480px) {
+@media (max-width: 680px) {
+  .table-responsive {
+    overflow: visible;
+  }
+
   .data-table {
-    min-width: 650px;
+    min-width: 0;
+  }
+
+  .data-table thead {
+    display: none;
+  }
+
+  .data-table,
+  .data-table tbody,
+  .data-table tr,
+  .data-table td {
+    display: block;
+    width: 100%;
+  }
+
+  .data-table tbody {
+    padding: 0.85rem;
+  }
+
+  .data-table tbody tr {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-areas:
+      "lottery lottery"
+      "draw jackpot"
+      "winners status"
+      "actions actions";
+    margin-bottom: 0.85rem;
+    border: 1px solid #ececec;
+    border-radius: 14px;
+    background: #fff;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.05);
+    overflow: hidden;
+  }
+
+  .data-table tbody tr:last-child {
+    margin-bottom: 0;
+  }
+
+  .data-table tbody td {
+    display: flex;
+    width: auto;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 0.9rem;
+    padding: 0.85rem 0.95rem;
+    text-align: right;
+    border-bottom: 1px solid #f2f4f7;
+  }
+
+  .data-table tbody td:last-child {
+    border-bottom: none;
+  }
+
+  .data-table tbody td::before {
+    display: none;
+  }
+
+  .data-table tbody td:nth-child(1) {
+    padding-bottom: 0.7rem;
+    font-size: 0.95rem;
+    font-weight: 600;
+    text-align: left;
+    grid-area: lottery;
+  }
+
+  .data-table tbody td:nth-child(2) {
+    grid-area: draw;
+  }
+
+  .data-table tbody td:nth-child(3) {
+    grid-area: jackpot;
+  }
+
+  .data-table tbody td:nth-child(4) {
+    grid-area: winners;
+  }
+
+  .data-table tbody td:nth-child(5) {
+    grid-area: status;
+  }
+
+  .data-table tbody td:nth-child(2),
+  .data-table tbody td:nth-child(3),
+  .data-table tbody td:nth-child(4),
+  .data-table tbody td:nth-child(5) {
+    flex-direction: column;
+    justify-content: center;
+    align-items: flex-start;
+    gap: 0.3rem;
+    min-height: 72px;
+    color: #374151;
+    font-size: 0.9rem;
+    font-weight: 600;
+    text-align: left;
+  }
+
+  .data-table tbody td:nth-child(2)::before,
+  .data-table tbody td:nth-child(3)::before,
+  .data-table tbody td:nth-child(4)::before,
+  .data-table tbody td:nth-child(5)::before {
+    display: block;
+    color: #667085;
+    font-size: 0.78rem;
+    font-weight: 700;
+    line-height: 1.25;
+  }
+
+  .data-table tbody td:nth-child(2)::before { content: "Draw"; }
+  .data-table tbody td:nth-child(3)::before { content: "Jackpot"; }
+  .data-table tbody td:nth-child(4)::before { content: "Winners"; }
+  .data-table tbody td:nth-child(5)::before { content: "Status"; }
+
+  .data-table tbody td:nth-child(5) {
+    color: #16a34a;
+  }
+
+  .data-table tbody td:nth-child(2),
+  .data-table tbody td:nth-child(4) {
+    border-right: 1px solid #f2f4f7;
+  }
+
+  .data-table tbody td:nth-child(6) {
+    grid-area: actions;
+  }
+
+  .action-buttons {
+    width: 100%;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.45rem;
+  }
+
+  .action-buttons button {
+    width: 100%;
+    min-width: 0;
+  }
+}
+
+@media (max-width: 560px) {
+  .page-header h1 {
+    font-size: 1.6rem;
+  }
+
+  .data-table tbody {
+    padding: 0.7rem;
+  }
+
+  .action-buttons {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .pagination {
+    justify-content: space-between;
+    width: 100%;
+  }
+}
+
+@media (max-width: 420px) {
+  .page-header {
+    padding-left: 0.8rem;
+    padding-right: 0.8rem;
+  }
+
+  .view-results {
+    padding-left: 0.8rem;
+    padding-right: 0.8rem;
   }
 }
