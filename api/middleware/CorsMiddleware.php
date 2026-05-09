@@ -2,24 +2,25 @@
 
 class CorsMiddleware
 {
+    private static $allowedOrigins = [
+        'https://www.totalfreelotto.com',
+        'https://totalfreelotto.com',
+        'http://localhost:4200',
+    ];
+
     public static function handle()
     {
-        // Allow from any origin
-        header("Access-Control-Allow-Origin: *");
-        
-        // Allow specific headers
+        $origin = $_SERVER['HTTP_ORIGIN'] ?? '';
+
+        if (in_array($origin, self::$allowedOrigins)) {
+            header("Access-Control-Allow-Origin: $origin");
+            header("Access-Control-Allow-Credentials: true");
+        }
+
         header("Access-Control-Allow-Headers: Content-Type, Authorization, X-Requested-With, Accept, Origin");
-        
-        // Allow specific methods
         header("Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS");
-        
-        // Allow credentials
-        header("Access-Control-Allow-Credentials: true");
-        
-        // Set max age for preflight
         header("Access-Control-Max-Age: 3600");
-        
-        // Handle preflight OPTIONS request
+
         if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
             http_response_code(200);
             exit;

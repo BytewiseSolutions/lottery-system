@@ -44,19 +44,20 @@ class NotificationController
             $userId = $this->getCurrentUserId();
             $page = max(1, (int)($_GET['page'] ?? 1));
             $limit = max(MIN_PAGE_SIZE, min(MAX_PAGE_SIZE, (int)($_GET['limit'] ?? 10)));
-            
+
+            // If no auth token, return public broadcast notifications
             if (!$userId) {
-                Response::json(false, 'Authentication required', null, HTTP_UNAUTHORIZED);
+                $result = $this->notificationService->getPublicNotifications($page, $limit);
+            } else {
+                $result = $this->notificationService->getNotifications($userId, $page, $limit);
             }
 
-            $result = $this->notificationService->getNotifications($userId, $page, $limit);
-            
             if ($result['success']) {
                 Response::json(true, 'Notifications retrieved successfully', $result['data'], HTTP_OK);
             } else {
                 Response::json(false, $result['message'], null, HTTP_BAD_REQUEST);
             }
-            
+
         } catch (Exception $e) {
             Logger::error('NotificationController get notifications error', [
                 'error' => $e->getMessage()

@@ -34,6 +34,28 @@ class NotificationService
         }
     }
 
+    public function getPublicNotifications($page = 1, $limit = 10)
+    {
+        try {
+            $notifications = $this->notificationRepository->getPublicNotifications($page, $limit);
+
+            return [
+                'success' => true,
+                'data' => $notifications
+            ];
+
+        } catch (Exception $e) {
+            Logger::error('Get public notifications failed', [
+                'error' => $e->getMessage()
+            ]);
+
+            return [
+                'success' => false,
+                'message' => 'Failed to get notifications'
+            ];
+        }
+    }
+
     public function getNotifications($userId, $page = 1, $limit = 10)
     {
         try {

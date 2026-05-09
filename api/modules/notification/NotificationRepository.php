@@ -9,6 +9,35 @@ class NotificationRepository
         $this->pdo = Connection::get();
     }
 
+    public function getPublicNotifications($page = 1, $limit = 10)
+    {
+        try {
+            $offset = ($page - 1) * $limit;
+
+            $stmt = $this->pdo->prepare('
+                SELECT id, title, message, type, created_at
+                FROM notification
+                WHERE sent_by IS NOT NULL
+                GROUP BY title, message, type, DATE(created_at)
+                ORDER BY created_at DESC
+                LIMIT :limit OFFSET :offset
+            ');
+
+            $stmt->bindValue(':limit', $limit, PDO::PARAM_INT);
+            $stmt->bindValue(':offset', $offset, PDO::PARAM_INT);
+            $stmt->execute();
+
+            return $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+        } catch (Exception $e) {
+            Logger::error('NotificationRepository getPublicNotifications error', [
+                'error' => $e->getMessage()
+            ]);
+
+            return [];
+        }
+    }
+
     public function getUnreadCount($userId)
     {
         try {
