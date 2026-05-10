@@ -1,7 +1,7 @@
-<div class="success-popup" [class.show]="showPopup" *ngIf="showPopup">
+<div class="success-popup" [class.show]="showPopup" [class.error-popup]="type === 'error'" *ngIf="showPopup">
   <div class="success-content">
     <button class="close-btn" (click)="dismiss()">&times;</button>
-    <div class="success-icon">✓</div>
+    <div class="success-icon">{{ type === 'error' ? '✕' : '✓' }}</div>
     <h3>{{ title }}</h3>
     <p>{{ message }}</p>
     <button class="custom-button2" (click)="dismiss()" style="margin-top: 20px;">Continue</button>

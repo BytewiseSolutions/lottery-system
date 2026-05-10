@@ -13,6 +13,7 @@ export class SuccessPopupComponent implements OnInit, OnDestroy {
   showPopup = false;
   message = '';
   title = 'Success!';
+  type: 'success' | 'error' = 'success';
   private subscription?: Subscription;
 
   constructor(private successPopupService: SuccessPopupService) {}
@@ -21,6 +22,7 @@ export class SuccessPopupComponent implements OnInit, OnDestroy {
     this.subscription = this.successPopupService.popup$.subscribe(popup => {
       this.title = popup.title || 'Success!';
       this.message = popup.message;
+      this.type = popup.type || 'success';
       this.showPopup = true;
       
       setTimeout(() => {

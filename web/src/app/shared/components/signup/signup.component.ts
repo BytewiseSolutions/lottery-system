@@ -37,7 +37,6 @@ export class SignupComponent {
   agreeTerms = false;
   isLoading = false;
   showPassword = false;
-  errorMessage = '';
 
   close() {
     this.clearForm();
@@ -58,7 +57,6 @@ export class SignupComponent {
     this.password = '';
     this.agreeTerms = false;
     this.showPassword = false;
-    this.errorMessage = '';
     this.validationErrors = {};
     this.selectedCountry = null;
   }
@@ -131,13 +129,15 @@ export class SignupComponent {
             this.switchToLogin();
           }, 3000);
         } else {
-          this.errorMessage = response.message || 'Registration failed';
+          this.successPopupService.showError(
+            response.message || 'Registration failed',
+            'Registration Failed'
+          );
         }
       },
       error: (error: any) => {
         this.isLoading = false;
-        console.error('Registration error:', error);
-        
+
         if (error.error?.data?.errors) {
           const apiErrors = error.error.data.errors;
           this.validationErrors = {
@@ -149,12 +149,13 @@ export class SignupComponent {
             country: apiErrors.country?.[0]
           };
           Object.keys(this.validationErrors).forEach(key => {
-            if (!this.validationErrors[key]) {
-              delete this.validationErrors[key];
-            }
+            if (!this.validationErrors[key]) delete this.validationErrors[key];
           });
         } else {
-          this.errorMessage = error.error?.message || 'Network error. Please check your connection.';
+          this.successPopupService.showError(
+            error.error?.message || 'Network error. Please check your connection.',
+            'Registration Failed'
+          );
         }
       }
     });

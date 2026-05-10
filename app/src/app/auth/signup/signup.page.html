@@ -11,52 +11,48 @@
 </ion-header>
 
 <ion-content class="ion-padding">
-  <div *ngIf="!showOtp">
-    <ion-item>
-      <ion-label position="floating">Full Name</ion-label>
-      <ion-input [(ngModel)]="name"></ion-input>
-    </ion-item>
-    <ion-item>
-      <ion-label position="floating">Email</ion-label>
-      <ion-input type="email" [(ngModel)]="email"></ion-input>
-    </ion-item>
-    <ion-item>
-      <ion-label position="floating">Phone</ion-label>
-      <ion-input type="tel" [(ngModel)]="phone"></ion-input>
-    </ion-item>
-    <ion-item>
-      <ion-label position="floating">Country</ion-label>
-      <ion-select [(ngModel)]="country" placeholder="Select Country" interface="action-sheet">
-        <ion-select-option *ngFor="let c of countries" [value]="c">{{ c }}</ion-select-option>
-      </ion-select>
-    </ion-item>
-    <ion-item>
-      <ion-label position="floating">Password</ion-label>
-      <ion-input [type]="showPassword ? 'text' : 'password'" [(ngModel)]="password"></ion-input>
-      <ion-button slot="end" fill="clear" (click)="togglePassword()">
-        <ion-icon slot="icon-only" [name]="showPassword ? 'eye-off' : 'eye'"></ion-icon>
-      </ion-button>
-    </ion-item>
-    <ion-item>
-      <ion-label position="floating">Repeat Password</ion-label>
-      <ion-input [type]="showRepeatPassword ? 'text' : 'password'" [(ngModel)]="repeatPassword"></ion-input>
-      <ion-button slot="end" fill="clear" (click)="toggleRepeatPassword()">
-        <ion-icon slot="icon-only" [name]="showRepeatPassword ? 'eye-off' : 'eye'"></ion-icon>
-      </ion-button>
-    </ion-item>
-    <div style="display: flex; align-items: center; margin: 15px 0;">
-      <ion-checkbox [(ngModel)]="agreeTerms" style="margin-right: 10px;"></ion-checkbox>
-      <span>I agree to the terms and conditions</span>
-      <ion-icon name="chevron-forward" (click)="openTerms()" style="cursor: pointer; color: #666; font-size: 18px; margin-left: 5px;"></ion-icon>
-    </div>
-    <ion-button expand="block" (click)="signup()" class="ion-margin-top">Sign Up</ion-button>
+  <ion-item>
+    <ion-label position="floating">First Name</ion-label>
+    <ion-input [(ngModel)]="first_name"></ion-input>
+  </ion-item>
+  <ion-item>
+    <ion-label position="floating">Last Name</ion-label>
+    <ion-input [(ngModel)]="last_name"></ion-input>
+  </ion-item>
+  <ion-item>
+    <ion-label position="floating">Email</ion-label>
+    <ion-input type="email" [(ngModel)]="email"></ion-input>
+  </ion-item>
+  <ion-item>
+    <ion-label position="floating">Phone</ion-label>
+    <ion-input type="tel" [(ngModel)]="phone"></ion-input>
+  </ion-item>
+  <ion-item>
+    <ion-label position="floating">Country</ion-label>
+    <ion-select [(ngModel)]="country" placeholder="Select Country" interface="action-sheet">
+      @for (c of countries; track c) {
+        <ion-select-option [value]="c">{{ c }}</ion-select-option>
+      }
+    </ion-select>
+  </ion-item>
+  <ion-item>
+    <ion-label position="floating">Password</ion-label>
+    <ion-input [type]="showPassword ? 'text' : 'password'" [(ngModel)]="password"></ion-input>
+    <ion-button slot="end" fill="clear" (click)="togglePassword()">
+      <ion-icon slot="icon-only" [name]="showPassword ? 'eye-off' : 'eye'"></ion-icon>
+    </ion-button>
+  </ion-item>
+  <ion-item>
+    <ion-label position="floating">Repeat Password</ion-label>
+    <ion-input [type]="showRepeatPassword ? 'text' : 'password'" [(ngModel)]="confirm_password"></ion-input>
+    <ion-button slot="end" fill="clear" (click)="toggleRepeatPassword()">
+      <ion-icon slot="icon-only" [name]="showRepeatPassword ? 'eye-off' : 'eye'"></ion-icon>
+    </ion-button>
+  </ion-item>
+  <div style="display: flex; align-items: center; margin: 15px 0;">
+    <ion-checkbox [(ngModel)]="agreeTerms" style="margin-right: 10px;"></ion-checkbox>
+    <span>I agree to the terms and conditions</span>
+    <ion-icon name="chevron-forward" (click)="openTerms()" style="cursor: pointer; color: #666; font-size: 18px; margin-left: 5px;"></ion-icon>
   </div>
-
-  <div *ngIf="showOtp">
-    <ion-item>
-      <ion-label position="floating">Enter OTP</ion-label>
-      <ion-input [(ngModel)]="otp"></ion-input>
-    </ion-item>
-    <ion-button expand="block" (click)="verifyOtp()" class="ion-margin-top">Verify</ion-button>
-  </div>
+  <ion-button expand="block" (click)="signup()" class="ion-margin-top">Sign Up</ion-button>
 </ion-content>

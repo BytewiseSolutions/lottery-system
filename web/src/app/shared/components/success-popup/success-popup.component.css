@@ -66,3 +66,11 @@
   margin-bottom: 25px;
   font-size: 16px;
 }
+
+.error-popup .success-icon {
+  background: #dc3545;
+}
+
+.error-popup .success-content h3 {
+  color: #dc3545;
+}

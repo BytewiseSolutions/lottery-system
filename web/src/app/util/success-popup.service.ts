@@ -4,6 +4,7 @@ import { Subject } from 'rxjs';
 export interface SuccessPopup {
   message: string;
   title?: string;
+  type?: 'success' | 'error';
 }
 
 @Injectable({
@@ -14,6 +15,10 @@ export class SuccessPopupService {
   public popup$ = this.popupSubject.asObservable();
 
   show(message: string, title: string = 'Success!') {
-    this.popupSubject.next({ message, title });
+    this.popupSubject.next({ message, title, type: 'success' });
+  }
+
+  showError(message: string, title: string = 'Error') {
+    this.popupSubject.next({ message, title, type: 'error' });
   }
 }
