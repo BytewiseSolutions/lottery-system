@@ -1,0 +1,238 @@
+<div class="admin-dashboard">
+  <app-sidebar></app-sidebar>
+
+  <main class="main-content">
+    <div class="allocation-page">
+      @if (loading) {
+        <div class="page-state">
+          <p>Loading...</p>
+        </div>
+      } @else {
+        <div class="page-header">
+          <div>
+            <h1>{{ isEditMode ? 'Edit Vote Allocation' : 'Create Vote Allocation' }}</h1>
+            <p>Use Section 1 for 5 main numbers and Section 2 for 2 bonus numbers.</p>
+          </div>
+        </div>
+
+        <div class="allocation-layout">
+          <section class="panel form-panel">
+            <div class="panel-body">
+              <div class="form-group">
+                <label for="draw-id">Select Draw</label>
+                @if (drawOptions.length === 0) {
+                  <p class="no-draws">No eligible draws available right now.</p>
+                } @else {
+                  <select id="draw-id" [(ngModel)]="selectedDrawId" (ngModelChange)="onDrawChange()">
+                    @for (draw of drawOptions; track draw.id) {
+                      <option [ngValue]="draw.id">{{ getDrawOptionLabel(draw) }}</option>
+                    }
+                  </select>
+                }
+              </div>
+
+              @if (formError) {
+                <div class="form-error">
+                  <i class="fas fa-circle-exclamation"></i>
+                  <span>{{ formError }}</span>
+                </div>
+              }
+
+              @if (currentStep === 'main') {
+                <div class="section-block">
+                  <div class="section-heading">
+                    <div>
+                      <h3>Section 1: Main Numbers</h3>
+                      <p>Click a number to assign votes. You must allocate votes to exactly 5 main numbers.</p>
+                    </div>
+                    <div class="section-stats">
+                      <span>{{ getMainCount() }}/5 numbers</span>
+                      <strong>{{ getMainVotesTotal() }} votes</strong>
+                    </div>
+                  </div>
+
+                  <div class="number-grid">
+                    @for (number of numbers; track number) {
+                      <button
+                        type="button"
+                        class="number-btn"
+                        [class.selected]="mainNumberVotes[number] > 0"
+                        (click)="openVotePopup(number, 'main')">
+                        <span>{{ number }}</span>
+                        @if (mainNumberVotes[number] > 0) {
+                          <span class="vote-count">{{ mainNumberVotes[number] }}</span>
+                        }
+                      </button>
+                    }
+                  </div>
+
+                  @if (getMainCount() > 0) {
+                    <div class="allocation-summary">
+                      <h4>Section 1 Allocations</h4>
+                      <div class="allocation-list">
+                        @for (entry of mainNumberVotes | keyvalue; track entry.key) {
+                          <div class="allocation-item">
+                            <span class="number-chip">{{ entry.key }}</span>
+                            <span class="allocation-votes">{{ entry.value }} votes</span>
+                            <button type="button" class="remove-btn" (click)="removeMainVotes(+$any(entry.key))">×</button>
+                          </div>
+                        }
+                      </div>
+                    </div>
+                  }
+
+                  <div class="form-actions">
+                    <button class="save-btn" type="button" (click)="nextToBonus()">Next: Section 2</button>
+                    <button class="cancel-btn" type="button" (click)="goBack()">Cancel</button>
+                  </div>
+                </div>
+              }
+
+              @if (currentStep === 'bonus') {
+                <div class="section-block">
+                  <div class="section-heading">
+                    <div>
+                      <h3>Section 2: Bonus Numbers</h3>
+                      <p>Click a number to assign votes. Bonus numbers cannot overlap with main numbers.</p>
+                    </div>
+                    <div class="section-stats">
+                      <span>{{ getBonusCount() }}/2 numbers</span>
+                      <strong>{{ getBonusVotesTotal() }} votes</strong>
+                    </div>
+                  </div>
+
+                  <div class="number-grid">
+                    @for (number of numbers; track number) {
+                      <button
+                        type="button"
+                        class="number-btn"
+                        [class.selected]="bonusNumberVotes[number] > 0"
+                        [class.disabled]="mainNumberVotes[number] > 0"
+                        [disabled]="mainNumberVotes[number] > 0"
+                        (click)="openVotePopup(number, 'bonus')">
+                        <span>{{ number }}</span>
+                        @if (bonusNumberVotes[number] > 0) {
+                          <span class="vote-count bonus-count">{{ bonusNumberVotes[number] }}</span>
+                        }
+                      </button>
+                    }
+                  </div>
+
+                  @if (getBonusCount() > 0) {
+                    <div class="allocation-summary">
+                      <h4>Section 2 Allocations</h4>
+                      <div class="allocation-list">
+                        @for (entry of bonusNumberVotes | keyvalue; track entry.key) {
+                          <div class="allocation-item">
+                            <span class="number-chip bonus-chip">{{ entry.key }}</span>
+                            <span class="allocation-votes">{{ entry.value }} votes</span>
+                            <button type="button" class="remove-btn" (click)="removeBonusVotes(+$any(entry.key))">×</button>
+                          </div>
+                        }
+                      </div>
+                    </div>
+                  }
+
+                  <div class="totals-card">
+                    <span>Total Allocation Weight</span>
+                    <strong>{{ getTotalAllocatedVotes() }} votes</strong>
+                  </div>
+
+                  <div class="form-actions">
+                    <button class="save-btn" type="button" (click)="saveAllocation()" [disabled]="saving">
+                      {{ saving ? 'Saving...' : (isEditMode ? 'Update Allocation' : 'Save Allocation') }}
+                    </button>
+                    <button class="cancel-btn" type="button" (click)="backToMain()" [disabled]="saving">Back to Section 1</button>
+                    <button class="cancel-btn" type="button" (click)="goBack()" [disabled]="saving">Cancel</button>
+                  </div>
+                </div>
+              }
+            </div>
+          </section>
+
+          <section class="panel preview-panel">
+            <div class="panel-header">
+              <h2>Highest-Vote Preview</h2>
+              <p>Current top combination for the selected draw.</p>
+            </div>
+
+            <div class="panel-body">
+              @if (previewLoading) {
+                <div class="panel-state">
+                  <p>Loading highest-vote data...</p>
+                </div>
+              } @else if (highestVotePreview) {
+                <div class="preview-meta">
+                  <h3>{{ highestVotePreview.lottery }}</h3>
+                  <p>Draw: {{ formatDateTime(highestVotePreview.draw_date) }}</p>
+                  <p>Jackpot: M {{ highestVotePreview.jackpot }}</p>
+                </div>
+
+                <div class="preview-group">
+                  <span class="preview-label">Winning Numbers</span>
+                  <div class="preview-numbers">
+                    @for (number of highestVotePreview.winning_numbers; track number) {
+                      <span class="number-chip">{{ number }}</span>
+                    }
+                  </div>
+                </div>
+
+                <div class="preview-group">
+                  <span class="preview-label">Bonus Numbers</span>
+                  <div class="preview-numbers">
+                    @for (number of highestVotePreview.bonus_numbers; track number) {
+                      <span class="number-chip bonus-chip">{{ number }}</span>
+                    }
+                  </div>
+                </div>
+
+                <div class="preview-stats">
+                  <div class="preview-stat">
+                    <span class="preview-stat-value">{{ highestVotePreview.total_main_votes }}</span>
+                    <span class="preview-stat-label">Main Votes</span>
+                  </div>
+                  <div class="preview-stat">
+                    <span class="preview-stat-value">{{ highestVotePreview.total_bonus_votes }}</span>
+                    <span class="preview-stat-label">Bonus Votes</span>
+                  </div>
+                </div>
+              } @else {
+                <div class="panel-state">
+                  <p>{{ highestVoteMessage }}</p>
+                </div>
+              }
+            </div>
+          </section>
+        </div>
+
+        <div class="detail-footer">
+          <button type="button" class="back-btn" (click)="goBack()">Back to Voting</button>
+        </div>
+      }
+    </div>
+
+    @if (showVotePopup) {
+      <div class="modal-overlay" (click)="closeVotePopup()">
+        <div class="modal-content" (click)="$event.stopPropagation()">
+          <div class="modal-header">
+            <h2>Allocate Votes to Number {{ selectedNumberForVoting }}</h2>
+            <button class="close-btn" type="button" (click)="closeVotePopup()">×</button>
+          </div>
+
+          <div class="modal-body">
+            <div class="form-group">
+              <label for="vote-amount">Vote Amount</label>
+              <input id="vote-amount" type="number" min="0" step="1" [(ngModel)]="voteAmount">
+            </div>
+            <p class="modal-help">Enter 0 to remove this number from the allocation.</p>
+          </div>
+
+          <div class="modal-footer">
+            <button class="cancel-btn" type="button" (click)="closeVotePopup()">Cancel</button>
+            <button class="save-btn" type="button" (click)="saveVoteAmount()">Save Votes</button>
+          </div>
+        </div>
+      </div>
+    }
+  </main>
+</div>

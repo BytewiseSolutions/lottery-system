@@ -1,8 +1,10 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
+import { firstValueFrom } from 'rxjs';
 import { LayoutComponent } from '../layout/layout.component';
-import { environment } from '../../environments/environment';
+import { BackendService } from '../util/backend.service';
+import { ApiResponse } from '../util/api-response';
 
 @Component({
   selector: 'app-results',
@@ -14,6 +16,8 @@ export class ResultsComponent implements OnInit {
   results: any[] = [];
   upcomingDraws: any = {};
 
+  constructor(private backendService: BackendService) {}
+
   ngOnInit() {
     this.loadResults();
     this.loadUpcomingDraws();
@@ -21,14 +25,13 @@ export class ResultsComponent implements OnInit {
 
   async loadUpcomingDraws() {
     try {
-      const response = await fetch(`${environment.apiUrl}/upcoming-draws`);
-      const data = await response.json();
-      if (data.success && data.draws) {
-        data.draws.forEach((draw: any) => {
-          const lotteryCode = this.getLotteryCode(draw.lottery_type);
+      const response = await firstValueFrom(this.backendService.getUpcomingDraws()) as ApiResponse<any[]>;
+      const draws = Array.isArray(response?.data) ? response.data : [];
+
+      draws.forEach((draw: any) => {
+          const lotteryCode = this.getLotteryCode(draw.lottery_type || draw.lottery || draw.name);
           this.upcomingDraws[lotteryCode] = draw.draw_date;
-        });
-      }
+      });
     } catch (error) {
       console.error('Error loading upcoming draws:', error);
     }
@@ -36,14 +39,15 @@ export class ResultsComponent implements OnInit {
 
   async loadResults() {
     try {
-      const response = await fetch(`${environment.apiUrl}/results`);
-      const data = await response.json();
-      this.results = data.map((result: any) => ({
+      const response = await firstValueFrom(this.backendService.getResults()) as ApiResponse<any[]>;
+      const results = Array.isArray(response?.data) ? response.data : [];
+
+      this.results = results.map((result: any) => ({
         id: result.id,
         game: result.lottery || 'Unknown Lottery',
-        date: result.drawDate,
-        numbers: result.numbers || [],
-        bonusNumbers: result.bonusNumbers || [],
+        date: result.drawDate || result.draw_date,
+        numbers: result.numbers || result.winning_numbers || [],
+        bonusNumbers: result.bonusNumbers || result.bonus_numbers || [],
         poolMoney: result.jackpot || '$0.00'
       }));
     } catch (error) {

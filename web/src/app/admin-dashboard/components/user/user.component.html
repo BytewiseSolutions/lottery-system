@@ -1,0 +1,246 @@
+<div class="admin-dashboard">
+  <app-sidebar></app-sidebar>
+
+  <main class="main-content">
+    <div class="user-page">
+      <div class="page-header">
+        <h1>Manage Users</h1>
+
+        <div class="header-actions">
+          <button class="export-btn" type="button" (click)="exportCsv()" [disabled]="exporting || totalItems === 0">
+            <i class="fas fa-file-csv"></i>
+            {{ exporting ? 'Exporting...' : 'Export CSV' }}
+          </button>
+
+          <button class="upload-btn" type="button" (click)="openAddUserModal()" [disabled]="saving">
+            <i class="fas fa-plus"></i>
+            Add User
+          </button>
+        </div>
+      </div>
+
+      <div class="filters-bar">
+        <div class="filter-group search-group">
+          <label for="user-search">Search</label>
+          <input
+            id="user-search"
+            type="text"
+            [(ngModel)]="searchTerm"
+            placeholder="Search by name, email, phone, country..."
+            (keyup.enter)="onFiltersChange()">
+        </div>
+
+        <div class="filter-group">
+          <label for="user-role-filter">Role</label>
+          <select id="user-role-filter" [(ngModel)]="selectedRole" (change)="onFiltersChange()">
+            <option value="all">All Roles</option>
+            <option value="admin">Admin</option>
+            <option value="user">User</option>
+          </select>
+        </div>
+
+        <div class="filter-group">
+          <label for="user-status-filter">Status</label>
+          <select id="user-status-filter" [(ngModel)]="selectedStatus" (change)="onFiltersChange()">
+            <option value="all">All Statuses</option>
+            <option value="active">Active</option>
+            <option value="inactive">Inactive</option>
+          </select>
+        </div>
+
+        <div class="filter-group">
+          <label for="user-sort-order">Sort</label>
+          <select id="user-sort-order" [(ngModel)]="sortOrder" (change)="onFiltersChange()">
+            <option value="newest">Newest first</option>
+            <option value="oldest">Oldest first</option>
+          </select>
+        </div>
+
+        <div class="filter-actions">
+          <button class="search-btn" type="button" (click)="onFiltersChange()">Apply</button>
+          <button class="clear-btn" type="button" (click)="clearFilters()">Clear</button>
+        </div>
+      </div>
+
+      <div class="table-panel">
+        @if (loading) {
+          <div class="table-state">
+            <p>Loading users...</p>
+          </div>
+        }
+
+        @if (error && !loading) {
+          <div class="table-state table-state-error">
+            <p>Failed to load users.</p>
+            <button class="retry-btn" type="button" (click)="retryLoad()">Retry</button>
+          </div>
+        }
+
+        @if (!loading && !error && users.length === 0) {
+          <div class="table-state">
+            <p>No users found for the selected filters.</p>
+          </div>
+        }
+
+        @if (!loading && !error && users.length > 0) {
+          <div class="table-wrapper">
+            <table class="user-table">
+              <thead>
+                <tr>
+                  <th>#</th>
+                  <th>User</th>
+                  <th>Contact</th>
+                  <th>Country</th>
+                  <th>Role</th>
+                  <th>Status</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+
+              <tbody>
+                @for (user of users; track user.id; let index = $index) {
+                  <tr>
+                    <td>{{ ((currentPage - 1) * itemsPerPage) + index + 1 }}</td>
+                    <td>{{ user.full_name }}</td>
+                    <td>{{ getContactLabel(user) }}</td>
+                    <td>{{ user.country || 'Not available' }}</td>
+                    <td>{{ getRoleLabel(user) }}</td>
+                    <td>
+                      <span class="status-badge" [class.inactive]="getStatusLabel(user) === 'Inactive'">
+                        {{ getStatusLabel(user) }}
+                      </span>
+                    </td>
+                    <td>
+                      <div class="actions">
+                        <button class="view-btn" type="button" (click)="viewUser(user)">View</button>
+                        <button class="edit-btn" type="button" (click)="editUser(user)">Edit</button>
+                        <button class="password-btn" type="button" (click)="openPasswordModal(user)">Change Password</button>
+                        <button
+                          class="status-btn"
+                          type="button"
+                          (click)="openStatusModal(user)"
+                          [disabled]="processingUserId === user.id">
+                          {{ getStatusActionLabel(user) }}
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+
+          <div class="table-footer">
+            <div class="table-info">
+              Showing {{ users.length }} of {{ totalItems }} users
+            </div>
+
+            <div class="pagination">
+              <button
+                class="btn-icon"
+                type="button"
+                (click)="onPageChange(currentPage - 1)"
+                [disabled]="currentPage === 1">
+                <i class="fas fa-chevron-left"></i>
+              </button>
+
+              <span class="page-info">
+                Page {{ currentPage }} of {{ totalPages || 1 }}
+              </span>
+
+              <button
+                class="btn-icon"
+                type="button"
+                (click)="onPageChange(currentPage + 1)"
+                [disabled]="currentPage === totalPages || totalPages === 0">
+                <i class="fas fa-chevron-right"></i>
+              </button>
+            </div>
+          </div>
+        }
+      </div>
+    </div>
+
+    @if (showUserModal) {
+      <div class="modal-overlay" (click)="closeUserModal()">
+        <div class="modal-content" (click)="$event.stopPropagation()">
+          <div class="modal-body">
+            <app-user-form
+              [initialValue]="userForm"
+              [isEditMode]="isEditMode"
+              [loading]="saving"
+              [errorMessage]="formError"
+              [showPasswordField]="!isEditMode"
+              (cancel)="closeUserModal()"
+              (saveForm)="saveUser($event)">
+            </app-user-form>
+          </div>
+        </div>
+      </div>
+    }
+
+    @if (showPasswordModal && passwordActionTarget) {
+      <div class="modal-overlay" (click)="closePasswordModal()">
+        <div class="modal-content password-modal-content" (click)="$event.stopPropagation()">
+          <div class="modal-body">
+            <div class="password-modal">
+              <div class="password-modal-header">
+                <div>
+                  <h3>Change Password</h3>
+                  <p>Set a new password for {{ passwordActionTarget.full_name }}.</p>
+                </div>
+                <button type="button" class="close-btn" (click)="closePasswordModal()" [disabled]="saving">×</button>
+              </div>
+
+              @if (passwordError) {
+                <div class="form-error">
+                  <i class="fas fa-circle-exclamation"></i>
+                  <span>{{ passwordError }}</span>
+                </div>
+              }
+
+              <div class="password-form">
+                <div class="form-group">
+                  <label for="reset-password">New Password</label>
+                  <input id="reset-password" type="password" [(ngModel)]="passwordForm.password">
+                </div>
+
+                <div class="form-group">
+                  <label for="reset-confirm-password">Confirm New Password</label>
+                  <input id="reset-confirm-password" type="password" [(ngModel)]="passwordForm.confirmPassword">
+                </div>
+              </div>
+
+              <div class="password-modal-footer">
+                <button type="button" class="btn-secondary" (click)="closePasswordModal()" [disabled]="saving">Cancel</button>
+                <button type="button" class="btn-primary" (click)="submitPasswordReset()" [disabled]="saving">
+                  {{ saving ? 'Saving...' : 'Update Password' }}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    }
+
+    @if (showStatusModal && statusActionTarget) {
+      <div class="modal-overlay" (click)="closeStatusModal()">
+        <div class="modal-content confirm-modal-content" (click)="$event.stopPropagation()">
+          <div class="modal-body">
+            <div class="confirm-modal">
+              <h3>{{ getStatusModalTitle() }}</h3>
+              <p>{{ statusActionMessage }}</p>
+
+              <div class="confirm-modal-footer">
+                <button type="button" class="btn-secondary" (click)="closeStatusModal()" [disabled]="processingUserId === statusActionTarget.id">Cancel</button>
+                <button type="button" class="btn-primary" (click)="confirmToggleUserStatus()" [disabled]="processingUserId === statusActionTarget.id">
+                  {{ processingUserId === statusActionTarget.id ? 'Processing...' : getStatusActionLabel(statusActionTarget) }}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    }
+  </main>
+</div>

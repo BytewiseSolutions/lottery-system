@@ -1,0 +1,131 @@
+<div class="admin-dashboard">
+  <app-sidebar></app-sidebar>
+
+  <main class="main-content">
+    <div class="results-page">
+
+      <div class="page-header">
+        <h1>Manage Results</h1>
+
+        <button class="upload-btn" (click)="openModal()" [disabled]="saving">
+          <i class="fas fa-upload"></i>
+          {{ saving ? 'Saving Result...' : 'Upload Results' }}
+        </button>
+      </div>
+
+      <div class="view-results">
+        <div class="table-responsive">
+          @if (loading) {
+            <div class="results-state">
+              <p>Loading results...</p>
+            </div>
+          }
+
+          @if (error && !loading) {
+            <div class="results-state results-state-error">
+              <p>Failed to load results.</p>
+              <button class="retry-btn" type="button" (click)="loadResults()">Retry</button>
+            </div>
+          }
+
+          @if (!loading && !error && results.length === 0) {
+            <div class="results-state">
+              <p>No published results found yet.</p>
+            </div>
+          }
+
+          @if (!loading && !error && results.length > 0) {
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Lottery</th>
+                  <th>Draw</th>
+                  <th>Jackpot</th>
+                  <th>Winners</th>
+                  <th>Status</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+
+              <tbody>
+                @for (result of paginatedResults; track result.id; let index = $index) {
+                <tr>
+                  <td>{{ result.lottery }}</td>
+                  <td>{{ formatDrawDate(result.draw_date) }}</td>
+                  <td>M{{ formatJackpot(result.jackpot) }}</td>
+                  <td>{{ result.winners_count }}</td>
+                  <td>{{ formatStatus(result.status) }}</td>
+
+                  <td class="action-buttons">
+                    <button type="button" (click)="viewResult(result)" [disabled]="saving">
+                      View
+                    </button>
+
+                    <button type="button" (click)="editResult(result)" [disabled]="saving">
+                      Edit
+                    </button>
+                  </td>
+                </tr>
+                }
+              </tbody>
+            </table>
+
+            <div class="table-footer">
+              <div class="table-info">
+                Showing {{ paginatedResults.length }} of {{ totalItems }} results
+              </div>
+              <div class="pagination">
+                <button
+                  class="btn-icon"
+                  type="button"
+                  (click)="onPageChange(currentPage - 1)"
+                  [disabled]="currentPage === 1">
+                  <i class="fas fa-chevron-left"></i>
+                </button>
+                <span class="page-info">
+                  Page {{ currentPage }} of {{ totalPages || 1 }}
+                </span>
+                <button
+                  class="btn-icon"
+                  type="button"
+                  (click)="onPageChange(currentPage + 1)"
+                  [disabled]="currentPage === totalPages || totalPages === 0">
+                  <i class="fas fa-chevron-right"></i>
+                </button>
+              </div>
+            </div>
+          }
+
+        </div>
+      </div>
+
+    </div>
+
+    @if (isModalOpen) {
+    <div class="modal-overlay" (click)="closeModal()">
+
+      <div class="modal-content" (click)="$event.stopPropagation()">
+
+        <div class="modal-header">
+          <h2>
+            {{ isEditMode ? 'Edit Results' : 'Upload Results' }}
+          </h2>
+
+          <button class="close-btn" (click)="closeModal()" [disabled]="isModalBusy()">
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
+
+        <div class="modal-body">
+          <app-results-form [editData]="selectedResult" [isEditMode]="isEditMode" [saving]="saving" (cancel)="closeModal()"
+            (save)="saveResult($event)">
+          </app-results-form>
+        </div>
+
+      </div>
+
+    </div>
+    }
+
+  </main>
+</div>

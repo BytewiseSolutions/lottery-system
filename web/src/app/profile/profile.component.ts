@@ -2,8 +2,9 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { LayoutComponent } from '../layout/layout.component';
-import { SuccessPopupService } from '../services/success-popup.service';
-import { environment } from '../../environments/environment';
+import { SuccessPopupService } from '../util/success-popup.service';
+import { BackendService } from '../util/backend.service';
+import { ErrorHandlerService } from '../util/error-handler.service';
 import { COUNTRIES } from '../shared/data/countries';
 
 @Component({
@@ -38,7 +39,11 @@ export class ProfileComponent implements OnInit {
   previewUrl: string | null = null;
   isUploadingPicture = false;
 
-  constructor(private successPopupService: SuccessPopupService) {}
+  constructor(
+    private successPopupService: SuccessPopupService,
+    private backendService: BackendService,
+    private errorHandlerService: ErrorHandlerService
+  ) {}
 
   ngOnInit() {
     this.loadProfile();
@@ -46,56 +51,52 @@ export class ProfileComponent implements OnInit {
   }
 
   loadProfile() {
+    this.loadProfileFromStorage();
+
+    this.backendService.getUserProfile().subscribe({
+      next: (response: any) => {
+        if (response?.success && response.data) {
+          this.applyProfileData(response.data);
+        }
+      },
+      error: (error) => {
+        console.error('Failed to load profile from api:', error);
+      }
+    });
+  }
+
+  private loadProfileFromStorage() {
     const user = localStorage.getItem('user');
     if (user) {
       const userData = JSON.parse(user);
-      const names = userData.fullName?.split(' ') || ['', ''];
-      this.profile = {
-        firstName: names[0] || '',
-        lastName: names.slice(1).join(' ') || '',
-        email: userData.email || '',
-        phone: userData.phone || '',
-        country: userData.country || '',
-        profilePicture: userData.profilePicture || ''
-      };
-      this.originalProfile = { ...this.profile };
-      this.previewUrl = this.profile.profilePicture || null;
+      this.applyProfileData(userData, false);
     }
   }
 
-  async loadStats() {
-    const user = localStorage.getItem('user');
-    if (!user) return;
+  loadStats() {
+    this.backendService.getCurrentUserStats().subscribe({
+      next: (response: any) => {
+        const statsData = response?.data;
+        const date = statsData?.member_since ? new Date(statsData.member_since) : null;
+        const formattedDate = date
+          ? `${date.getDate()} ${date.toLocaleDateString('en-US', { month: 'short' })} ${date.getFullYear()}`
+          : 'N/A';
 
-    const userData = JSON.parse(user);
-    const token = localStorage.getItem('token');
-
-    try {
-      const response = await fetch(`${environment.apiUrl}/user-stats?userId=${userData.id}`, {
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
-      const data = await response.json();
-      console.log('Stats API response:', data);
-      
-      if (data.success) {
-        const date = data.memberSince ? new Date(data.memberSince) : null;
-        const formattedDate = date ? `${date.getDate()} ${date.toLocaleDateString('en-US', { month: 'short' })} ${date.getFullYear()}` : 'N/A';
-        
         this.stats = {
-          totalEntries: data.totalEntries || 0,
-          totalWinnings: data.totalWinnings || '0.00',
+          totalEntries: Number(statsData?.total_entries || 0),
+          totalWinnings: statsData?.total_winnings || '0.00',
           memberSince: formattedDate
         };
-        console.log('Processed stats:', this.stats);
+      },
+      error: (error) => {
+        console.error('Error loading stats:', error);
+        this.stats = {
+          totalEntries: 0,
+          totalWinnings: '0.00',
+          memberSince: 'N/A'
+        };
       }
-    } catch (error) {
-      console.error('Error loading stats:', error);
-      this.stats = {
-        totalEntries: 0,
-        totalWinnings: '0.00',
-        memberSince: 'N/A'
-      };
-    }
+    });
   }
 
   toggleEdit() {
@@ -129,12 +130,12 @@ export class ProfileComponent implements OnInit {
     const file = event.target.files[0];
     if (file) {
       if (file.size > 5 * 1024 * 1024) {
-        alert('File size must be less than 5MB');
+        this.errorHandlerService.showError('File size must be less than 5MB');
         return;
       }
       
       if (!file.type.startsWith('image/')) {
-        alert('Please select an image file');
+        this.errorHandlerService.showError('Please select an image file');
         return;
       }
       
@@ -148,50 +149,46 @@ export class ProfileComponent implements OnInit {
     }
   }
 
-  async uploadProfilePicture() {
+  uploadProfilePicture() {
     if (!this.selectedFile) return;
     
     this.isUploadingPicture = true;
-    const token = localStorage.getItem('token');
-    const user = JSON.parse(localStorage.getItem('user') || '{}');
     
     const formData = new FormData();
     formData.append('profilePicture', this.selectedFile);
-    formData.append('userId', user.id);
-    
-    try {
-      const response = await fetch(`${environment.apiUrl}/upload-profile-picture.php`, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`
-        },
-        body: formData
-      });
-      
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+
+    this.backendService.uploadFile(formData).subscribe({
+      next: (response: any) => {
+        this.isUploadingPicture = false;
+
+        if (response?.success && response.data?.profile_picture_id) {
+          const profilePictureId = response.data.profile_picture_id;
+          const imageUrl = this.backendService.getFileUrl(profilePictureId);
+          const user = JSON.parse(localStorage.getItem('user') || '{}');
+
+          this.profile.profilePicture = imageUrl;
+          this.previewUrl = imageUrl;
+          this.selectedFile = null;
+
+          localStorage.setItem('user', JSON.stringify({
+            ...user,
+            profilePicture: imageUrl,
+            profile_picture: imageUrl,
+            profile_picture_id: profilePictureId
+          }));
+
+          this.successPopupService.show('Profile picture updated successfully!', 'Success');
+          return;
+        }
+
+        this.errorHandlerService.showError(response?.message || 'Failed to upload profile picture');
+      },
+      error: (error: any) => {
+        this.isUploadingPicture = false;
+        console.error('Upload error:', error);
+        this.errorHandlerService.showError(error?.error?.message || 'Failed to upload profile picture');
       }
-      
-      const result = await response.json();
-      
-      if (result.success) {
-        // Build the URL to get the image
-        const imageUrl = `${environment.apiUrl}/get-file.php?id=${result.profilePictureId}`;
-        this.profile.profilePicture = imageUrl;
-        this.previewUrl = imageUrl;
-        user.profilePicture = imageUrl;
-        localStorage.setItem('user', JSON.stringify(user));
-        this.successPopupService.show('Profile picture updated successfully!', 'Success');
-        this.selectedFile = null;
-      } else {
-        alert(result.error || 'Failed to upload profile picture');
-      }
-    } catch (error: any) {
-      console.error('Upload error:', error);
-      alert('Network error. Please make sure the API server is running on port 8000.');
-    } finally {
-      this.isUploadingPicture = false;
-    }
+    });
   }
 
   removeProfilePicture() {
@@ -202,45 +199,81 @@ export class ProfileComponent implements OnInit {
 
   async updateProfile() {
     this.isSaving = true;
-    const token = localStorage.getItem('token');
     const user = JSON.parse(localStorage.getItem('user') || '{}');
 
-    try {
-      const response = await fetch(`${environment.apiUrl}/update-profile`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify({
-          userId: user.id,
-          fullName: `${this.profile.firstName} ${this.profile.lastName}`.trim(),
-          email: this.profile.email,
-          phone: this.profile.phone,
-          country: this.profile.country
-        })
-      });
+    this.backendService.updateUserProfile({
+      first_name: this.profile.firstName,
+      last_name: this.profile.lastName,
+      email: this.profile.email,
+      phone: this.profile.phone,
+      country: this.profile.country
+    }).subscribe({
+      next: (response: any) => {
+        this.isSaving = false;
 
-      const result = await response.json();
-      console.log('Update profile response:', result);
+        if (response?.success && response.data) {
+          this.successPopupService.show('Your profile information has been updated successfully!', 'Profile Updated');
+          this.applyProfileData(response.data);
+          this.isEditing = false;
 
-      if (result.success) {
-        this.successPopupService.show('Your profile information has been updated successfully!', 'Profile Updated');
-        this.originalProfile = { ...this.profile };
-        this.isEditing = false;
-        
-        user.fullName = `${this.profile.firstName} ${this.profile.lastName}`.trim();
-        user.email = this.profile.email;
-        user.phone = this.profile.phone;
-        user.country = this.profile.country;
-        localStorage.setItem('user', JSON.stringify(user));
-      } else {
-        alert(result.error || 'Failed to update profile');
+          const updatedUser = {
+            ...user,
+            first_name: response.data.first_name,
+            last_name: response.data.last_name,
+            full_name: response.data.full_name,
+            fullName: response.data.full_name,
+            email: response.data.email,
+            phone: response.data.phone,
+            country: response.data.country
+          };
+
+          localStorage.setItem('user', JSON.stringify(updatedUser));
+          return;
+        }
+
+        this.errorHandlerService.showError(response?.message || 'Failed to update profile');
+      },
+      error: (error) => {
+        this.isSaving = false;
+        console.error('Update profile failed:', error);
+        this.errorHandlerService.showError(error?.error?.message || 'Failed to update profile');
       }
-    } catch (error) {
-      alert('Network error. Please try again.');
-    } finally {
-      this.isSaving = false;
+    });
+  }
+
+  private applyProfileData(userData: any, updateStorage: boolean = true) {
+    const firstName = userData.first_name || userData.firstName || '';
+    const lastName = userData.last_name || userData.lastName || '';
+    const fullName = userData.full_name || userData.fullName || `${firstName} ${lastName}`.trim();
+
+    this.profile = {
+      firstName: firstName || fullName.split(' ')[0] || '',
+      lastName: lastName || fullName.split(' ').slice(1).join(' ') || '',
+      email: userData.email || '',
+      phone: userData.phone || '',
+      country: userData.country || '',
+      profilePicture: userData.profilePicture
+        || userData.profile_picture
+        || (userData.profile_picture_id ? this.backendService.getFileUrl(userData.profile_picture_id) : '')
+    };
+    this.originalProfile = { ...this.profile };
+    this.previewUrl = this.profile.profilePicture || null;
+
+    if (updateStorage) {
+      const storedUser = JSON.parse(localStorage.getItem('user') || '{}');
+      localStorage.setItem('user', JSON.stringify({
+        ...storedUser,
+        first_name: this.profile.firstName,
+        last_name: this.profile.lastName,
+        full_name: `${this.profile.firstName} ${this.profile.lastName}`.trim(),
+        fullName: `${this.profile.firstName} ${this.profile.lastName}`.trim(),
+        email: this.profile.email,
+        phone: this.profile.phone,
+        country: this.profile.country,
+        profilePicture: this.profile.profilePicture,
+        profile_picture: this.profile.profilePicture,
+        profile_picture_id: userData.profile_picture_id ?? storedUser.profile_picture_id
+      }));
     }
   }
 }

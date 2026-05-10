@@ -1,41 +1,68 @@
 import { Routes } from '@angular/router';
 import { HomeComponent } from './home/home.component';
 import { LotteriesComponent } from './lotteries/lotteries.component';
-import { ResultsComponent } from './results/results.component';
 import { AboutComponent } from './about/about.component';
 import { FaqComponent } from './faq/faq.component';
 import { HistoryComponent } from './history/history.component';
 import { ContactComponent } from './contact/contact.component';
 import { PlayLotteryComponent } from './play-lottery/play-lottery.component';
+import { VotingComponent as PublicVotingComponent } from './voting/voting.component';
+import { ResultsComponent as PublicResultsComponent } from './results/results.component';
+import { LoginPageComponent } from './login-page/login-page.component';
 import { TermsComponent } from './terms/terms.component';
 import { PrivacyComponent } from './privacy/privacy.component';
-import { AdminComponent } from './admin/admin.component';
 import { ProfileComponent } from './profile/profile.component';
 import { SettingsComponent } from './settings/settings.component';
-import { VotingComponent } from './voting/voting.component';
 import { WinningsComponent } from './winnings/winnings.component';
 import { adminGuard } from './guards/admin.guard';
-import { UserDetailsPageComponent } from './admin/components/user-management/user-details/user-details-page.component';
+import { AdminDashboardComponent } from './admin-dashboard/admin-dashboard.component';
+import { ActivityLogComponent } from './admin-dashboard/components/activity-log/activity-log.component';
+import { VotingComponent as AdminVotingComponent } from './admin-dashboard/components/voting/voting.component';
+import { VoteAllocationFormComponent } from './admin-dashboard/components/voting/vote-allocation-form/vote-allocation-form.component';
+import { VoteAllocationDetailsComponent } from './admin-dashboard/components/voting/vote-allocation-details/vote-allocation-details.component';
+import { ResultsComponent as AdminResultsComponent } from './admin-dashboard/components/results/results.component';
+import { EntryComponent } from './admin-dashboard/components/entry/entry.component';
+import { NotificationComponent } from './admin-dashboard/components/notification/notification.component';
+import { UserComponent } from './admin-dashboard/components/user/user.component';
+import { WinnerComponent } from './admin-dashboard/components/winner/winner.component';
+import { ResultsDetailsComponent } from './admin-dashboard/components/results/results-details/results-details.component';
+import { UserDetailsComponent } from './admin-dashboard/components/user/user-details/user-details.component';
+import { EntryDetailsComponent } from './admin-dashboard/components/entry/entry-details/entry-details.component';
+import { AdminProfileComponent } from './admin-dashboard/components/profile/profile.component';
+import { DashboardSettingsComponent } from './admin-dashboard/components/admin-settings/admin-settings.component';
 
 export const routes: Routes = [
   { path: '', component: HomeComponent },
   { path: 'home', component: HomeComponent },
   { path: 'lotteries', component: LotteriesComponent },
-  { path: 'results', component: ResultsComponent },
   { path: 'about', component: AboutComponent },
   { path: 'faq', component: FaqComponent },
   { path: 'history', component: HistoryComponent },
   { path: 'contact', component: ContactComponent },
+  { path: 'login', component: LoginPageComponent },
   { path: 'play-lottery', component: PlayLotteryComponent },
+  { path: 'voting', component: PublicVotingComponent },
+  { path: 'results', component: PublicResultsComponent },
   { path: 'terms', component: TermsComponent },
   { path: 'privacy', component: PrivacyComponent },
   { path: 'profile', component: ProfileComponent },
   { path: 'settings', component: SettingsComponent },
-  { path: 'voting', component: VotingComponent },
   { path: 'winnings', component: WinningsComponent },
-  { path: 'admin/users/:id', component: UserDetailsPageComponent, canActivate: [adminGuard] },
-  { path: 'dashboard/users/:id', component: UserDetailsPageComponent, canActivate: [adminGuard] },
-  { path: 'admin', component: AdminComponent, canActivate: [adminGuard] },
-  { path: 'dashboard', component: AdminComponent, canActivate: [adminGuard] },
+  { path: 'admin-dashboard', component: AdminDashboardComponent, canActivate: [adminGuard] },
+  { path: 'admin-dashboard/activity-log', component: ActivityLogComponent, canActivate: [adminGuard] },
+  { path: 'admin-dashboard/voting', component: AdminVotingComponent, canActivate: [adminGuard] },
+  { path: 'admin-dashboard/voting/new', component: VoteAllocationFormComponent, canActivate: [adminGuard] },
+  { path: 'admin-dashboard/voting/:id/edit', component: VoteAllocationFormComponent, canActivate: [adminGuard] },
+  { path: 'admin-dashboard/voting/:id', component: VoteAllocationDetailsComponent, canActivate: [adminGuard] },
+  { path: 'admin-dashboard/results', component: AdminResultsComponent, canActivate: [adminGuard] },
+  { path: 'admin-dashboard/results/:id', component: ResultsDetailsComponent, canActivate: [adminGuard] },
+  { path: 'admin-dashboard/entry', component: EntryComponent, canActivate: [adminGuard] },
+  { path: 'admin-dashboard/entry/:id', component: EntryDetailsComponent, canActivate: [adminGuard] },
+  { path: 'admin-dashboard/notification', component: NotificationComponent, canActivate: [adminGuard] },
+  { path: 'admin-dashboard/profile', component: AdminProfileComponent, canActivate: [adminGuard] },
+  { path: 'admin-dashboard/settings', component: DashboardSettingsComponent, canActivate: [adminGuard] },
+  { path: 'admin-dashboard/user', component: UserComponent, canActivate: [adminGuard] },
+  { path: 'admin-dashboard/user/:id', component: UserDetailsComponent, canActivate: [adminGuard] },
+  { path: 'admin-dashboard/winner', component: WinnerComponent, canActivate: [adminGuard] },
   { path: '**', redirectTo: '' }
 ];

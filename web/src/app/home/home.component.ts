@@ -1,9 +1,11 @@
 import { Component, OnInit, ChangeDetectorRef, NgZone, OnDestroy, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
-import { LotteryService, Draw } from '../services/lottery.service';
+import { firstValueFrom } from 'rxjs';
+import { Draw } from '../lotteries/draw';
+import { BackendService } from '../util/backend.service';
+import { ApiResponse } from '../util/api-response';
 import { LayoutComponent } from '../layout/layout.component';
-import { environment } from '../../environments/environment';
 
 @Component({
   selector: 'app-home',
@@ -21,7 +23,11 @@ export class HomeComponent implements OnInit, OnDestroy {
   totalPages = 0;
   private countdownInterval: any;
 
-  constructor(private lotteryService: LotteryService, private cdr: ChangeDetectorRef, private ngZone: NgZone) {}
+  constructor(
+    private backendService: BackendService,
+    private cdr: ChangeDetectorRef, 
+    private ngZone: NgZone
+  ) {}
 
   ngOnInit() {
     this.loadData();
@@ -45,15 +51,19 @@ export class HomeComponent implements OnInit, OnDestroy {
   }
 
   private loadData() {
-    this.lotteryService.getDraws().subscribe({
-      next: (draws) => {
-        this.draws = draws;
+    this.backendService.getUpcomingDraws().subscribe({
+      next: (response: ApiResponse<Draw[]>) => {
+        this.draws = response?.data ?? [];
         this.totalPages = Math.ceil(this.draws.length / this.itemsPerPage);
         this.updatePagination();
+        this.cdr.markForCheck();
       },
       error: (error) => {
         console.error('Error loading draws:', error);
         this.draws = [];
+        this.totalPages = 0;
+        this.paginatedDraws = [];
+        this.cdr.markForCheck();
       }
     });
     
@@ -75,34 +85,19 @@ export class HomeComponent implements OnInit, OnDestroy {
 
   private async loadResults() {
     try {
-      const response = await fetch(`${environment.apiUrl}/results`);
-      const data = await response.json();
-      
-      console.log('Raw results data:', data);
-      
-      if (Array.isArray(data)) {
-        this.results = data.slice(0, 1).map((result: any) => {
-          console.log('Processing result:', result);
-          console.log('Raw winning_numbers:', result.winning_numbers);
-          console.log('Raw bonus_numbers:', result.bonus_numbers);
-          
-          const processed = {
-            id: result.id,
-            name: result.lottery || 'Unknown Lottery',
-            drawDate: result.draw_date || result.drawDate,
-            winningNumbers: this.parseNumbers(result.winning_numbers || result.numbers),
-            bonusNumbers: this.parseNumbers(result.bonus_numbers || result.bonusNumbers),
-            poolMoney: result.jackpot || '$0.00',
-            nextDraw: this.getNextDrawDate(result.lottery),
-            currentPool: this.getCurrentPoolFromDraws(result.lottery)
-          };
-          
-          console.log('Processed result:', processed);
-          return processed;
-        });
-      } else {
-        this.results = [];
-      }
+      const response = await firstValueFrom(this.backendService.getResults()) as ApiResponse<any[]>;
+      const results = Array.isArray(response?.data) ? response.data : [];
+
+      this.results = results.slice(0, 1).map((result: any) => ({
+        id: result.id,
+        name: result.lottery || 'Unknown Lottery',
+        drawDate: result.draw_date || result.drawDate,
+        winningNumbers: this.parseNumbers(result.winning_numbers || result.numbers),
+        bonusNumbers: this.parseNumbers(result.bonus_numbers || result.bonusNumbers),
+        poolMoney: result.jackpot || '$0.00',
+        nextDraw: this.getNextDrawDate(result.lottery),
+        currentPool: this.getCurrentPoolFromDraws(result.lottery)
+      }));
     } catch (error) {
       console.error('Error loading results:', error);
       this.results = [];
@@ -110,33 +105,21 @@ export class HomeComponent implements OnInit, OnDestroy {
   }
 
   private parseNumbers(numbers: any): number[] {
-    console.log('Parsing numbers:', numbers, 'Type:', typeof numbers);
-    
     if (!numbers) return [];
     
-    // If it's already an array, return it
     if (Array.isArray(numbers)) {
-      console.log('Already array:', numbers);
       return numbers;
     }
     
-    // If it's a string, try to parse it as JSON
     if (typeof numbers === 'string') {
       try {
-        // Remove any extra quotes or whitespace
         const cleaned = numbers.trim();
-        console.log('Cleaned string:', cleaned);
-        
         const parsed = JSON.parse(cleaned);
-        console.log('Parsed result:', parsed);
-        
         return Array.isArray(parsed) ? parsed : [];
       } catch (error) {
         console.warn('Failed to parse numbers as JSON:', numbers, error);
         
-        // Try to extract numbers from concatenated string like "1345645127570"
         if (/^\d+$/.test(numbers)) {
-          // Split into groups of 2 digits (assuming lottery numbers are 1-75)
           const nums = [];
           for (let i = 0; i < numbers.length; i += 2) {
             const num = parseInt(numbers.substr(i, 2));
@@ -144,7 +127,6 @@ export class HomeComponent implements OnInit, OnDestroy {
               nums.push(num);
             }
           }
-          console.log('Extracted from concatenated string:', nums);
           return nums;
         }
         
@@ -174,8 +156,8 @@ export class HomeComponent implements OnInit, OnDestroy {
   }
 
   private getCurrentPoolFromDraws(lottery: string): string {
-    const draw = this.draws.find(d => d.name === lottery);
-    return draw?.jackpot || '$10.00';
+    const draw = this.draws.find(d => (d.name || d.lottery) === lottery);
+    return String(draw?.jackpot || '$10.00');
   }
 
   formatDate(dateString: string | undefined): string {
@@ -183,7 +165,6 @@ export class HomeComponent implements OnInit, OnDestroy {
     
     const date = new Date(dateString);
     
-    // Check if date is valid
     if (isNaN(date.getTime())) {
       console.warn('Invalid date string:', dateString);
       return 'TBA';
@@ -228,7 +209,6 @@ export class HomeComponent implements OnInit, OnDestroy {
     
     const target = new Date(targetDate);
     
-    // Check if date is valid
     if (isNaN(target.getTime())) {
       console.warn('Invalid target date:', targetDate);
       return '00 Days 00:00:00';
@@ -246,5 +226,9 @@ export class HomeComponent implements OnInit, OnDestroy {
     const seconds = Math.floor((distance % (1000 * 60)) / 1000);
 
     return `${days.toString().padStart(2, '0')} Days ${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+  }
+
+  getLotteryCloseCountdown(draw: Draw): string {
+    return this.getCountdown(draw.entry_closes_at || draw.lottery_closes_at || draw.nextDraw || draw.drawDate);
   }
 }

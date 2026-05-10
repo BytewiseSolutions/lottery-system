@@ -1,0 +1,128 @@
+<div class="tab-content">
+  <h3>Winners</h3>
+
+  @if (loading) {
+    <p class="winners-state">Loading winners...</p>
+  }
+
+  @if (!loading && error) {
+    <p class="winners-state winners-state-error">Winners could not be loaded right now.</p>
+  }
+
+  @if (!loading && !error && winners.length === 0) {
+    <p class="winners-state">No winners found for this result yet.</p>
+  }
+
+  @if (!loading && !error && winners.length > 0) {
+  <div class="table-wrapper desktop-view">
+    <table class="winners-table">
+
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Name</th>
+          <th>Email</th>
+          <th>Prize</th>
+          <th>Claim</th>
+          <th>Payment</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+
+      <tbody>
+        @for (w of winners; track $index) {
+        <tr>
+          <td>{{ $index + 1 }}</td>
+          <td>{{ w.name }}</td>
+          <td>{{ w.email }}</td>
+          <td class="prize">M {{ w.prize_amount }}</td>
+
+          <td>
+            <span class="badge">
+              {{ w.claim_status }}
+            </span>
+          </td>
+
+          <td>
+            <span class="badge">
+              {{ w.payment_status }}
+            </span>
+          </td>
+
+          <td>
+            <div class="actions">
+              <button class="pay-btn" (click)="payWinner(w)" [disabled]="!canPay(w)">{{ getPayLabel(w) }}</button>
+              <button class="claim-btn" (click)="markClaimed(w)" [disabled]="!canClaim(w)">{{ getClaimLabel(w) }}</button>
+            </div>
+          </td>
+        </tr>
+        }
+      </tbody>
+
+    </table>
+  </div>
+
+  <div class="mobile-view mobile-list">
+
+    @for (w of winners; track $index) {
+    <div class="winner-card">
+
+      <div class="top-row">
+        <strong>{{ $index + 1 }}. {{ w.name }}</strong>
+        <span class="prize">M {{ w.prize_amount }}</span>
+      </div>
+
+      <small>{{ w.email }}</small>
+
+      <div class="status-row">
+        <span class="badge">{{ w.claim_status }}</span>
+        <span class="badge">{{ w.payment_status }}</span>
+      </div>
+
+      <div class="actions">
+        <button class="pay-btn" (click)="payWinner(w)" [disabled]="!canPay(w)">{{ getPayLabel(w) }}</button>
+        <button class="claim-btn" (click)="markClaimed(w)" [disabled]="!canClaim(w)">{{ getClaimLabel(w) }}</button>
+      </div>
+
+    </div>
+    }
+
+  </div>
+  }
+</div>
+
+@if (isPayModalOpen) {
+  <div class="modal-overlay" (click)="closePayModal()">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h2>Process Payment</h2>
+        <button class="close-btn" (click)="closePayModal()">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+      <app-pay-form 
+        [winner]="selectedWinner" 
+        (cancel)="closePayModal()" 
+        (pay)="handlePayment($event)">
+      </app-pay-form>
+    </div>
+  </div>
+}
+
+@if (isClaimModalOpen) {
+  <div class="modal-overlay" (click)="closeClaimModal()">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h2>Mark as Claimed</h2>
+        <button class="close-btn" (click)="closeClaimModal()">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+      <app-claim-form 
+        [winner]="selectedWinner" 
+        (cancel)="closeClaimModal()" 
+        (claim)="handleClaim($event)">
+      </app-claim-form>
+    </div>
+  </div>
+}

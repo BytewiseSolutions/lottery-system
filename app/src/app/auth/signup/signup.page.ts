@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
-import { AuthService } from '../../services/auth.service';
+import { BackendService } from '../../util/backend.service';
 import { AlertController, LoadingController } from '@ionic/angular';
 import { COUNTRIES } from '../../shared/countries';
 
@@ -11,30 +11,27 @@ import { COUNTRIES } from '../../shared/countries';
   standalone: false
 })
 export class SignupPage implements OnInit {
-  name = '';
+  first_name = '';
+  last_name = '';
   email = '';
   password = '';
-  repeatPassword = '';
+  confirm_password = '';
   phone = '';
   country = '';
-  otp = '';
-  showOtp = false;
   showPassword = false;
   showRepeatPassword = false;
   agreeTerms = false;
   countries = COUNTRIES;
 
   constructor(
-    private auth: AuthService,
+    private backendService: BackendService,
     private router: Router,
     private alertCtrl: AlertController,
     private loadingCtrl: LoadingController
   ) {}
 
   ngOnInit() {
-    if (this.auth.isAuthenticated()) {
-      this.router.navigate(['/home']);
-    }
+    // Remove auth check since we're using new backend
   }
 
   togglePassword() {
@@ -50,19 +47,56 @@ export class SignupPage implements OnInit {
   }
 
   async signup() {
+    // Validation
+    if (!this.validateForm()) {
+      return;
+    }
+
     const loading = await this.loadingCtrl.create({ message: 'Registering...' });
     await loading.present();
 
-    this.auth.register({ name: this.name, email: this.email, password: this.password, repeatPassword: this.repeatPassword, phone: this.phone, country: this.country }).subscribe({
-      next: () => {
+    const userData = {
+      first_name: this.first_name,
+      last_name: this.last_name,
+      email: this.email,
+      password: this.password,
+      confirm_password: this.confirm_password,
+      phone: this.phone,
+      country: this.country
+    };
+
+    this.backendService.register(userData).subscribe({
+      next: async (response) => {
         loading.dismiss();
-        this.showOtp = true;
+        
+        const alert = await this.alertCtrl.create({
+          header: 'Success',
+          message: response.message || 'Registration successful!',
+          buttons: [{
+            text: 'OK',
+            handler: () => {
+              this.router.navigate(['/auth/login']);
+            }
+          }]
+        });
+        await alert.present();
       },
       error: async (err) => {
         loading.dismiss();
+        
+        let errorMessage = 'Registration failed';
+        
+        if (err.error?.message) {
+          errorMessage = err.error.message;
+        } else if (err.error?.data?.errors) {
+          // Handle validation errors
+          const errors = err.error.data.errors;
+          errorMessage = Object.values(errors).join('\n');
+        }
+        
         const alert = await this.alertCtrl.create({
-          header: 'Error',
-          message: err.error?.message || 'Registration failed',
+          header: 'Registration Error',
+          message: errorMessage,
           buttons: ['OK']
         });
         await alert.present();
@@ -70,24 +104,41 @@ export class SignupPage implements OnInit {
     });
   }
 
-  async verifyOtp() {
-    const loading = await this.loadingCtrl.create({ message: 'Verifying...' });
-    await loading.present();
+  private validateForm(): boolean {
+    if (!this.first_name || !this.last_name) {
+      this.showAlert('Error', 'Please enter your first and last name');
+      return false;
+    }
 
-    this.auth.verifyOtp(this.email, this.otp).subscribe({
-      next: () => {
-        loading.dismiss();
-        this.router.navigate(['/home']);
-      },
-      error: async (err) => {
-        loading.dismiss();
-        const alert = await this.alertCtrl.create({
-          header: 'Error',
-          message: err.error?.message || 'Verification failed',
-          buttons: ['OK']
-        });
-        await alert.present();
-      }
+    if (!this.email) {
+      this.showAlert('Error', 'Please enter your email');
+      return false;
+    }
+
+    if (!this.password || this.password.length < 8) {
+      this.showAlert('Error', 'Password must be at least 8 characters');
+      return false;
+    }
+
+    if (this.password !== this.confirm_password) {
+      this.showAlert('Error', 'Passwords do not match');
+      return false;
+    }
+
+    if (!this.agreeTerms) {
+      this.showAlert('Error', 'Please agree to the terms and conditions');
+      return false;
+    }
+
+    return true;
+  }
+
+  private async showAlert(header: string, message: string) {
+    const alert = await this.alertCtrl.create({
+      header,
+      message,
+      buttons: ['OK']
     });
+    await alert.present();
   }
 }

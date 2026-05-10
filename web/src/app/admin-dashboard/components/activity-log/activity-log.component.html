@@ -1,0 +1,99 @@
+<div class="admin-dashboard">
+  <app-sidebar></app-sidebar>
+  
+  <main class="main-content">
+    <div class="activity-log-page">
+      <div class="activity-log-content">
+        <section class="logs-section">
+          <div class="empty-logs-state" *ngIf="activityLogs.length === 0 && !loading && !error">
+            <div class="empty-icon">
+              <i class="fas fa-file-alt"></i>
+            </div>
+            <h3>No Activity Logs</h3>
+            <p>No activity logs found in the system.</p>
+          </div>
+          
+          <div class="card" *ngIf="activityLogs.length > 0 && !loading && !error">
+            <div class="card-header">
+              <h3><i class="fas fa-history"></i> Activity Logs ({{ totalItems }})</h3>
+            </div>
+            <div class="table-responsive">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>#</th>
+                    <th>Timestamp</th>
+                    <th>User</th>
+                    <th>Action</th>
+                    <th>Details</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr *ngFor="let activity of paginatedLogs; trackBy: trackByFn; let i = index">
+                    <td data-label="#">{{ (currentPage - 1) * itemsPerPage + i + 1 }}</td>
+                    <td data-label="Timestamp">{{ formatDateTime(activity.created_at) }}</td>
+                    <td data-label="User">{{ activity.user_name || 'System' }}</td>
+                    <td data-label="Action">
+                      <span class="action-badge" [class]="getActionClass(activity.action)">
+                        <i [class]="getActivityIcon(activity.action)"></i>
+                        {{ formatAction(activity.action) }}
+                      </span>
+                    </td>
+                    <td data-label="Details">{{ getActivityDescription(activity) }}</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <div class="table-footer" *ngIf="activityLogs.length > 0">
+              <div class="table-info">
+                Showing {{ paginatedLogs.length }} of {{ totalItems }} logs
+              </div>
+              <div class="pagination">
+                <button 
+                  class="btn-icon" 
+                  (click)="onPageChange(currentPage - 1)"
+                  [disabled]="currentPage === 1">
+                  <i class="fas fa-chevron-left"></i>
+                </button>
+                <span class="page-info">
+                  Page {{ currentPage }} of {{ totalPages }}
+                </span>
+                <button 
+                  class="btn-icon" 
+                  (click)="onPageChange(currentPage + 1)"
+                  [disabled]="currentPage === totalPages">
+                  <i class="fas fa-chevron-right"></i>
+                </button>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <div class="loading-state" *ngIf="loading">
+          <div class="card">
+            <div class="card-header">
+              <h3><i class="fas fa-history"></i> Loading Activity Logs...</h3>
+            </div>
+            <div class="activity-skeleton">
+              <div class="skeleton-item" *ngFor="let item of [1,2,3,4,5,6,7,8]">
+                <div class="skeleton-text skeleton-title"></div>
+                <div class="skeleton-text skeleton-subtitle"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="error-state" *ngIf="error && !loading">
+          <div class="card">
+            <div class="error-message">
+              <i class="fas fa-exclamation-triangle"></i>
+              <h3>Error Loading Activity Logs</h3>
+              <p>{{ error }}</p>
+              <button class="retry-btn" (click)="loadActivityLogs()">Retry</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>

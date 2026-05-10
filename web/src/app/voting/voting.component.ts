@@ -1,8 +1,9 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { Router } from '@angular/router';
 import { LayoutComponent } from '../layout/layout.component';
-import { LotteryService } from '../services/lottery.service';
-import { ToastService } from '../services/toast.service';
+import { ToastService } from '../util/toast.service';
+import { BackendService } from '../util/backend.service';
 
 @Component({
   selector: 'app-voting',
@@ -27,7 +28,11 @@ export class VotingComponent implements OnInit {
   isLoadingDraw = false;
   drawLoadError = '';
   
-  constructor(private lotteryService: LotteryService, private toastService: ToastService) {}
+  constructor(
+    private backendService: BackendService,
+    private toastService: ToastService,
+    private router: Router
+  ) {}
   
   ngOnInit() {
     this.loadUpcomingDraw();
@@ -41,20 +46,17 @@ export class VotingComponent implements OnInit {
     this.isLoadingDraw = true;
     this.drawLoadError = '';
     this.upcomingDraw = null;
-    console.log('Loading upcoming draw...');
     
-    this.lotteryService.getCurrentVotingDraw().subscribe({
+    this.backendService.getCurrentDraw().subscribe({
       next: (response: any) => {
-        console.log('getCurrentVotingDraw response:', response);
         this.isLoadingDraw = false;
-        if (response && response.success && response.current_voting_draw) {
-          this.upcomingDraw = response.current_voting_draw;
-          this.isVotingTime = response.current_voting_draw.is_voting_open;
-          console.log('upcomingDraw set to:', this.upcomingDraw);
+        const draw = response?.data;
+
+        if (response?.success && draw) {
+          this.upcomingDraw = draw;
+          this.isVotingTime = !!draw.is_voting_open;
         } else {
-          console.log('No upcoming draw in response or invalid response');
-          this.isVotingTime = false;
-          this.drawLoadError = response?.message || 'No voting draw is available right now.';
+          this.loadFallbackDraw();
         }
       },
       error: (err) => {
@@ -68,21 +70,17 @@ export class VotingComponent implements OnInit {
   }
   
   loadFallbackDraw() {
-    this.lotteryService.getUpcomingDraws().subscribe({
-      next: (draws: any) => {
-        const drawsArray = Array.isArray(draws) ? draws : draws.draws || [];
+    this.backendService.getUpcomingDraws().subscribe({
+      next: (response: any) => {
+        const drawsArray = response?.data ?? [];
         if (drawsArray.length > 0) {
-          this.upcomingDraw = {
-            ...drawsArray[0],
-            lottery_type: drawsArray[0].lottery,
-            is_voting_open: true
-          };
-          this.isVotingTime = true;
+          this.upcomingDraw = drawsArray[0];
+          this.isVotingTime = !!drawsArray[0].is_voting_open;
           this.drawLoadError = '';
         } else {
           this.upcomingDraw = null;
           this.isVotingTime = false;
-          this.drawLoadError = 'No voting draw is available right now.';
+          this.drawLoadError = response?.message || 'No voting draw is available right now.';
         }
         this.isLoadingDraw = false;
       },
@@ -104,11 +102,14 @@ export class VotingComponent implements OnInit {
     }
 
     const now = new Date();
-    const drawDate = new Date(this.upcomingDraw.draw_date || this.upcomingDraw.drawDate);
-    
-    drawDate.setHours(19, 59, 59, 999);
-    
-    const diff = drawDate.getTime() - now.getTime();
+    const closeAtValue = this.upcomingDraw.voting_closes_at || this.upcomingDraw.draw_date || this.upcomingDraw.drawDate;
+    const closeAt = new Date(closeAtValue);
+
+    if (closeAtValue === this.upcomingDraw.draw_date || closeAtValue === this.upcomingDraw.drawDate) {
+      closeAt.setHours(19, 59, 59, 999);
+    }
+
+    const diff = closeAt.getTime() - now.getTime();
     
     if (diff <= 0) {
       this.countdown = '00:00:00';
@@ -140,16 +141,13 @@ export class VotingComponent implements OnInit {
   
   selectNumber(num: number) {
     if (this.currentStep === 1 || this.currentStep === 2) {
-      // Main numbers selection
       const idx = this.selectedNumbers.indexOf(num);
       if (idx > -1) {
         this.selectedNumbers.splice(idx, 1);
       } else if (this.selectedNumbers.length < 5) {
         this.selectedNumbers.push(num);
-        // Let backend handle sorting when needed
       }
     } else if (this.currentStep === 3 || this.currentStep === 4) {
-      // Bonus numbers selection - check if already selected in main numbers
       if (this.selectedNumbers.includes(num)) {
         this.toastService.showError(`Number ${num} is already selected in main numbers. Please choose a different number.`);
         return;
@@ -160,7 +158,6 @@ export class VotingComponent implements OnInit {
         this.selectedBonus.splice(idx, 1);
       } else if (this.selectedBonus.length < 2) {
         this.selectedBonus.push(num);
-        // Let backend handle sorting when needed
       }
     }
   }
@@ -176,7 +173,6 @@ export class VotingComponent implements OnInit {
   }
   
   isDisabled(num: number): boolean {
-    // In bonus number selection steps, disable numbers already selected in main numbers
     if (this.currentStep === 3 || this.currentStep === 4) {
       return this.selectedNumbers.includes(num);
     }
@@ -251,9 +247,15 @@ export class VotingComponent implements OnInit {
   }
   
   submitVote() {
-    const token = localStorage.getItem('token');
-    if (!token || !this.upcomingDraw) {
-      this.toastService.showError('Please login to vote');
+    if (!this.hasAuthToken()) {
+      this.showLogin();
+      this.votingStarted = false;
+      this.currentStep = 1;
+      return;
+    }
+
+    if (!this.upcomingDraw) {
+      this.toastService.showError('No upcoming draw available');
       this.votingStarted = false;
       this.currentStep = 1;
       return;
@@ -271,18 +273,14 @@ export class VotingComponent implements OnInit {
       return;
     }
     
-    console.log('Upcoming draw object:', this.upcomingDraw);
-    
     const voteData = {
       lottery: this.upcomingDraw.lottery || this.upcomingDraw.lottery_type || 'Unknown Lottery',
       numbers: [...this.selectedNumbers].sort((a, b) => a - b),
       bonusNumbers: [...this.selectedBonus].sort((a, b) => a - b),
-      drawDate: this.upcomingDraw.draw_date?.split(' ')[0] || this.upcomingDraw.drawDate
+      drawDate: this.getDrawDate(this.upcomingDraw)
     };
-    
-    console.log('Vote data being sent:', voteData);
-    
-    this.lotteryService.submitVote(voteData).subscribe({
+
+    this.backendService.submitVote(voteData).subscribe({
       next: () => {
         this.showSuccessPopup = true;
         
@@ -300,7 +298,13 @@ export class VotingComponent implements OnInit {
         }, 15000);
       },
       error: (err) => {
-        this.toastService.showError(err.error?.error || 'Failed to submit vote');
+        if (err?.status === 401) {
+          this.clearAuthState();
+          this.showLogin();
+          return;
+        }
+
+        this.toastService.showError(err?.error?.message || err?.error?.error || 'Failed to submit vote');
       }
     });
   }
@@ -314,11 +318,10 @@ export class VotingComponent implements OnInit {
   }
   
   quickPick() {
-    // Get quick pick numbers from backend
-    this.lotteryService.getQuickPickNumbers('main').subscribe({
+    this.backendService.getQuickPickNumbers('main').subscribe({
       next: (response: any) => {
         if (response.success) {
-          this.selectedNumbers = response.numbers;
+          this.selectedNumbers = response?.data?.numbers ?? [];
         } else {
           this.toastService.showError('Failed to generate quick pick numbers');
         }
@@ -331,11 +334,10 @@ export class VotingComponent implements OnInit {
   }
   
   quickPickBonus() {
-    // Get quick pick bonus numbers from backend, excluding main numbers
-    this.lotteryService.getQuickPickNumbers('bonus', this.selectedNumbers).subscribe({
+    this.backendService.getQuickPickNumbers('bonus', this.selectedNumbers).subscribe({
       next: (response: any) => {
         if (response.success) {
-          this.selectedBonus = response.numbers;
+          this.selectedBonus = response?.data?.numbers ?? [];
         } else {
           this.toastService.showError('Failed to generate quick pick bonus numbers');
         }
@@ -348,11 +350,13 @@ export class VotingComponent implements OnInit {
   }
   
   loadHistory() {
-    const token = localStorage.getItem('token');
-    if (!token) return;
+    if (!this.hasAuthToken()) {
+      this.showLogin();
+      return;
+    }
     
-    this.lotteryService.getVotingHistory().subscribe({
-      next: (data) => this.votingHistory = data.votes || [],
+    this.backendService.getVoteHistory().subscribe({
+      next: (response: any) => this.votingHistory = response?.data?.votes || [],
       error: (err) => console.error(err)
     });
   }
@@ -360,25 +364,49 @@ export class VotingComponent implements OnInit {
   loadLeadingNumbers() {
     if (!this.upcomingDraw) return;
     
-    this.lotteryService.getLeadingNumbers(
+    this.backendService.getLeadingNumbers(
       this.upcomingDraw.lottery || this.upcomingDraw.lottery_type, 
-      this.upcomingDraw.draw_date?.split(' ')[0] || this.upcomingDraw.drawDate
+      this.getDrawDate(this.upcomingDraw)
     ).subscribe({
-      next: (data) => {
-        this.leadingNumbers = data;
-        // Backend should handle sorting, but keep this for compatibility
-        if (this.leadingNumbers.section1) {
-          this.leadingNumbers.topSection1 = this.leadingNumbers.section1
-            .slice(0, 5)
-            .map((item: any) => item.number);
-        }
-        if (this.leadingNumbers.section2) {
-          this.leadingNumbers.topSection2 = this.leadingNumbers.section2
-            .slice(0, 2)
-            .map((item: any) => item.number);
+      next: (response: any) => {
+        this.leadingNumbers = response?.data ?? null;
+        if (this.leadingNumbers) {
+          const topSection1 = this.leadingNumbers.topSection1
+            || this.leadingNumbers.section1?.slice(0, 5).map((item: any) => item.number)
+            || [];
+          const topSection2 = this.leadingNumbers.topSection2
+            || this.leadingNumbers.section2?.slice(0, 2).map((item: any) => item.number)
+            || [];
+
+          this.leadingNumbers.topSection1 = [...topSection1].map((value: any) => Number(value)).sort((left: number, right: number) => left - right);
+          this.leadingNumbers.topSection2 = [...topSection2].map((value: any) => Number(value)).sort((left: number, right: number) => left - right);
         }
       },
       error: (err) => console.error(err)
+    });
+  }
+
+  private getDrawDate(draw: any): string {
+    const value = draw?.draw_date || draw?.drawDate || '';
+
+    return String(value).split(' ')[0].split('T')[0];
+  }
+
+  private hasAuthToken(): boolean {
+    return !!(localStorage.getItem('auth_token') || localStorage.getItem('token'));
+  }
+
+  private clearAuthState() {
+    localStorage.removeItem('auth_token');
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+  }
+
+  private showLogin() {
+    this.router.navigate(['/login'], {
+      queryParams: {
+        returnUrl: this.router.url
+      }
     });
   }
 }

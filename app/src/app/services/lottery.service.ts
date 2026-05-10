@@ -1,43 +1,64 @@
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { Observable } from 'rxjs';
-import { environment } from '../../environments/environment';
-import { AuthService } from './auth.service';
+import { map, Observable, of } from 'rxjs';
+import { BackendService } from '../util/backend.service';
 
 @Injectable({ providedIn: 'root' })
 export class LotteryService {
-  constructor(private http: HttpClient, private auth: AuthService) {}
-
-  private getHeaders(): HttpHeaders {
-    return new HttpHeaders({ Authorization: `Bearer ${this.auth.getToken()}` });
-  }
+  constructor(private backendService: BackendService) {}
 
   getUpcomingDraws(): Observable<any> {
-    return this.http.get(`${environment.apiUrl}/api/upcoming-draws`, { headers: this.getHeaders() });
+    return this.backendService.getUpcomingDraws().pipe(
+      map((response: any) => ({
+        draws: response?.data ?? []
+      }))
+    );
   }
 
-  playLottery(drawId: number, numbers: number[]): Observable<any> {
-    return this.http.post(`${environment.apiUrl}/api/play`, { draw_id: drawId, numbers }, { headers: this.getHeaders() });
+  playLottery(entryData: any): Observable<any> {
+    return this.backendService.playLottery(entryData);
   }
 
   getMyEntries(): Observable<any> {
-    return this.http.get(`${environment.apiUrl}/api/entries`, { headers: this.getHeaders() });
+    return this.backendService.getEntryHistory().pipe(
+      map((response: any) => response?.data ?? [])
+    );
   }
 
   getMyWinnings(): Observable<any> {
-    return this.http.get(`${environment.apiUrl}/api/my-winnings`, { headers: this.getHeaders() });
+    return this.backendService.getMyWinnings().pipe(
+      map((response: any) => {
+        const winnings = Array.isArray(response?.data) ? response.data : [];
+        const totalWinnings = winnings.reduce((sum: number, item: any) => sum + Number(item.prize_amount || 0), 0);
+
+        return {
+          total_winnings: totalWinnings,
+          winnings
+        };
+      })
+    );
   }
 
   getResults(): Observable<any> {
-    return this.http.get(`${environment.apiUrl}/api/results`);
+    return this.backendService.getResults().pipe(
+      map((response: any) => {
+        const results = Array.isArray(response?.data) ? response.data : [];
+
+        return results.map((result: any) => ({
+          ...result,
+          drawDate: result.draw_date || result.drawDate,
+          numbers: result.winning_numbers || result.numbers || [],
+          bonusNumbers: result.bonus_numbers || result.bonusNumbers || []
+        }));
+      })
+    );
   }
 
   getNotifications(): Observable<any> {
-    return this.http.get(`${environment.apiUrl}/api/user-notifications`, { headers: this.getHeaders() });
+    return this.backendService.getNotifications();
   }
 
   markNotificationRead(id: number): Observable<any> {
-    return this.http.post(`${environment.apiUrl}/api/mark-notification-read`, { id }, { headers: this.getHeaders() });
+    return this.backendService.markNotificationAsRead(id);
   }
 
   getPastDraws(): Observable<any> {
@@ -45,9 +66,6 @@ export class LotteryService {
   }
 
   getEntryLimit(): Observable<any> {
-    return new Observable(observer => {
-      observer.next({ limit: 10, used: 0, remaining: 10 });
-      observer.complete();
-    });
+    return of({ limit: 10, used: 0, remaining: 10 });
   }
 }

@@ -1,23 +1,10 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { firstValueFrom } from 'rxjs';
 import { LayoutComponent } from '../layout/layout.component';
-import { environment } from '../../environments/environment';
-
-interface HistoryEntry {
-  id: number;
-  lottery: string;
-  numbers: number[];
-  bonus_numbers: number[];
-  created_at: string;
-  draw_date: string;
-  date: string;
-  matchedNumbers?: number[];
-  matchedBonus?: number[];
-  unmatchedNumbers?: number[];
-  unmatchedBonus?: number[];
-  status?: 'Won' | 'Lost' | 'Pending';
-}
+import { BackendService } from '../util/backend.service';
+import { ApiResponse } from '../util/api-response';
 
 interface GroupedEntry {
   date: string;
@@ -45,13 +32,14 @@ export class HistoryComponent implements OnInit {
   itemsPerPage = 5;
   totalPages = 0;
 
+  constructor(private backendService: BackendService) {}
+
   ngOnInit() {
-    this.isLoggedIn = !!localStorage.getItem('token');
+    this.isLoggedIn = !!(localStorage.getItem('auth_token') || localStorage.getItem('token'));
     this.setRandomQuote();
     this.startQuoteRotation();
     if (this.isLoggedIn) {
-      this.loadResults();
-      this.loadHistory();
+      this.loadHistoryData();
     }
   }
 
@@ -61,36 +49,40 @@ export class HistoryComponent implements OnInit {
     }, 5000);
   }
 
+  async loadHistoryData() {
+    await this.loadResults();
+    await this.loadHistory();
+  }
+
   async loadResults() {
     try {
-      const response = await fetch(`${environment.apiUrl}/results`);
-      this.results = await response.json();
+      const response = await firstValueFrom(this.backendService.getResults()) as ApiResponse<any[]>;
+      this.results = response?.data ?? [];
     } catch (error) {
       console.error('Error loading results:', error);
+      this.results = [];
     }
   }
 
   async loadHistory() {
     try {
-      const token = localStorage.getItem('token');
-      const response = await fetch(`${environment.apiUrl}/entries`, {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      });
-      const entries = await response.json();
+      const response = await firstValueFrom(this.backendService.getEntryHistory()) as ApiResponse<any[]>;
+      const entries = response?.data ?? [];
       this.processEntries(entries);
     } catch (error) {
       console.error('Error loading history:', error);
+      this.processEntries([]);
     }
   }
 
   processEntries(entries: any[]) {
-    this.historyEntries = entries.map(entry => {
-      const numbers = typeof entry.numbers === 'string' ? JSON.parse(entry.numbers) : entry.numbers;
-      const bonus_numbers = typeof entry.bonus_numbers === 'string' ? JSON.parse(entry.bonus_numbers) : entry.bonus_numbers;
+    const safeEntries = Array.isArray(entries) ? entries : [];
+
+    this.historyEntries = safeEntries.map(entry => {
+      const numbers = this.parseNumberList(entry.numbers);
+      const bonus_numbers = this.parseNumberList(entry.bonus_numbers);
       
-      const matchResult = this.checkMatch(entry.lottery, entry.draw_date, numbers, bonus_numbers);
+      const matchResult = this.checkMatch(entry, numbers, bonus_numbers);
       
       return {
         ...entry,
@@ -109,29 +101,57 @@ export class HistoryComponent implements OnInit {
     this.groupEntriesByDate();
   }
 
-  checkMatch(lottery: string, drawDate: string, numbers: number[], bonusNumbers: number[]) {
+  checkMatch(entry: any, numbers: number[], bonusNumbers: number[]) {
+    const lottery = entry?.lottery;
+    const drawDate = entry?.draw_date;
+    const entryDrawId = Number(entry?.draw_id || 0);
+
     if (!drawDate) {
-      return { matchedNumbers: [], matchedBonus: [], status: 'Pending' as const };
+      return {
+        matchedNumbers: [],
+        matchedBonus: [],
+        unmatchedNumbers: [],
+        unmatchedBonus: [],
+        status: 'Pending' as const
+      };
     }
     
     const entryDrawDate = new Date(drawDate).toISOString().split('T')[0];
     
     const result = this.results.find(r => {
+      const resultDrawId = Number(r.draw_id || 0);
+
+      if (entryDrawId > 0 && resultDrawId > 0) {
+        return resultDrawId === entryDrawId;
+      }
+
       const resultDate = r.drawDate || r.draw_date;
       if (!resultDate) return false;
       const resultDrawDate = new Date(resultDate).toISOString().split('T')[0];
       return r.lottery === lottery && resultDrawDate === entryDrawDate;
     });
 
-    if (!result || result.status !== 'published') {
-      return { matchedNumbers: [], matchedBonus: [], status: 'Pending' as const };
+    if (!result || String(result.status || '').toLowerCase() !== 'published') {
+      return {
+        matchedNumbers: [],
+        matchedBonus: [],
+        unmatchedNumbers: [],
+        unmatchedBonus: [],
+        status: 'Pending' as const
+      };
     }
 
-    const winningNumbers = result.numbers || result.winning_numbers;
-    const winningBonus = result.bonusNumbers || result.bonus_numbers;
+    const winningNumbers = this.parseNumberList(result.numbers || result.winning_numbers);
+    const winningBonus = this.parseNumberList(result.bonusNumbers || result.bonus_numbers);
 
-    if (!winningNumbers || !winningBonus) {
-      return { matchedNumbers: [], matchedBonus: [], status: 'Pending' as const };
+    if (winningNumbers.length === 0 && winningBonus.length === 0) {
+      return {
+        matchedNumbers: [],
+        matchedBonus: [],
+        unmatchedNumbers: [],
+        unmatchedBonus: [],
+        status: 'Pending' as const
+      };
     }
 
     const matchedNumbers = numbers.filter(n => winningNumbers.includes(n));
@@ -142,6 +162,25 @@ export class HistoryComponent implements OnInit {
     const status = (matchedNumbers.length === 5 && matchedBonus.length === 2) ? 'Won' : 'Lost';
 
     return { matchedNumbers, matchedBonus, unmatchedNumbers, unmatchedBonus, status: status as 'Won' | 'Lost' };
+  }
+
+  private parseNumberList(value: any): number[] {
+    if (Array.isArray(value)) {
+      return value.map((item) => Number(item)).filter((item) => !Number.isNaN(item));
+    }
+
+    if (typeof value === 'string') {
+      try {
+        const parsed = JSON.parse(value);
+        if (Array.isArray(parsed)) {
+          return parsed.map((item) => Number(item)).filter((item) => !Number.isNaN(item));
+        }
+      } catch (error) {
+        console.warn('Failed to parse number list:', value, error);
+      }
+    }
+
+    return [];
   }
 
   groupEntriesByDate() {

@@ -1,6 +1,6 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ErrorHandlerService, ErrorMessage } from '../../../services/error-handler.service';
+import { ErrorHandlerService, ErrorMessage } from '../../../util/error-handler.service';
 import { Subscription } from 'rxjs';
 
 @Component({

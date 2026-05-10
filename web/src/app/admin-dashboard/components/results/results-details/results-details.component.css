@@ -1,0 +1,288 @@
+.admin-dashboard {
+  min-height: 100vh;
+  background-color: #f2f2f7;
+}
+
+.main-content {
+  margin-top: 100px;
+  min-height: calc(100vh - 100px);
+  padding-top: 2rem;
+}
+
+.result-detail-page {
+  padding: 0 2rem 2rem;
+}
+
+.detail-toolbar {
+  margin-bottom: 1rem;
+}
+
+.back-btn,
+.state-btn {
+  border: none;
+  border-radius: 8px;
+  padding: 0.65rem 1rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: 0.2s ease;
+}
+
+.back-btn {
+  background: #ede9fe;
+  color: #5b21b6;
+}
+
+.back-btn:hover,
+.state-btn:hover {
+  filter: brightness(0.97);
+}
+
+.state-btn {
+  background: rgb(108, 0, 146);
+  color: #fff;
+}
+
+.state-card,
+.state-inline {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.result-header-card {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+  background: #fff;
+  padding: 1.2rem;
+  border-radius: 14px;
+}
+
+.header-item label {
+  font-size: 0.75rem;
+  color: #777;
+}
+
+.header-item h2,
+.header-item h3 {
+  margin: 0.2rem 0 0;
+  font-size: 1rem;
+}
+
+.status {
+  padding: 0.3rem 0.7rem;
+  border-radius: 20px;
+  background: #eee;
+  font-size: 12px;
+}
+
+.status.published {
+  background: #dcfce7;
+  color: #16a34a;
+}
+
+.tabs {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 1.5rem;
+  overflow-x: auto;
+  overflow-y: hidden;
+  flex-wrap: nowrap;
+  white-space: nowrap;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+  padding-bottom: 4px;
+}
+
+.tabs::-webkit-scrollbar {
+  display: none;
+}
+
+.tabs button {
+  flex: 0 0 auto !important;
+  width: auto !important;
+  min-width: fit-content;
+  padding: 0.55rem 1rem;
+  border: none;
+  background: #fff;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 13px;
+  line-height: 1;
+  white-space: nowrap;
+  transition: 0.2s ease;
+}
+
+.tabs button:hover {
+  background: #f3f4f6;
+}
+
+.tabs button.active {
+  background: rgb(108, 0, 146);
+  color: #fff;
+}
+
+.tab-content {
+  margin-top: 1rem;
+  background: #fff;
+  padding: 1.2rem;
+  border-radius: 12px;
+}
+
+.entries-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+  margin-top: 1rem;
+}
+
+.entry-card {
+  border: 1px solid #ececec;
+  border-radius: 10px;
+  padding: 0.95rem 1rem;
+  background: #fafafa;
+}
+
+.entry-card-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  align-items: center;
+  margin-bottom: 0.45rem;
+  color: #444;
+}
+
+.entry-card p {
+  margin: 0.25rem 0 0;
+  color: #555;
+  font-size: 0.93rem;
+}
+
+.numbers,
+.bonus {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.bonus-section {
+  margin-top: 1rem;
+}
+
+.ball {
+  width: 35px;
+  height: 35px;
+  background: #eee;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.bonus-ball {
+  background: #e9d5ff;
+}
+
+@media (max-width: 992px) {
+  .result-header-card {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .result-detail-page {
+    padding: 0 1rem 1.5rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .main-content {
+    margin-top: 60px;
+    padding-top: 1rem;
+  }
+
+  .result-detail-page {
+    padding: 0 0.8rem 1rem;
+  }
+
+  .result-header-card {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.8rem;
+    padding: 1rem;
+  }
+
+  .header-item h2,
+  .header-item h3 {
+    font-size: 0.95rem;
+  }
+
+  .tab-content {
+    padding: 1rem;
+  }
+
+  .state-card,
+  .state-inline {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .ball {
+    width: 32px;
+    height: 32px;
+    font-size: 13px;
+  }
+
+  .tabs {
+    gap: 0.4rem;
+    margin-top: 1rem;
+  }
+
+  .tabs button {
+    font-size: 12px;
+    padding: 0.45rem 0.8rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .result-detail-page {
+    padding: 0 0.6rem 1rem;
+  }
+
+  .result-header-card {
+    grid-template-columns: repeat(2, 1fr);
+    padding: 0.8rem;
+    gap: 0.6rem;
+  }
+
+  .header-item label {
+    font-size: 0.7rem;
+  }
+
+  .header-item h2,
+  .header-item h3 {
+    font-size: 0.85rem;
+    margin: 0.1rem 0 0;
+  }
+
+  .tab-content h3 {
+    font-size: 1rem;
+  }
+
+  .ball {
+    width: 30px;
+    height: 30px;
+    font-size: 12px;
+  }
+
+  .tabs {
+    gap: 0.35rem;
+  }
+
+  .tabs button {
+    font-size: 11px;
+    padding: 0.42rem 0.7rem;
+    border-radius: 7px;
+  }
+}

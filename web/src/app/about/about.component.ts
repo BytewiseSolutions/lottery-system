@@ -2,7 +2,14 @@ import { Component, OnInit } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { LayoutComponent } from '../layout/layout.component';
-import { LotteryService, Stats } from '../services/lottery.service';
+import { BackendService } from '../util/backend.service';
+import { ApiResponse } from '../util/api-response';
+
+interface Stats {
+  winnersLastMonth: number;
+  totalEntries: number;
+  totalPayouts: number;
+}
 
 @Component({
   selector: 'app-about',
@@ -17,11 +24,16 @@ export class AboutComponent implements OnInit {
     totalPayouts: 0
   };
 
-  constructor(private lotteryService: LotteryService) {}
+  constructor(private backendService: BackendService) {}
 
   ngOnInit() {
-    this.lotteryService.getStats().subscribe(stats => {
-      this.stats = stats;
+    this.backendService.getAnalytics().subscribe({
+      next: (response: ApiResponse<Stats>) => {
+        this.stats = response?.data ?? this.stats;
+      },
+      error: (error) => {
+        console.error('Error loading stats:', error);
+      }
     });
   }
 

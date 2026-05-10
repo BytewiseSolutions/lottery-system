@@ -1,0 +1,142 @@
+<div class="admin-dashboard">
+  <app-sidebar></app-sidebar>
+  
+  <main class="main-content">
+    <div class="notification-page">
+      <div class="page-header">
+        <h1>Notifications</h1>
+        <div class="header-actions">
+          <button class="refresh-btn" (click)="refreshNotifications()">
+            <i class="fas fa-sync-alt"></i>
+            Refresh
+          </button>
+          <button class="create-btn" (click)="openCreateModal()">
+            <i class="fas fa-plus"></i>
+            Create Notification
+          </button>
+          <button class="mark-all-btn" (click)="markAllAsRead()" [disabled]="unreadCount === 0">
+            <i class="fas fa-check-double"></i>
+            Mark All Read
+          </button>
+        </div>
+      </div>
+
+      <div class="notification-stats">
+        <div class="stat-card">
+          <div class="stat-number">{{ notifications.length }}</div>
+          <div class="stat-label">Total</div>
+        </div>
+        <div class="stat-card unread">
+          <div class="stat-number">{{ unreadCount }}</div>
+          <div class="stat-label">Unread</div>
+        </div>
+        <div class="stat-card read">
+          <div class="stat-number">{{ notifications.length - unreadCount }}</div>
+          <div class="stat-label">Read</div>
+        </div>
+      </div>
+
+      <div class="notification-tabs">
+        <button 
+          class="tab-button" 
+          [class.active]="selectedTab === 'all'"
+          (click)="selectedTab = 'all'">
+          All ({{ notifications.length }})
+        </button>
+        <button 
+          class="tab-button" 
+          [class.active]="selectedTab === 'unread'"
+          (click)="selectedTab = 'unread'">
+          Unread ({{ unreadCount }})
+        </button>
+        <button 
+          class="tab-button" 
+          [class.active]="selectedTab === 'read'"
+          (click)="selectedTab = 'read'">
+          Read ({{ notifications.length - unreadCount }})
+        </button>
+      </div>
+
+      <div class="notification-content">
+        <div class="table-responsive">
+          <!-- Loading State -->
+          @if (loading) {
+            <div class="loading-state">
+              <div class="spinner"></div>
+              <p>Loading notifications...</p>
+            </div>
+          }
+
+          <!-- Error State -->
+          @if (error && !loading) {
+            <div class="error-state">
+              <i class="fas fa-exclamation-triangle"></i>
+              <h3>Failed to load notifications</h3>
+              <p>There was an error loading your notifications. Please try again.</p>
+              <button class="mark-all-btn" (click)="refreshNotifications()">
+                <i class="fas fa-retry"></i> Retry
+              </button>
+            </div>
+          }
+
+          <!-- Notifications List -->
+          @if (!loading && !error) {
+            <div class="notifications-list">
+              @if (getFilteredNotifications().length === 0) {
+                <div class="empty-state">
+                  <i class="fas fa-bell-slash"></i>
+                  <h3>No notifications</h3>
+                  @if (selectedTab === 'all') {
+                    <p>You don't have any notifications yet.</p>
+                  }
+                  @if (selectedTab === 'unread') {
+                    <p>All notifications have been read.</p>
+                  }
+                  @if (selectedTab === 'read') {
+                    <p>No read notifications found.</p>
+                  }
+                </div>
+              }
+
+              @for (notification of getFilteredNotifications(); track notification.id) {
+                <div 
+                  class="notification-item"
+                  [class]="getNotificationClass(notification.type)"
+                  [class.unread]="!notification.is_read"
+                  (click)="markAsRead(notification)">
+                  
+                  <div class="notification-icon">
+                    <span>{{ getNotificationIcon(notification.type) }}</span>
+                  </div>
+                  
+                  <div class="notification-content-item">
+                    <div class="notification-title">{{ notification.title }}</div>
+                    <div class="notification-message">{{ notification.message }}</div>
+                    <div class="notification-time">Posted at: {{ formatDate(notification.created_at) }}</div>
+                  </div>
+                  
+                  <div class="notification-status">
+                    @if (!notification.is_read) {
+                      <span class="unread-badge">New</span>
+                    }
+                    @if (notification.is_read) {
+                      <i class="fas fa-check read-icon"></i>
+                    }
+                  </div>
+                </div>
+              }
+            </div>
+          }
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Create Notification Form Component -->
+  <app-notification-form 
+    [isOpen]="isCreateModalOpen"
+    [loading]="creating"
+    (cancel)="closeCreateModal()"
+    (save)="onCreateNotification($event)">
+  </app-notification-form>
+</div>

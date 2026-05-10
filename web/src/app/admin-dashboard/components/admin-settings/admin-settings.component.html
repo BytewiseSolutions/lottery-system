@@ -1,0 +1,104 @@
+<div class="admin-dashboard">
+  <app-sidebar></app-sidebar>
+
+  <main class="main-content">
+    <div class="settings-page">
+      @if (loading) {
+        <div class="settings-panel">
+          <div class="settings-state">
+            <p>Loading system settings...</p>
+          </div>
+        </div>
+      }
+
+      @if (error && !loading) {
+        <div class="settings-panel">
+          <div class="settings-state settings-state-error">
+            <p>System settings could not be loaded.</p>
+            <button type="button" class="retry-btn" (click)="retryLoad()">Retry</button>
+          </div>
+        </div>
+      }
+
+      @if (!loading && !error) {
+        <div class="page-header">
+          <h1>System Settings</h1>
+          <button type="button" class="primary-btn" (click)="saveSettings()" [disabled]="saving">
+            {{ saving ? 'Saving...' : 'Save Settings' }}
+          </button>
+        </div>
+
+        <div class="settings-wrapper">
+          <div class="settings-panel">
+            <form class="settings-form">
+              <div class="settings-section">
+                <h3>General</h3>
+                <div class="settings-grid">
+                  <div class="form-group">
+                    <label for="site-name">Site Name</label>
+                    <input id="site-name" type="text" [(ngModel)]="settings.site_name" name="site_name">
+                  </div>
+
+                  <div class="form-group">
+                    <label for="default-jackpot">Default Draw Jackpot</label>
+                    <input
+                      id="default-jackpot"
+                      type="number"
+                      step="0.01"
+                      min="0"
+                      [(ngModel)]="settings.default_draw_jackpot"
+                      name="default_draw_jackpot">
+                  </div>
+                </div>
+              </div>
+
+              <div class="settings-section">
+                <h3>Support</h3>
+                <div class="settings-grid">
+                  <div class="form-group">
+                    <label for="support-email">Support Email</label>
+                    <input id="support-email" type="email" [(ngModel)]="settings.support_email" name="support_email">
+                  </div>
+
+                  <div class="form-group">
+                    <label for="support-phone">Support Phone</label>
+                    <input id="support-phone" type="text" [(ngModel)]="settings.support_phone" name="support_phone">
+                  </div>
+                </div>
+              </div>
+
+              <div class="settings-section">
+                <h3>Access Controls</h3>
+                <div class="toggle-grid">
+                  <div class="toggle-card">
+                    <label>
+                      <input type="checkbox" [(ngModel)]="settings.maintenance_mode" name="maintenance_mode">
+                      Maintenance Mode
+                    </label>
+                    <p>Temporarily place the system into maintenance mode.</p>
+                  </div>
+
+                  <div class="toggle-card">
+                    <label>
+                      <input type="checkbox" [(ngModel)]="settings.registration_enabled" name="registration_enabled">
+                      Registration Enabled
+                    </label>
+                    <p>Allow new users to create accounts.</p>
+                  </div>
+
+                  <div class="toggle-card">
+                    <label>
+                      <input type="checkbox" [(ngModel)]="settings.notifications_enabled" name="notifications_enabled">
+                      Notifications Enabled
+                    </label>
+                    <p>Allow the notification system to stay active across the app.</p>
+                  </div>
+                </div>
+              </div>
+            </form>
+          </div>
+        </div>
+      }
+    </div>
+  </main>
+</div>

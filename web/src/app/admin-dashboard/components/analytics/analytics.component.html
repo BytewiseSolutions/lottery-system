@@ -1,0 +1,134 @@
+<div class="analytics-section" *ngIf="!loading">
+  <div class="analytics-header">
+    <h2>Analytics & Reports</h2>
+    <div class="date-filter">
+      <select class="filter-select" (change)="onPeriodChange($event)" [value]="selectedPeriod">
+        <option value="last_7_days">Last 7 days</option>
+        <option value="last_30_days">Last 30 days</option>
+        <option value="last_3_months">Last 3 months</option>
+        <option value="last_year">Last year</option>
+      </select>
+    </div>
+  </div>
+
+  <div class="analytics-grid">
+    <div class="chart-widget">
+      <div class="widget-header">
+        <h3>Entry Trends</h3>
+        <div class="chart-legend">
+          <span class="legend-item">
+            <span class="legend-color primary"></span>
+            Entries
+          </span>
+        </div>
+      </div>
+      <div class="chart-placeholder">
+        <div class="chart-bars">
+          <div class="bar" 
+               *ngFor="let trend of analyticsData.entryTrends" 
+               [style.height.%]="(trend.entries / getMaxEntries()) * 100">
+          </div>
+        </div>
+        <div class="chart-labels">
+          <span *ngFor="let trend of analyticsData.entryTrends">{{ trend.date }}</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="chart-widget">
+      <div class="widget-header">
+        <h3>Revenue Distribution</h3>
+      </div>
+      <div class="pie-chart">
+        <div class="pie-segment segment-1"></div>
+        <div class="pie-segment segment-2"></div>
+        <div class="pie-segment segment-3"></div>
+        <div class="pie-center">
+          <span class="pie-total">{{ formatCurrency(analyticsData.revenueDistribution.total) }}</span>
+          <small>Total Revenue</small>
+        </div>
+      </div>
+      <div class="pie-legend">
+        <div class="legend-item">
+          <span class="legend-color" style="background: #3b82f6"></span>
+          <span>Entry Fees ({{ getRevenuePercentage(analyticsData.revenueDistribution.entryFees, analyticsData.revenueDistribution.total) }})</span>
+        </div>
+        <div class="legend-item">
+          <span class="legend-color" style="background: #10b981"></span>
+          <span>Premium ({{ getRevenuePercentage(analyticsData.revenueDistribution.premium, analyticsData.revenueDistribution.total) }})</span>
+        </div>
+        <div class="legend-item">
+          <span class="legend-color" style="background: #f59e0b"></span>
+          <span>Other ({{ getRevenuePercentage(analyticsData.revenueDistribution.other, analyticsData.revenueDistribution.total) }})</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="performance-metrics">
+    <div class="metric-card">
+      <div class="metric-header">
+        <h4>Conversion Rate</h4>
+        <span [class]="'trend ' + getTrendClass(analyticsData.performanceMetrics.conversionTrend)">
+          {{ getTrendSymbol(analyticsData.performanceMetrics.conversionTrend) }}{{ formatPercentage(analyticsData.performanceMetrics.conversionTrend) }}
+        </span>
+      </div>
+      <div class="metric-value">{{ formatPercentage(analyticsData.performanceMetrics.conversionRate) }}</div>
+      <div class="metric-description">Visitors to participants</div>
+    </div>
+
+    <div class="metric-card">
+      <div class="metric-header">
+        <h4>Average Entry Value</h4>
+        <span [class]="'trend ' + getTrendClass(analyticsData.performanceMetrics.averageEntryTrend)">
+          {{ getTrendSymbol(analyticsData.performanceMetrics.averageEntryTrend) }}{{ formatPercentage(analyticsData.performanceMetrics.averageEntryTrend) }}
+        </span>
+      </div>
+      <div class="metric-value">{{ formatCurrency(analyticsData.performanceMetrics.averageEntryValue) }}</div>
+      <div class="metric-description">Per participant</div>
+    </div>
+
+    <div class="metric-card">
+      <div class="metric-header">
+        <h4>Return Rate</h4>
+        <span [class]="'trend ' + getTrendClass(analyticsData.performanceMetrics.returnTrend)">
+          {{ getTrendSymbol(analyticsData.performanceMetrics.returnTrend) }}{{ formatPercentage(analyticsData.performanceMetrics.returnTrend) }}
+        </span>
+      </div>
+      <div class="metric-value">{{ formatPercentage(analyticsData.performanceMetrics.returnRate) }}</div>
+      <div class="metric-description">Returning participants</div>
+    </div>
+
+    <div class="metric-card">
+      <div class="metric-header">
+        <h4>Payout Ratio</h4>
+        <span [class]="'trend ' + getTrendClass(analyticsData.performanceMetrics.payoutTrend)">
+          {{ getTrendSymbol(analyticsData.performanceMetrics.payoutTrend) }}{{ formatPercentage(analyticsData.performanceMetrics.payoutTrend) }}
+        </span>
+      </div>
+      <div class="metric-value">{{ formatPercentage(analyticsData.performanceMetrics.payoutRatio) }}</div>
+      <div class="metric-description">Of total revenue</div>
+    </div>
+  </div>
+</div>
+
+<div class="loading-state" *ngIf="loading">
+  <div class="analytics-skeleton">
+    <div class="skeleton-header"></div>
+    <div class="skeleton-charts">
+      <div class="skeleton-chart"></div>
+      <div class="skeleton-chart"></div>
+    </div>
+    <div class="skeleton-metrics">
+      <div class="skeleton-metric" *ngFor="let item of [1,2,3,4]"></div>
+    </div>
+  </div>
+</div>
+
+<div class="error-state" *ngIf="error && !loading">
+  <div class="error-message">
+    <i class="fas fa-exclamation-triangle"></i>
+    <p>{{ error }}</p>
+    <button class="retry-btn" (click)="loadAnalyticsData()">Retry</button>
+  </div>
+</div>

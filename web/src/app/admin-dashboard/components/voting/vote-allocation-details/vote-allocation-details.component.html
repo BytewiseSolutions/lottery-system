@@ -1,0 +1,116 @@
+<div class="admin-dashboard">
+  <app-sidebar></app-sidebar>
+
+  <div class="main-content">
+    <div class="detail-page">
+      @if (loading) {
+        <div class="tab-content">
+          <p>Loading allocation details...</p>
+        </div>
+      }
+
+      @if (error && !loading) {
+        <div class="tab-content state-card">
+          <p>Allocation details could not be loaded.</p>
+          <button type="button" class="state-btn" (click)="retryLoad()">Retry</button>
+        </div>
+      }
+
+      @if (!loading && !error && allocation) {
+        <div class="header-card">
+          <div class="header-item">
+            <label>Lottery</label>
+            <h2>{{ allocation.lottery }}</h2>
+          </div>
+
+          <div class="header-item">
+            <label>Draw</label>
+            <h3>{{ formatDateTime(allocation.drawDate) }}</h3>
+          </div>
+
+          <div class="header-item">
+            <label>Total Votes</label>
+            <h3>{{ getTotalVotes() }}</h3>
+          </div>
+        </div>
+
+        <div class="tabs">
+          <button type="button" (click)="activeTab = 'main'" [class.active]="activeTab === 'main'">Main Numbers</button>
+          <button type="button" (click)="activeTab = 'bonus'" [class.active]="activeTab === 'bonus'">Bonus Numbers</button>
+          <button type="button" (click)="activeTab = 'meta'" [class.active]="activeTab === 'meta'">Meta Info</button>
+        </div>
+
+        @if (activeTab === 'main') {
+          <div class="tab-content">
+            <h3>Main Number Distribution</h3>
+
+            @if (getVoteMap('main').length > 0) {
+              <div class="vote-list">
+                @for (entry of getVoteMap('main'); track entry[0]) {
+                  <div class="vote-item">
+                    <span class="number-chip">{{ entry[0] }}</span>
+                    <div class="vote-bar-wrap">
+                      <div class="vote-bar" [style.width.%]="(entry[1] / getTotalVotes()) * 100"></div>
+                    </div>
+                    <span class="vote-value">{{ entry[1] }} votes</span>
+                  </div>
+                }
+              </div>
+            } @else {
+              <div class="numbers-display">
+                @for (num of getNumbers('main'); track num) {
+                  <span class="number-chip">{{ num }}</span>
+                }
+              </div>
+            }
+          </div>
+        }
+
+        @if (activeTab === 'bonus') {
+          <div class="tab-content">
+            <h3>Bonus Number Distribution</h3>
+
+            @if (getVoteMap('bonus').length > 0) {
+              <div class="vote-list">
+                @for (entry of getVoteMap('bonus'); track entry[0]) {
+                  <div class="vote-item">
+                    <span class="number-chip bonus-chip">{{ entry[0] }}</span>
+                    <div class="vote-bar-wrap">
+                      <div class="vote-bar bonus-bar" [style.width.%]="(entry[1] / getTotalVotes()) * 100"></div>
+                    </div>
+                    <span class="vote-value">{{ entry[1] }} votes</span>
+                  </div>
+                }
+              </div>
+            } @else {
+              <div class="numbers-display">
+                @for (num of getNumbers('bonus'); track num) {
+                  <span class="number-chip bonus-chip">{{ num }}</span>
+                }
+              </div>
+            }
+          </div>
+        }
+
+        @if (activeTab === 'meta') {
+          <div class="tab-content">
+            <h3>Meta Info</h3>
+            <div class="meta-info">
+              <p><strong>Allocation ID:</strong> {{ allocation.id }}</p>
+              <p><strong>Draw ID:</strong> {{ allocation.draw_id }}</p>
+              <p><strong>Lottery:</strong> {{ allocation.lottery }}</p>
+              <p><strong>Total Votes:</strong> {{ getTotalVotes() }}</p>
+              <p><strong>Created By:</strong> {{ allocation.admin_name || 'Admin' }}</p>
+              <p><strong>Admin Email:</strong> {{ allocation.admin_email || 'Not available' }}</p>
+              <p><strong>Created At:</strong> {{ formatDateTime(allocation.createdAt) }}</p>
+            </div>
+          </div>
+        }
+
+        <div class="detail-footer">
+          <button type="button" class="back-btn" (click)="goBack()">Back to Voting</button>
+        </div>
+      }
+    </div>
+  </div>
+</div>

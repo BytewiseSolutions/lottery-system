@@ -1,11 +1,11 @@
 import { HttpInterceptorFn } from '@angular/common/http';
 import { inject } from '@angular/core';
 import { catchError, throwError } from 'rxjs';
-import { ToastService } from '../services/toast.service';
+import { ToastService } from '../util/toast.service';
 
 export const authInterceptor: HttpInterceptorFn = (req, next) => {
   const toastService = inject(ToastService);
-  const token = localStorage.getItem('token');
+  const token = localStorage.getItem('auth_token') || localStorage.getItem('token');
 
   // Clone request and add authorization header if token exists
   const authReq = token
@@ -20,9 +20,10 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
     catchError((error) => {
       if (error.status === 401) {
         toastService.showError('Session expired. Please login again.');
+        localStorage.removeItem('auth_token');
         localStorage.removeItem('token');
         localStorage.removeItem('user');
-        window.location.href = '/';
+        window.location.href = '/#/';
       } else if (error.status === 429) {
         toastService.showError('Too many requests. Please try again later.');
       } else if (error.status === 0) {

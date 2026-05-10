@@ -1,0 +1,101 @@
+<nav class="navbar">
+  <div class="navbar-top">
+    <div class="navbar-container">
+      <div class="navbar-brand">
+        <div class="logo">
+          <i class="fas fa-crown"></i>
+          <div class="logo-text">
+            <h2>Admin Dashboard</h2>
+          </div>
+        </div>
+      </div>
+
+      <div class="navbar-actions">
+        <div class="search-box">
+          <i class="fas fa-search"></i>
+          <input type="text" placeholder="Search...">
+        </div>
+        <div class="notifications" (click)="navigateTo('/admin-dashboard/notification')">
+          <i class="fas fa-bell"></i>
+          @if (unreadNotificationCount > 0) {
+            <span class="notification-badge">{{ unreadNotificationCount > 99 ? '99+' : unreadNotificationCount }}</span>
+          }
+        </div>
+        <div class="user-profile">
+          <div class="user-avatar">
+            @if (loading) {
+              <div class="avatar-skeleton"></div>
+            } @else {
+              <span class="avatar-initials">{{ getUserInitials() }}</span>
+            }
+          </div>
+          <div class="user-info">
+            @if (loading) {
+              <div class="user-name-skeleton"></div>
+            } @else {
+              <span class="user-name">{{ getUserDisplayName() }}</span>
+            }
+            <i class="fas fa-chevron-down"></i>
+          </div>
+          <div class="user-dropdown">
+            <a class="dropdown-item" (click)="navigateTo('/admin-dashboard/profile')">Profile</a>
+            <a class="dropdown-item" (click)="navigateTo('/admin-dashboard/settings')">Settings</a>
+            <a class="dropdown-item logout" (click)="logout()">Logout</a>
+          </div>
+        </div>
+        <button class="mobile-menu-toggle" (click)="toggleMobileMenu()">
+          <i class="fas fa-bars"></i>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div class="navbar-bottom" [class.show]="isMobileMenuOpen">
+    <div class="navbar-container">
+      <div class="navbar-menu" id="navbar-menu">
+        <ul class="nav-items">
+          <li class="nav-item">
+            <a class="nav-link" [class.active]="isActive('/admin-dashboard')" (click)="navigateTo('/admin-dashboard')">
+              <span>Dashboard</span>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" [class.active]="isActive('/admin-dashboard/results')" (click)="navigateTo('/admin-dashboard/results')">
+              <span>Results</span>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" [class.active]="isActive('/admin-dashboard/entry')" (click)="navigateTo('/admin-dashboard/entry')">
+              <span>Entries</span>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" [class.active]="isActive('/admin-dashboard/winner')" (click)="navigateTo('/admin-dashboard/winner')">
+              <span>Winners</span>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" [class.active]="isActive('/admin-dashboard/user')" (click)="navigateTo('/admin-dashboard/user')">
+              <span>Users</span>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" [class.active]="isActive('/admin-dashboard/notification')" (click)="navigateTo('/admin-dashboard/notification')">
+              <span>Notifications</span>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" [class.active]="isActive('/admin-dashboard/activity-log')" (click)="navigateTo('/admin-dashboard/activity-log')">
+              <span>Activity Logs</span>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" [class.active]="isActive('/admin-dashboard/voting')" (click)="navigateTo('/admin-dashboard/voting')">
+              <span>Voting</span>
+            </a>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</nav>

@@ -1,39 +1,34 @@
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { Observable } from 'rxjs';
-import { environment } from '../../environments/environment';
+import { map, Observable } from 'rxjs';
+import { BackendService } from '../util/backend.service';
 
 @Injectable({
   providedIn: 'root'
 })
 export class VotingService {
-  private apiUrl = environment.apiUrl;
-
-  constructor(private http: HttpClient) { }
-
-  private getHeaders(): HttpHeaders {
-    const token = localStorage.getItem('token');
-    return new HttpHeaders({
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${token}`
-    });
-  }
+  constructor(private backendService: BackendService) { }
 
   submitVote(lottery: string, numbers: number[], bonusNumbers: number[], voteDate: string): Observable<any> {
-    return this.http.post(`${this.apiUrl}/vote.php`, {
+    return this.backendService.submitVote({
       lottery,
       numbers,
       bonusNumbers,
       voteDate
-    }, { headers: this.getHeaders() });
+    });
   }
 
   getVotingHistory(): Observable<any> {
-    return this.http.get(`${this.apiUrl}/voting-history.php`, { headers: this.getHeaders() });
+    return this.backendService.getVoteHistory().pipe(
+      map((response: any) => ({
+        votes: response?.data?.votes || response?.data || []
+      }))
+    );
   }
 
   getLeadingNumbers(lottery: string, voteDate: string): Observable<any> {
-    return this.http.get(`${this.apiUrl}/leading-numbers.php?lottery=${lottery}&voteDate=${voteDate}`);
+    return this.backendService.getLeadingNumbers(lottery, voteDate).pipe(
+      map((response: any) => response?.data || { section1: [], section2: [] })
+    );
   }
 
   isVotingTime(): boolean {

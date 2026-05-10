@@ -6,26 +6,31 @@
           <span>&times;</span>
         </div>
         <div class="log-reg-inner">
-          <h2 class="title">{{ passwordRecoveryMode ? 'Reset Password' : verificationMode ? 'Verify Your Account' : 'Create an Account' }}</h2>
+          <h2 class="title">Create an Account</h2>
           <div class="main-content">
-            <form (ngSubmit)="onSignup()" *ngIf="!showOtpVerification && !verificationMode && !passwordRecoveryMode">
-              <!-- Registration form content stays the same -->
+            <form (ngSubmit)="onSignup()">
               <div class="form-row">
                 <div class="form-group half-width">
                   <label>First Name</label>
                   <input type="text" class="my-form-control" [(ngModel)]="firstName" [ngModelOptions]="{standalone: true}" placeholder="Enter Your First Name" required>
-                  <div *ngIf="validationErrors.firstName" class="error-message">{{ validationErrors.firstName }}</div>
+                  @if (validationErrors.firstName) {
+                    <div class="error-message">{{ validationErrors.firstName }}</div>
+                  }
                 </div>
                 <div class="form-group half-width">
                   <label>Last Name</label>
                   <input type="text" class="my-form-control" [(ngModel)]="lastName" [ngModelOptions]="{standalone: true}" placeholder="Enter Your Last Name" required>
-                  <div *ngIf="validationErrors.lastName" class="error-message">{{ validationErrors.lastName }}</div>
+                  @if (validationErrors.lastName) {
+                    <div class="error-message">{{ validationErrors.lastName }}</div>
+                  }
                 </div>
               </div>
               <div class="form-group full-width">
                 <label>Email</label>
                 <input type="email" class="my-form-control" [(ngModel)]="email" [ngModelOptions]="{standalone: true}" placeholder="Enter Your Email">
-                <div *ngIf="validationErrors.contact" class="error-message">{{ validationErrors.contact }}</div>
+                @if (validationErrors.contact) {
+                  <div class="error-message">{{ validationErrors.contact }}</div>
+                }
               </div>
               <div class="form-row">
                 <div class="form-group half-width">
@@ -34,31 +39,21 @@
                 </div>
                 <div class="form-group half-width">
                   <label>Country</label>
-                  <input 
-                    type="text" 
-                    class="my-form-control" 
-                    [(ngModel)]="country" 
-                    [ngModelOptions]="{standalone: true}" 
-                    (input)="filterCountries($event)"
-                    (focus)="showCountryDropdown = true"
-                    placeholder="Type to search country"
-                    autocomplete="off"
-                    required>
-                  <div *ngIf="showCountryDropdown && filteredCountries.length > 0" class="country-dropdown">
-                    <div 
-                      *ngFor="let c of filteredCountries.slice(0, 5)" 
-                      class="country-option" 
-                      (click)="selectCountry(c)">
-                      {{ c }}
-                    </div>
-                  </div>
-                  <div *ngIf="validationErrors.country" class="error-message">{{ validationErrors.country }}</div>
+                  <app-country-selector 
+                    [selectedCountry]="selectedCountry" 
+                    (countrySelected)="onCountrySelected($event)">
+                  </app-country-selector>
+                  @if (validationErrors.country) {
+                    <div class="error-message">{{ validationErrors.country }}</div>
+                  }
                 </div>
               </div>
               <div class="form-group full-width">
                 <label>Password</label>
                 <input [type]="showPassword ? 'text' : 'password'" class="my-form-control" [(ngModel)]="password" [ngModelOptions]="{standalone: true}" placeholder="Enter Your Password" required>
-                <div *ngIf="validationErrors.password" class="error-message">{{ validationErrors.password }}</div>
+                @if (validationErrors.password) {
+                  <div class="error-message">{{ validationErrors.password }}</div>
+                }
               </div>
               <div class="custom-control custom-checkbox">
                 <input type="checkbox" class="custom-control-input" id="showPasswordSignup" [(ngModel)]="showPassword" [ngModelOptions]="{standalone: true}">
@@ -70,93 +65,33 @@
                 <label class="custom-control-label" for="customCheck1">
                   I agree to the <a href="/#/terms" target="_blank" rel="noopener">Terms</a> and <a href="/#/privacy" target="_blank" rel="noopener">Privacy Policy</a>
                 </label>
-                <div *ngIf="validationErrors.terms" class="error-message">{{ validationErrors.terms }}</div>
+                @if (validationErrors.terms) {
+                  <div class="error-message">{{ validationErrors.terms }}</div>
+                }
               </div>
+              
+              @if (errorMessage) {
+                <div class="alert alert-danger" style="margin-bottom: 15px; padding: 10px; background-color: #f8d7da; border: 1px solid #f5c6cb; border-radius: 4px; color: #721c24;">
+                  {{ errorMessage }}
+                </div>
+              }
+              
               <div class="button-wrapper">
                 <button type="submit" class="custom-button2" [disabled]="!agreeTerms || isLoading">
-                  <span *ngIf="isLoading">Registering...</span>
-                  <span *ngIf="!isLoading">Register Now</span>
+                  @if (isLoading) {
+                    <span>Registering...</span>
+                  } @else {
+                    <span>Register Now</span>
+                  }
                 </button>
                 <p class="or-signup">
                   Already have an account? <a href="#" (click)="switchToLogin()">Login</a>
                 </p>
               </div>
             </form>
-            
-            <!-- Password Recovery Mode -->
-            <div *ngIf="passwordRecoveryMode">
-              <div *ngIf="!showOtpInput && !showSuccessMessage">
-                <p>Enter your email or phone number to reset your password:</p>
-                <div class="form-group">
-                  <label>Email or Phone Number</label>
-                  <input type="text" class="my-form-control" [(ngModel)]="identifier" placeholder="Enter your email or phone number">
-                </div>
-                
-                <!-- Error Message Display -->
-                <div *ngIf="errorMessage" class="alert alert-danger" style="margin-bottom: 15px; padding: 10px; background-color: #f8d7da; border: 1px solid #f5c6cb; border-radius: 4px; color: #721c24;">
-                  {{ errorMessage }}
-                </div>
-                
-                <div class="button-wrapper">
-                  <button type="button" class="custom-button2" (click)="sendPasswordReset()" [disabled]="isLoading">
-                    <span *ngIf="isLoading">Sending...</span>
-                    <span *ngIf="!isLoading">Send Reset Code</span>
-                  </button>
-                  <p class="or-signup">
-                    Remember your password? <a href="#" (click)="switchToLogin()">Login here</a>
-                  </p>
-                </div>
-              </div>
-              
-              <!-- OTP Input for Password Reset -->
-              <div *ngIf="showOtpInput && !showSuccessMessage">
-                <p>Enter the verification code sent to {{ identifier }}</p>
-                <div class="form-group">
-                  <label>Verification Code</label>
-                  <input type="text" class="my-form-control" [(ngModel)]="resetOtp" placeholder="Enter 6-digit code" maxlength="6">
-                </div>
-                <div class="form-group">
-                  <label>New Password</label>
-                  <input [type]="showPassword ? 'text' : 'password'" class="my-form-control" [(ngModel)]="newPassword" placeholder="Enter new password">
-                </div>
-                <div class="form-group">
-                  <label>Confirm New Password</label>
-                  <input [type]="showPassword ? 'text' : 'password'" class="my-form-control" [(ngModel)]="confirmNewPassword" placeholder="Confirm new password">
-                </div>
-                <div class="custom-control custom-checkbox">
-                  <input type="checkbox" class="custom-control-input" id="showPasswordReset" [(ngModel)]="showPassword" [ngModelOptions]="{standalone: true}">
-                  <label class="custom-control-label" for="showPasswordReset">Show Password</label>
-                </div>
-                
-                <div *ngIf="errorMessage" class="alert alert-danger" style="margin-bottom: 15px; padding: 10px; background-color: #f8d7da; border: 1px solid #f5c6cb; border-radius: 4px; color: #721c24;">
-                  {{ errorMessage }}
-                </div>
-                
-                <div class="button-wrapper">
-                  <button type="button" class="custom-button2" (click)="resetPassword()" [disabled]="isLoading">
-                    <span *ngIf="isLoading">Resetting...</span>
-                    <span *ngIf="!isLoading">Reset Password</span>
-                  </button>
-                  <p class="or-signup">
-                    <a href="#" (click)="resendResetCode()">Resend Code</a>
-                  </p>
-                </div>
-              </div>
-              
-              <!-- Success Message -->
-              <div *ngIf="showSuccessMessage" class="alert alert-success" style="padding: 20px; background-color: #d4edda; border: 1px solid #c3e6cb; border-radius: 4px; color: #155724; text-align: center;">
-                <h4>Password Reset Successfully!</h4>
-                <p>Your password has been reset. You can now login with your new password.</p>
-                <p><small>Redirecting to login in a few seconds...</small></p>
-              </div>
-            </div>
-            
-
           </div>
         </div>
       </div>
     </div>
   </div>
 </div>
-
-

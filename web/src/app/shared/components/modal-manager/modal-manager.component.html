@@ -1,0 +1,42 @@
+@if (isVisible) {
+  <div class="modal fade" [class.show]="isVisible" [style.display]="isVisible ? 'block' : 'none'" 
+       tabindex="-1" role="dialog">
+    <div class="modal-dialog" [class]="modalSize" role="document">
+      <div class="modal-content">
+        @if (title || showCloseButton) {
+          <div class="modal-header">
+            @if (title) {
+              <h5 class="modal-title">{{ title }}</h5>
+            }
+            @if (showCloseButton) {
+              <button type="button" class="btn-close" (click)="close()" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+              </button>
+            }
+          </div>
+        }
+        
+        <div class="modal-body">
+          @if (contentTemplate) {
+            <ng-container *ngTemplateOutlet="contentTemplate"></ng-container>
+          } @else {
+            <div [innerHTML]="content"></div>
+          }
+        </div>
+        
+        @if (showFooter) {
+          <div class="modal-footer">
+            @if (showCancelButton) {
+              <button type="button" class="btn btn-secondary" (click)="cancel()">{{ cancelText }}</button>
+            }
+            @if (showConfirmButton) {
+              <button type="button" class="btn btn-primary" (click)="confirm()">{{ confirmText }}</button>
+            }
+          </div>
+        }
+      </div>
+    </div>
+  </div>
+  
+  <div class="modal-backdrop fade" [class.show]="isVisible"></div>
+}

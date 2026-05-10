@@ -2,23 +2,24 @@ import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
-import { environment } from '../../../../environments/environment';
+import { BackendService } from '../../../util/backend.service';
+import { SiteSettingsService } from '../../../util/site-settings.service';
 
 @Component({
   selector: 'app-login',
+  standalone: true,
   imports: [CommonModule, FormsModule],
   templateUrl: './login.component.html',
-  styleUrl: './login.component.css'
+  styleUrls: ['./login.component.css']
 })
 export class LoginComponent {
   @Input() isVisible = false;
+
   @Output() loginSuccess = new EventEmitter<any>();
   @Output() closeModal = new EventEmitter<void>();
   @Output() switchToSignupEvent = new EventEmitter<void>();
   @Output() switchToVerificationEvent = new EventEmitter<void>();
   @Output() switchToPasswordRecoveryEvent = new EventEmitter<void>();
-
-  constructor(private router: Router) {}
 
   identifier = '';
   password = '';
@@ -26,34 +27,40 @@ export class LoginComponent {
   isLoading = false;
   errorMessage = '';
 
-  // Validation errors
+  showLogin = true;
+  showSignup = false;
+  showPasswordReset = false;
+
   validationErrors: any = {};
 
-  close() {
+  constructor(
+    private router: Router,
+    private backendService: BackendService,
+    public siteSettingsService: SiteSettingsService
+  ) { }
+
+  close(): void {
     this.clearForm();
     this.closeModal.emit();
   }
 
-  switchToSignup() {
+  switchToSignup(): void {
     this.clearForm();
     this.switchToSignupEvent.emit();
   }
 
-  switchToVerification() {
+  switchToVerification(): void {
     this.clearForm();
     this.switchToVerificationEvent.emit();
   }
 
-  switchToPasswordRecovery() {
+  switchToPasswordRecovery(event?: Event): void {
+    event?.preventDefault();
     this.clearForm();
     this.switchToPasswordRecoveryEvent.emit();
   }
 
-  togglePasswordVisibility() {
-    this.showPassword = !this.showPassword;
-  }
-
-  clearForm() {
+  clearForm(): void {
     this.identifier = '';
     this.password = '';
     this.showPassword = false;
@@ -61,20 +68,24 @@ export class LoginComponent {
     this.isLoading = false;
     this.validationErrors = {};
   }
-
-  async onLogin() {
+  openForgotPassword() {
+    this.showLogin = false;
+    this.showSignup = false;
+    this.showPasswordReset = true;
+  }
+  onLogin(): void {
     this.validationErrors = {};
-    
-    // Validate fields
-    if (!this.identifier) {
-      this.validationErrors.identifier = 'Email or phone number is required';
+
+    if (!this.identifier.trim()) {
+      this.validationErrors.identifier =
+        'Email or phone number is required';
     }
-    
-    if (!this.password) {
-      this.validationErrors.password = 'Password is required';
+
+    if (!this.password.trim()) {
+      this.validationErrors.password =
+        'Password is required';
     }
-    
-    // If there are validation errors, don't proceed
+
     if (Object.keys(this.validationErrors).length > 0) {
       return;
     }
@@ -82,62 +93,78 @@ export class LoginComponent {
     this.isLoading = true;
     this.errorMessage = '';
 
-    try {
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 10000); // Increased to 10 seconds
-      
-      const response = await fetch(`${environment.apiUrl}/login`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ identifier: this.identifier, password: this.password }),
-        signal: controller.signal
-      });
-      
-      clearTimeout(timeoutId);
-      
-      let result;
-      try {
-        result = await response.json();
-      } catch (parseError) {
-        this.errorMessage = 'Server error. Please try again later.';
+    this.backendService.login({
+      identifier: this.identifier,
+      password: this.password
+    }).subscribe({
+      next: (response: any) => {
         this.isLoading = false;
-        return;
-      }
 
-      if (response.ok && result.success) {
-        localStorage.setItem('token', result.token);
-        localStorage.setItem('user', JSON.stringify(result.user));
-        
-        this.clearForm();
-        
-        // Check if admin and redirect to admin dashboard
-        if (result.user.role === 'admin' || result.user.email === 'admin@totalfreelotto.com') {
-          this.router.navigate(['/dashboard']);
-          return;
-        }
-        
-        this.loginSuccess.emit(result.user);
-        this.close();
-      } else {
-        // Handle different HTTP status codes
-        if (response.status === 400) {
-          this.errorMessage = result?.error || 'Invalid credentials. Please check your email/phone and password.';
-        } else if (response.status === 429) {
-          this.errorMessage = 'Too many login attempts. Please try again later.';
-        } else if (response.status === 500) {
-          this.errorMessage = 'Server error. Please try again later.';
+        if (response?.success) {
+          const loginData = response?.data ?? response;
+          const token = loginData?.token;
+          const user = loginData?.user;
+
+          if (!token || !user) {
+            this.errorMessage =
+              response?.message ||
+              'Login failed. Please try again.';
+            return;
+          }
+
+          localStorage.setItem(
+            'auth_token',
+            token
+          );
+
+          localStorage.setItem(
+            'token',
+            token
+          );
+
+          localStorage.setItem(
+            'user',
+            JSON.stringify(user)
+          );
+
+          this.clearForm();
+
+          if (
+            user?.role === 'admin' ||
+            user?.email === 'admin@totalfreelotto.com'
+          ) {
+            this.router.navigate(['/admin-dashboard']);
+            return;
+          }
+
+          this.loginSuccess.emit(user);
+          this.close();
         } else {
-          this.errorMessage = result?.error || 'Login failed. Please try again.';
+          this.errorMessage =
+            response?.message ||
+            'Login failed. Please try again.';
+        }
+      },
+
+      error: (error) => {
+        this.isLoading = false;
+
+        if (error.status === 400) {
+          this.errorMessage =
+            error?.error?.message ||
+            'Invalid credentials.';
+        } else if (error.status === 429) {
+          this.errorMessage =
+            'Too many login attempts. Please try again later.';
+        } else if (error.status === 0) {
+          this.errorMessage =
+            'Network error. Please check your connection.';
+        } else {
+          this.errorMessage =
+            error?.error?.message ||
+            'Server error. Please try again later.';
         }
       }
-    } catch (error: any) {
-      if (error.name === 'AbortError') {
-        this.errorMessage = 'Request timeout. Please try again.';
-      } else {
-        this.errorMessage = 'Network error. Please check your connection and try again.';
-      }
-    } finally {
-      this.isLoading = false;
-    }
+    });
   }
 }

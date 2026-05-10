@@ -1,8 +1,10 @@
-import { Component, OnInit, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
+import { Component, OnDestroy, OnInit, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
-import { LotteryService, Draw } from '../services/lottery.service';
+import { BackendService } from '../util/backend.service';
+import { ApiResponse } from '../util/api-response';
 import { LayoutComponent } from '../layout/layout.component';
+import { Draw } from './draw';
 
 @Component({
   selector: 'app-lotteries',
@@ -11,25 +13,35 @@ import { LayoutComponent } from '../layout/layout.component';
   styleUrl: './lotteries.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class LotteriesComponent implements OnInit {
+export class LotteriesComponent implements OnInit, OnDestroy {
   draws: Draw[] = [];
+  private refreshIntervalId?: ReturnType<typeof setInterval>;
 
-  constructor(private lotteryService: LotteryService, private cdr: ChangeDetectorRef) {}
+  constructor(
+    private backendService: BackendService,
+    private cdr: ChangeDetectorRef
+  ) {}
 
   ngOnInit() {
     this.loadDraws();
-    setInterval(() => this.loadDraws(), 30000);
+    this.refreshIntervalId = setInterval(() => this.loadDraws(), 30000);
+  }
+
+  ngOnDestroy() {
+    if (this.refreshIntervalId) {
+      clearInterval(this.refreshIntervalId);
+    }
   }
 
   private loadDraws() {
-    this.lotteryService.getDraws().subscribe({
-      next: (draws) => {
-        console.log('Loaded draws:', draws);
-        this.draws = draws;
-        this.cdr.detectChanges();
+    this.backendService.getUpcomingDraws().subscribe({
+      next: (response: ApiResponse<Draw[]>) => {
+        this.draws = response?.data ?? [];
+        this.cdr.markForCheck();
       },
       error: (error) => {
-        console.error('Error loading draws:', error);
+        this.draws = [];
+        this.cdr.markForCheck();
       }
     });
   }
@@ -45,9 +57,7 @@ export class LotteriesComponent implements OnInit {
     
     const date = new Date(dateString);
     
-    // Check if date is valid
     if (isNaN(date.getTime())) {
-      console.warn('Invalid date string:', dateString);
       return 'TBA';
     }
     
@@ -60,7 +70,7 @@ export class LotteriesComponent implements OnInit {
   }
 
   getLotteryCode(name: string, date?: string): string {
-    if (!name) return 'monday'; // Default fallback
+    if (!name) return 'monday'; 
     
     const baseCode = name.includes('Monday') ? 'monday' : 
                     name.includes('Wednesday') ? 'wednesday' : 'friday';
@@ -80,7 +90,6 @@ export class LotteriesComponent implements OnInit {
     try {
       return dateString.split('T')[0];
     } catch (error) {
-      console.warn('Error splitting date:', dateString);
       return '';
     }
   }
@@ -90,9 +99,7 @@ export class LotteriesComponent implements OnInit {
     
     const target = new Date(targetDate);
     
-    // Check if date is valid
     if (isNaN(target.getTime())) {
-      console.warn('Invalid target date:', targetDate);
       return '00 Days 00:00:00';
     }
     
@@ -107,5 +114,9 @@ export class LotteriesComponent implements OnInit {
     const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
 
     return `${days.toString().padStart(2, '0')} Days ${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:00`;
+  }
+
+  getLotteryCloseCountdown(draw: Draw): string {
+    return this.getCountdown(draw.entry_closes_at || draw.lottery_closes_at || draw.drawDate || draw.nextDraw || '');
   }
 }

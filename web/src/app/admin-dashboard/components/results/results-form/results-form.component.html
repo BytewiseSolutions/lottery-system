@@ -1,0 +1,87 @@
+<form class="results-form" (ngSubmit)="onSubmit()">
+  <div class="form-group">
+    <label for="draw">Select Draw *</label>
+    <select
+      id="draw"
+      [(ngModel)]="formData.draw_id"
+      name="draw_id"
+      (ngModelChange)="onDrawChange($event)"
+      [disabled]="saving"
+      required>
+      <option value="">
+        {{ drawsLoading ? 'Loading draws...' : 'Choose a draw...' }}
+      </option>
+      @for (draw of draws; track draw.id) {
+        <option [value]="draw.id">
+          {{ draw.lottery }} - {{ formatDrawDate(draw.draw_date) }}
+        </option>
+      }
+    </select>
+    @if (autofillMessage) {
+      <small
+        [style.color]="autofillMessageType === 'error' ? '#b42318' : autofillMessageType === 'success' ? '#027a48' : '#6941c6'">
+        {{ autofillMessage }}
+      </small>
+    }
+  </div>
+
+  <div class="form-group">
+    <label>Winning Numbers *</label>
+    <div class="numbers-grid">
+      @for (num of formData.winning_numbers; track $index) {
+        <input 
+          type="number" 
+          min="1" 
+          max="75" 
+          [(ngModel)]="formData.winning_numbers[$index]" 
+          [name]="'main_' + $index" 
+          placeholder="{{$index + 1}}"
+          [disabled]="saving"
+          required>
+      }
+    </div>
+  </div>
+
+  <div class="form-group">
+    <label>Bonus Numbers *</label>
+    <div class="numbers-grid bonus">
+      @for (num of formData.bonus_numbers; track $index) {
+        <input 
+          type="number" 
+          min="1" 
+          max="75" 
+          [(ngModel)]="formData.bonus_numbers[$index]" 
+          [name]="'bonus_' + $index" 
+          [disabled]="saving"
+          placeholder="B{{$index + 1}}">
+      }
+    </div>
+  </div>
+
+  <div class="form-group">
+    <label for="jackpot">Jackpot Amount *</label>
+    <input 
+      type="number" 
+      id="jackpot" 
+      step="0.01" 
+      min="0" 
+      [(ngModel)]="formData.jackpot" 
+      name="jackpot" 
+      [disabled]="saving"
+      placeholder="0.00" 
+      required>
+  </div>
+
+  @if (formData.draw_id && getValidationMessage()) {
+    <div class="form-feedback form-feedback-error">
+      {{ getValidationMessage() }}
+    </div>
+  }
+
+  <div class="form-actions">
+    <button type="button" class="btn-secondary" (click)="onCancel()" [disabled]="saving">Cancel</button>
+    <button type="submit" class="btn-primary" [disabled]="!isFormValid() || saving">
+      {{ saving ? (isEditMode ? 'Updating...' : 'Saving...') : 'Save' }}
+    </button>
+  </div>
+</form>

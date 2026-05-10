@@ -1,0 +1,145 @@
+<div class="admin-dashboard">
+    <app-sidebar></app-sidebar>
+
+    <div class="main-content">
+        <div class="result-detail-page">
+            <div class="detail-toolbar">
+                <button type="button" class="back-btn" (click)="goBackToResults()">Back to Results</button>
+            </div>
+
+            @if (loading) {
+            <div class="tab-content">
+                <p>Loading result details...</p>
+            </div>
+            }
+
+            @if (error && !loading) {
+            <div class="tab-content state-card">
+                <p>Result details could not be loaded.</p>
+                <button type="button" class="state-btn" (click)="retryResultLoad()">Retry</button>
+            </div>
+            }
+
+            @if (!loading && !error && result) {
+            <div class="result-header-card">
+
+                <div class="header-item">
+                    <label>Lottery</label>
+                    <h2>{{ result.lottery }}</h2>
+                </div>
+
+                <div class="header-item">
+                    <label>Draw</label>
+                    <h3>{{ formatDrawDate(result.draw_date) }}</h3>
+                </div>
+
+                <div class="header-item">
+                    <label>Jackpot</label>
+                    <h3>M{{ formatJackpot(result.jackpot) }}</h3>
+                </div>
+
+            </div>
+
+            <div class="tabs">
+
+                <button (click)="activeTab = 'winners'" [class.active]="activeTab === 'winners'">
+                    Winners
+                </button>
+
+                <button (click)="activeTab = 'numbers'" [class.active]="activeTab === 'numbers'">
+                    Winning Numbers
+                </button>
+
+                <button (click)="activeTab = 'entries'" [class.active]="activeTab === 'entries'">
+                    Entries
+                </button>
+
+                <button (click)="activeTab = 'meta'" [class.active]="activeTab === 'meta'">
+                    Meta Info
+                </button>
+
+            </div>
+
+            @if (activeTab === 'winners') {
+            <app-winner-list
+                [winners]="winners"
+                [loading]="winnersLoading"
+                [error]="winnersError"
+                [processingWinnerId]="processingWinnerId"
+                [processingAction]="processingWinnerAction"
+                (pay)="payWinner($event)"
+                (claim)="markClaimed($event)">
+            </app-winner-list>
+            }
+
+            @if (activeTab === 'numbers') {
+            <div class="tab-content">
+                <h3>Winning Numbers</h3>
+
+                <div class="numbers">
+                    @for (num of result.winning_numbers; track $index) {
+                    <span class="ball">{{ num }}</span>
+                    }
+                </div>
+
+                <div class="bonus-section">
+                    <h4>Bonus Numbers</h4>
+
+                    <div class="bonus">
+                        @for (num of result.bonus_numbers; track $index) {
+                        <span class="ball bonus-ball">{{ num }}</span>
+                        }
+                    </div>
+                </div>
+            </div>
+            }
+
+            @if (activeTab === 'entries') {
+            <div class="tab-content">
+                <h3>Entries Summary</h3>
+                <p>Total Entries: {{ result.total_entries || 0 }}</p>
+
+                @if (entriesLoading) {
+                <p>Loading entries...</p>
+                }
+
+                @if (!entriesLoading && entriesError) {
+                <div class="state-inline">
+                    <p>Entries could not be loaded right now.</p>
+                    <button type="button" class="state-btn" (click)="retryEntriesLoad()">Retry</button>
+                </div>
+                }
+
+                @if (!entriesLoading && !entriesError && entries.length === 0) {
+                <p>No entries found for this draw.</p>
+                }
+
+                @if (!entriesLoading && !entriesError && entries.length > 0) {
+                <div class="entries-list">
+                    @for (entry of entries; track entry.id) {
+                    <div class="entry-card">
+                        <div class="entry-card-row">
+                            <strong>Entry #{{ entry.id }}</strong>
+                            <span>{{ formatDate(entry.created_at) }}</span>
+                        </div>
+                        <p>Main Numbers: {{ formatNumbers(entry.numbers) }}</p>
+                        <p>Bonus Numbers: {{ formatNumbers(entry.bonus_numbers) }}</p>
+                    </div>
+                    }
+                </div>
+                }
+            </div>
+            }
+
+            @if (activeTab === 'meta') {
+            <div class="tab-content">
+                <h3>Meta Info</h3>
+                <p>Created: {{ formatDate(result.created_at) }}</p>
+                <p>Updated: {{ formatDate(result.updated_at) }}</p>
+            </div>
+            }
+            }
+
+        </div>
+    </div>
+</div>

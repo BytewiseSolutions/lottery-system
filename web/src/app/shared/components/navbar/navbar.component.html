@@ -5,7 +5,7 @@
         <div class="col-lg-12">
           <div class="header-top-area-inner">
             <a routerLink="/" class="logo">
-              <img src="assets/images/logoo.png" alt="Total Free Lotto" style="height: 60px; width: auto; background: white; padding: 5px; border-radius: 5px;">
+              <img src="assets/images/logoo.png" [alt]="siteSettingsService.siteName()" style="height: 60px; width: auto; background: white; padding: 5px; border-radius: 5px;">
             </a>
             <div class="right-area">
               <div class="log-reg-area" *ngIf="!isLoggedIn">
@@ -14,7 +14,7 @@
               </div>
               <div class="log-reg-area" *ngIf="isLoggedIn" style="position: relative;">
                 <div class="user-dropdown">
-                  <span class="user-name">{{ currentUser?.fullName || 'User' }}</span>
+                  <span class="user-name">{{ getUserDisplayName() }}</span>
                   <div class="dropdown-menu">
                     <a routerLink="/profile">Profile</a>
                     <a routerLink="/winnings">My Winnings</a>
@@ -29,7 +29,6 @@
                   <span class="notification-badge" *ngIf="notificationCount > 0">{{ notificationCount }}</span>
                 </div>
                 
-                <!-- Notification Dropdown -->
                 <div class="notification-dropdown" *ngIf="showNotifications">
                   <div class="notification-header">
                     <h4>Notifications</h4>
@@ -38,9 +37,17 @@
                     <div *ngIf="notifications.length === 0" class="no-notifications">
                       <p>No new notifications</p>
                     </div>
-                    <div *ngFor="let notification of notifications" class="notification-item">
+                    <div
+                      *ngFor="let notification of notifications"
+                      class="notification-item"
+                      [class.notification-unread]="!notification.is_read"
+                      (click)="markNotificationAsRead(notification, $event)">
+                      <div class="notification-item-header">
+                        <p class="notification-title">{{ notification.title || 'Notification' }}</p>
+                        <span *ngIf="!notification.is_read" class="notification-pill">New</span>
+                      </div>
                       <p class="notification-message">{{ notification.message }}</p>
-                      <button class="notification-action-btn" (click)="navigateToProfile()">{{ notification.action }}</button>
+                      <p class="notification-date">Posted at: {{ formatNotificationDate(notification.created_at) }}</p>
                     </div>
                   </div>
                 </div>
@@ -61,7 +68,7 @@
     <div class="container">
       <div class="header-wrapper">
         <div class="mobile-brand d-lg-none">
-          <span class="brand-text">Total Free Lotto</span>
+          <span class="brand-text">{{ siteSettingsService.siteName() }}</span>
         </div>
         <ul class="menu" [class.mobile-open]="mobileMenuOpen">
           <li><a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}" (click)="mobileMenuOpen = false">Home</a></li>
@@ -93,9 +100,12 @@
 
 <app-signup 
   [isVisible]="showSignupModal"
-  [verificationMode]="verificationMode"
-  [passwordRecoveryMode]="passwordRecoveryMode"
   (signupSuccess)="onSignupSuccess($event)"
   (closeModal)="onCloseSignup()"
   (switchToLoginEvent)="onSwitchToLogin()">
 </app-signup>
+
+<app-password-reset
+  [isVisible]="showPasswordResetModal"
+  (closeModal)="onClosePasswordReset()">
+</app-password-reset>

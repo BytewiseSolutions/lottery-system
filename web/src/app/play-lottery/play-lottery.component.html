@@ -153,24 +153,6 @@
   </div>
 </div>
 
-<!-- Human Verification Modal -->
-<div class="modal" [class.show]="showHumanVerification" *ngIf="showHumanVerification">
-  <div class="modal-dialog modal-dialog-centered">
-    <div class="modal-content">
-      <div class="modal-body text-center" style="padding: 40px;">
-        <span class="close" (click)="onCloseHumanVerification()">&times;</span>
-        <h3 style="color: #5949b3; margin-bottom: 20px;">Human Verification</h3>
-        <p style="margin-bottom: 30px;">You've played 4+ times today. Please verify you're human to continue.</p>
-        <div style="margin: 20px 0; display: flex; flex-direction: column; align-items: center;">
-          <p style="margin-bottom: 15px;">Complete the CAPTCHA to verify:</p>
-          <div id="recaptcha-container" class="g-recaptcha" style="display: inline-block;"></div>
-          <button class="custom-button2" (click)="onHumanVerified()" [disabled]="!captchaVerified" style="margin-top: 20px; padding: 15px 30px;" [style.opacity]="captchaVerified ? '1' : '0.5'">Submit Entry</button>
-        </div>
-      </div>
-    </div>
-  </div>
-</div>
-
 <style>
 .play-section {
   margin-bottom: 30px;

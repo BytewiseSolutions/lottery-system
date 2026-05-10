@@ -1,0 +1,129 @@
+@if (!loading) {
+<div class="stats-grid">
+  <div class="stat-card">
+    <div class="stat-icon">
+      <i class="fas fa-ticket-alt"></i>
+    </div>
+    <div class="stat-info">
+      <h3>{{ formatNumber(stats.totalEntries) }}</h3>
+      <p>Total Entries</p>
+    </div>
+  </div>
+
+  <div class="stat-card">
+    <div class="stat-icon">
+      <i class="fas fa-trophy"></i>
+    </div>
+    <div class="stat-info">
+      <h3>{{ formatNumber(stats.winnersLastMonth) }}</h3>
+      <p>Winners This Month</p>
+    </div>
+  </div>
+
+  <div class="stat-card">
+    <div class="stat-icon">
+      <i class="fas fa-money-bill-wave"></i>
+    </div>
+    <div class="stat-info">
+      <h3>{{ formatCurrency(stats.totalPayouts) }}</h3>
+      <p>Total Payouts</p>
+    </div>
+  </div>
+
+  <div class="stat-card">
+    <div class="stat-icon">
+      <i class="fas fa-users"></i>
+    </div>
+    <div class="stat-info">
+      <h3>{{ formatNumber(stats.totalUsers) }}</h3>
+      <p>Active Users</p>
+    </div>
+  </div>
+</div>
+}
+
+@if (loading) {
+<div class="loading-state">
+  <div class="stats-grid">
+    @for (item of [1,2,3,4]; track item) {
+    <div class="stat-card skeleton">
+      <div class="stat-icon skeleton-icon"></div>
+      <div class="stat-info">
+        <div class="skeleton-text skeleton-title"></div>
+        <div class="skeleton-text skeleton-subtitle"></div>
+      </div>
+    </div>
+    }
+  </div>
+</div>
+}
+
+@if (error && !loading) {
+<div class="error-state">
+  <div class="error-message">
+    <i class="fas fa-exclamation-triangle"></i>
+    <p>{{ error }}</p>
+    <button class="retry-btn" (click)="loadDashboardData()">Retry</button>
+  </div>
+</div>
+}
+
+@if (!loading) {
+<div class="dashboard-widgets">
+  <div class="widget recent-activity">
+    <div class="widget-header">
+      <h3>Recent Activity</h3>
+      <button class="btn-link" (click)="navigateToActivityLog()">View All</button>
+    </div>
+
+    @if (recentActivity.length > 0) {
+    <div class="activity-list">
+      @for (activity of recentActivity; track activity.id) {
+      <div class="activity-item">
+        <div class="activity-icon">
+          <i [class]="getActivityIcon(activity.action)"></i>
+        </div>
+        <div class="activity-content">
+          <p>{{ getActivityDescription(activity) }}</p>
+          <small>{{ getTimeAgo(activity.created_at) }}</small>
+        </div>
+      </div>
+      }
+    </div>
+    } @else {
+    <div class="no-activity">
+      <i class="fas fa-inbox"></i>
+      <p>No recent activity</p>
+    </div>
+    }
+  </div>
+
+  <div class="widget quick-actions">
+    <div class="widget-header">
+      <h3>Quick Actions</h3>
+    </div>
+
+    <div class="action-buttons">
+      <button class="action-btn" (click)="navigateTo('/admin-dashboard/user')">
+        <i class="fas fa-users"></i>
+        <span>Users</span>
+      </button>
+
+      <button class="action-btn" (click)="navigateTo('/admin-dashboard/results')">
+        <i class="fas fa-list-alt"></i>
+        <span>Results</span>
+      </button>
+
+      <button class="action-btn" (click)="navigateTo('/admin-dashboard/winner')">
+        <i class="fas fa-trophy"></i>
+        <span>Announce Winner</span>
+      </button>
+
+      <button class="action-btn" (click)="navigateTo('/admin-dashboard/notification')">
+        <i class="fas fa-envelope"></i>
+        <span>Send Notification</span>
+      </button>
+    </div>
+  </div>
+</div>
+}

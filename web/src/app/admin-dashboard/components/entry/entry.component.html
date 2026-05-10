@@ -1,0 +1,142 @@
+<div class="admin-dashboard">
+  <app-sidebar></app-sidebar>
+
+  <main class="main-content">
+    <div class="results-page">
+      <div class="page-header">
+        <h1>All Entries</h1>
+
+        <button class="export-btn" type="button" (click)="exportCsv()" [disabled]="totalItems === 0 || exporting">
+          <i class="fas fa-file-csv"></i>
+          {{ exporting ? 'Exporting...' : 'Export CSV' }}
+        </button>
+      </div>
+
+      <div class="filter-bar">
+        <div class="filter-group filter-group-search">
+          <label for="entry-search">Search</label>
+          <input
+            id="entry-search"
+            type="text"
+            [(ngModel)]="searchTerm"
+            (ngModelChange)="onFiltersChange()"
+            placeholder="Search by user, email, phone, lottery, date...">
+        </div>
+
+        <div class="filter-group">
+          <label for="entry-lottery">Lottery</label>
+          <select
+            id="entry-lottery"
+            [(ngModel)]="selectedLottery"
+            (ngModelChange)="onFiltersChange()">
+            <option value="all">All lotteries</option>
+            @for (lottery of lotteryOptions; track lottery) {
+              <option [value]="lottery">{{ lottery }}</option>
+            }
+          </select>
+        </div>
+
+        <div class="filter-group">
+          <label for="entry-sort">Sort</label>
+          <select
+            id="entry-sort"
+            [(ngModel)]="sortOrder"
+            (ngModelChange)="onFiltersChange()">
+            <option value="newest">Newest first</option>
+            <option value="oldest">Oldest first</option>
+          </select>
+        </div>
+
+        <div class="filter-actions">
+          <button type="button" class="clear-btn" (click)="clearFilters()" [disabled]="!hasActiveFilters()">
+            Clear
+          </button>
+        </div>
+      </div>
+
+      <div class="view-entries">
+        <div class="table-wrapper desktop-view">
+          @if (loading) {
+            <div class="entries-state">
+              <p>Loading entries...</p>
+            </div>
+          }
+
+          @if (error && !loading) {
+            <div class="entries-state entries-state-error">
+              <p>Entries could not be loaded.</p>
+              <button type="button" class="retry-btn" (click)="loadEntries()">Retry</button>
+            </div>
+          }
+
+          @if (!loading && !error && entries.length === 0 && !hasActiveFilters()) {
+            <div class="entries-state">
+              <p>No entries found yet.</p>
+            </div>
+          }
+
+          @if (!loading && !error && totalItems === 0 && hasActiveFilters()) {
+            <div class="entries-state">
+              <p>No entries matched your search or filters.</p>
+            </div>
+          }
+
+          @if (!loading && !error && entries.length > 0) {
+            <table class="entries-table">
+              <thead>
+                <tr>
+                  <th>#</th>
+                  <th>User</th>
+                  <th>Draw</th>
+                  <th>Submitted</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+
+              <tbody>
+                @for (entry of entries; track entry.id; let index = $index) {
+                  <tr>
+                    <td>{{ (currentPage - 1) * itemsPerPage + index + 1 }}</td>
+                    <td>{{ getUserLabel(entry) }}</td>
+                    <td>{{ formatDrawLabel(entry) }}</td>
+                    <td>{{ formatDateTime(entry.created_at) }}</td>
+                    <td>
+                      <div class="actions">
+                        <button class="view-btn" type="button" (click)="viewEntry(entry)">View</button>
+                      </div>
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+
+            <div class="table-footer">
+              <div class="table-info">
+                Showing {{ entries.length }} of {{ totalItems }} entries
+              </div>
+              <div class="pagination">
+                <button
+                  class="btn-icon"
+                  type="button"
+                  (click)="onPageChange(currentPage - 1)"
+                  [disabled]="currentPage === 1">
+                  <i class="fas fa-chevron-left"></i>
+                </button>
+                <span class="page-info">
+                  Page {{ currentPage }} of {{ totalPages || 1 }}
+                </span>
+                <button
+                  class="btn-icon"
+                  type="button"
+                  (click)="onPageChange(currentPage + 1)"
+                  [disabled]="currentPage === totalPages || totalPages === 0">
+                  <i class="fas fa-chevron-right"></i>
+                </button>
+              </div>
+            </div>
+          }
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
