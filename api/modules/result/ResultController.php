@@ -105,6 +105,36 @@ class ResultController
         }
     }
 
+    public function autoPublishResults()
+    {
+        try {
+            $currentUser = $this->getCurrentUser();
+
+            if (!$currentUser) {
+                Response::json(false, 'Unauthorized', null, HTTP_UNAUTHORIZED);
+            }
+
+            if (!$currentUser->isAdmin()) {
+                Response::json(false, 'Admin access required', null, HTTP_FORBIDDEN);
+            }
+
+            $result = $this->resultService->autoPublishDueResults();
+
+            if ($result['success']) {
+                Response::json(true, 'Auto-publish complete', $result['data'] ?? null, HTTP_OK);
+            }
+
+            Response::json(false, $result['message'], null, HTTP_BAD_REQUEST);
+
+        } catch (Exception $e) {
+            Logger::error('ResultController auto-publish error', [
+                'error' => $e->getMessage()
+            ]);
+
+            Response::json(false, 'Failed to auto-publish results', null, HTTP_INTERNAL_ERROR);
+        }
+    }
+
     public function updateResult()
     {
         try {
