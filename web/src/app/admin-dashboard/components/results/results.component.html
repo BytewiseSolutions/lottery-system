@@ -7,10 +7,17 @@
       <div class="page-header">
         <h1>Manage Results</h1>
 
-        <button class="upload-btn" (click)="openModal()" [disabled]="saving">
-          <i class="fas fa-upload"></i>
-          {{ saving ? 'Saving Result...' : 'Upload Results' }}
-        </button>
+        <div class="header-actions">
+          <button class="auto-publish-btn" (click)="autoPublish()" [disabled]="saving || autoPublishing">
+            <i class="fas fa-sync-alt"></i>
+            {{ autoPublishing ? 'Publishing...' : 'Auto Publish' }}
+          </button>
+
+          <button class="upload-btn" (click)="openModal()" [disabled]="saving || autoPublishing">
+            <i class="fas fa-upload"></i>
+            {{ saving ? 'Saving Result...' : 'Upload Results' }}
+          </button>
+        </div>
       </div>
 
       <div class="view-results">

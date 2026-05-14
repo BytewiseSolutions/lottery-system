@@ -171,6 +171,10 @@ export class BackendService {
     return this.get('result/details', { id: resultId });
   }
 
+  autoPublishResults(): Observable<any> {
+    return this.post('result/auto-publish', {});
+  }
+
   createResult(resultData: any): Observable<any> {
     return this.post('result/create', resultData);
   }

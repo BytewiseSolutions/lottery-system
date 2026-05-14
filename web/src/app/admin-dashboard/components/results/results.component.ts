@@ -42,6 +42,8 @@ export class ResultsComponent implements OnInit {
   totalItems = 0;
   totalPages = 0;
 
+  autoPublishing = false;
+
   constructor(
     private router: Router,
     private backendService: BackendService,
@@ -86,6 +88,36 @@ export class ResultsComponent implements OnInit {
         this.totalPages = 0;
         this.loading = false;
         this.error = true;
+      }
+    });
+  }
+
+  autoPublish() {
+    if (this.autoPublishing || this.saving) return;
+
+    this.autoPublishing = true;
+
+    this.backendService.autoPublishResults().subscribe({
+      next: (response: any) => {
+        this.autoPublishing = false;
+
+        if (response?.success) {
+          const data = response.data ?? {};
+          const processed = data.processed_count ?? 0;
+          const skipped = data.skipped_count ?? 0;
+          this.successPopupService.show(
+            `Processed: ${processed} | Skipped: ${skipped}`,
+            'Auto Publish Complete'
+          );
+          this.loadResults();
+          return;
+        }
+
+        this.errorHandlerService.showError(response?.message || 'Auto-publish failed');
+      },
+      error: (error: any) => {
+        this.autoPublishing = false;
+        this.errorHandlerService.showError(error?.error?.message || 'Auto-publish failed');
       }
     });
   }
