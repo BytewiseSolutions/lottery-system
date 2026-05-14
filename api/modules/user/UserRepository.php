@@ -168,11 +168,13 @@ class UserRepository
 
     public function deleteById($userId)
     {
+        $this->pdo->prepare('DELETE FROM notification WHERE user_id = :id')->execute([':id' => $userId]);
+        $this->pdo->prepare('DELETE FROM payment WHERE user_id = :id')->execute([':id' => $userId]);
+        $this->pdo->prepare('DELETE FROM winner WHERE user_id = :id')->execute([':id' => $userId]);
+
         $stmt = $this->pdo->prepare('DELETE FROM user WHERE id = :id');
 
-        return $stmt->execute([
-            ':id' => $userId
-        ]);
+        return $stmt->execute([':id' => $userId]);
     }
 
     public function getUserStats($userId)
