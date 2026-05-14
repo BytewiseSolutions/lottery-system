@@ -57,6 +57,7 @@ export class HomeComponent implements OnInit, OnDestroy {
         this.totalPages = Math.ceil(this.draws.length / this.itemsPerPage);
         this.updatePagination();
         this.cdr.markForCheck();
+        this.loadResults();
       },
       error: (error) => {
         console.error('Error loading draws:', error);
@@ -64,10 +65,9 @@ export class HomeComponent implements OnInit, OnDestroy {
         this.totalPages = 0;
         this.paginatedDraws = [];
         this.cdr.markForCheck();
+        this.loadResults();
       }
     });
-    
-    this.loadResults();
   }
 
   updatePagination() {
@@ -156,7 +156,10 @@ export class HomeComponent implements OnInit, OnDestroy {
   }
 
   private getCurrentPoolFromDraws(lottery: string): string {
-    const draw = this.draws.find(d => (d.name || d.lottery) === lottery);
+    const matching = this.draws
+      .filter(d => (d.name || d.lottery) === lottery)
+      .sort((a, b) => new Date(a.nextDraw || a.drawDate || '').getTime() - new Date(b.nextDraw || b.drawDate || '').getTime());
+    const draw = matching[0];
     return String(draw?.jackpot || '$10.00');
   }
 

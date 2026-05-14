@@ -172,6 +172,14 @@ class UserRepository
         $this->pdo->prepare('DELETE FROM payment WHERE user_id = :id')->execute([':id' => $userId]);
         $this->pdo->prepare('DELETE FROM winner WHERE user_id = :id')->execute([':id' => $userId]);
 
+        $this->pdo->prepare(
+            'UPDATE draw SET jackpot = 10.00 + (
+                SELECT COUNT(*) FROM entry
+                WHERE draw_id = draw.id AND user_id != :uid
+            ) * 0.01
+            WHERE id IN (SELECT draw_id FROM entry WHERE user_id = :uid2)'
+        )->execute([':uid' => $userId, ':uid2' => $userId]);
+
         $stmt = $this->pdo->prepare('DELETE FROM user WHERE id = :id');
 
         return $stmt->execute([':id' => $userId]);

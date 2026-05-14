@@ -356,12 +356,9 @@ onClosePasswordReset() {
         const draws = response?.data ?? [];
 
         if (draws.length > 0) {
-          const jackpotValue = String(draws[0].jackpot ?? '0');
-          const jackpot = parseFloat(jackpotValue.replace('$', ''));
-
-          this.totalPoolMoney = jackpot;
-          // Cache the value
-          localStorage.setItem('cachedJackpot', jackpot.toString());
+          const jackpot = parseFloat(String(draws[0].jackpot ?? '0').replace('$', ''));
+          this.totalPoolMoney = isNaN(jackpot) ? 0 : jackpot;
+          localStorage.setItem('cachedJackpot', this.totalPoolMoney.toString());
         }
       },
       error: (error) => {
