@@ -485,6 +485,14 @@ function handleResultRoutes($method, $action) {
             }
             break;
 
+        case 'auto-publish':
+            if ($method === 'POST') {
+                $controller->autoPublishResults();
+            } else {
+                Response::json(false, 'Method not allowed', null, 405);
+            }
+            break;
+
         case 'update':
             if ($method === 'PUT') {
                 $controller->updateResult();
