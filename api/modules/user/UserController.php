@@ -366,12 +366,14 @@ class UserController
 
             if (!$currentUser) {
                 Response::json(false, 'Authentication required', null, HTTP_UNAUTHORIZED);
+                return;
             }
 
             $result = $this->userService->deleteCurrentAccount($currentUser);
 
             if ($result['success']) {
                 Response::json(true, $result['message'], null, HTTP_OK);
+                return;
             }
 
             Response::json(false, $result['message'], null, HTTP_BAD_REQUEST);
