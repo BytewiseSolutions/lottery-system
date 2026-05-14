@@ -83,15 +83,17 @@ export class SettingsComponent implements OnInit {
         if (response?.success) {
           this.successPopupService.show('Your account has been deleted successfully.', 'Account Deleted');
           this.backendService.clearAuthSession();
-          setTimeout(() => {
-            this.router.navigate(['/']);
-          }, 1000);
+          setTimeout(() => this.router.navigate(['/']), 1000);
           return;
         }
-
         this.errorHandlerService.showError(response?.message || 'Failed to delete account');
       },
-      error: (error) => {
+      error: (error: any) => {
+        if (error?.status === 401) {
+          this.backendService.clearAuthSession();
+          this.router.navigate(['/']);
+          return;
+        }
         this.errorHandlerService.showError(error?.error?.message || 'Failed to delete account');
       }
     });
