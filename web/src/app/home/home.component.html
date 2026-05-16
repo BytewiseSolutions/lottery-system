@@ -39,7 +39,11 @@
                   For {{formatDate(draw.nextDraw)}}<br>
                   {{draw.jackpot}}
                 </h4>
+                @if (isEntryClosed(draw)) {
+                <button class="custom-button-closed" disabled>Already Closed</button>
+              } @else {
                 <a routerLink="/play-lottery" [queryParams]="{lottery: getLotteryCode(draw.name), drawDate: getDateOnly(draw.nextDraw || draw.drawDate)}" [class]="i % 2 === 0 ? 'custom-button1' : 'custom-button2'">Play</a>
+              }
                 <div class="next-draw">
                   <span class="text">Lottery Closes :</span>
                   <div class="time">

@@ -36,7 +36,8 @@ export class LotteriesComponent implements OnInit, OnDestroy {
   private loadDraws() {
     this.backendService.getUpcomingDraws().subscribe({
       next: (response: ApiResponse<Draw[]>) => {
-        this.draws = response?.data ?? [];
+        const all = response?.data ?? [];
+        this.draws = all.filter(d => !this.isDrawExpired(d));
         this.cdr.markForCheck();
       },
       error: (error) => {
@@ -114,6 +115,21 @@ export class LotteriesComponent implements OnInit, OnDestroy {
     const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
 
     return `${days.toString().padStart(2, '0')} Days ${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:00`;
+  }
+
+  isEntryClosed(draw: Draw): boolean {
+    if (draw.is_entry_open === false) return true;
+    const closeTime = draw.entry_closes_at || draw.lottery_closes_at;
+    if (!closeTime) return false;
+    return new Date() > new Date(closeTime);
+  }
+
+  isDrawExpired(draw: Draw): boolean {
+    const drawDate = draw.drawDate || draw.nextDraw || draw.draw_date;
+    if (!drawDate) return false;
+    const expiry = new Date(drawDate);
+    expiry.setHours(20, 0, 0, 0);
+    return new Date() > expiry;
   }
 
   getLotteryCloseCountdown(draw: Draw): string {

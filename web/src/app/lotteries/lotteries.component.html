@@ -24,8 +24,12 @@
             {{ formatDate(draw.drawDate || draw.nextDraw || '') }}<br>
             {{ draw.jackpot }}
           </h4>
-          <a routerLink="/play-lottery" [queryParams]="{lottery: getLotteryCode(draw.lottery || draw.name || ''), drawDate: getDateOnly(draw.drawDate || draw.nextDraw || '')}" 
-             [class]="getLotteryImageId(draw.lottery || draw.name || '') === 2 ? 'custom-button2' : 'custom-button1'">Play</a>
+          @if (isEntryClosed(draw)) {
+            <button class="custom-button-closed" disabled>Already Closed</button>
+          } @else {
+            <a routerLink="/play-lottery" [queryParams]="{lottery: getLotteryCode(draw.lottery || draw.name || ''), drawDate: getDateOnly(draw.drawDate || draw.nextDraw || '')}" 
+               [class]="getLotteryImageId(draw.lottery || draw.name || '') === 2 ? 'custom-button2' : 'custom-button1'">Play</a>
+          }
           <div class="next-draw">
             <span class="text">Lottery Closes :</span>
             <div class="time">

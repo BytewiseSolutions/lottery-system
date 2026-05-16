@@ -54,7 +54,6 @@ export class HomeComponent implements OnInit, OnDestroy {
     this.backendService.getUpcomingDraws().subscribe({
       next: (response: ApiResponse<Draw[]>) => {
         this.draws = response?.data ?? [];
-        this.totalPages = Math.ceil(this.draws.length / this.itemsPerPage);
         this.updatePagination();
         this.cdr.markForCheck();
         this.loadResults();
@@ -71,9 +70,11 @@ export class HomeComponent implements OnInit, OnDestroy {
   }
 
   updatePagination() {
+    const active = this.draws.filter(d => !this.isDrawExpired(d));
     const startIndex = (this.currentPage - 1) * this.itemsPerPage;
     const endIndex = startIndex + this.itemsPerPage;
-    this.paginatedDraws = this.draws.slice(startIndex, endIndex);
+    this.paginatedDraws = active.slice(startIndex, endIndex);
+    this.totalPages = Math.ceil(active.length / this.itemsPerPage);
   }
 
   goToPage(page: number) {
@@ -229,6 +230,21 @@ export class HomeComponent implements OnInit, OnDestroy {
     const seconds = Math.floor((distance % (1000 * 60)) / 1000);
 
     return `${days.toString().padStart(2, '0')} Days ${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+  }
+
+  isEntryClosed(draw: Draw): boolean {
+    if (draw.is_entry_open === false) return true;
+    const closeTime = draw.entry_closes_at || draw.lottery_closes_at;
+    if (!closeTime) return false;
+    return new Date() > new Date(closeTime);
+  }
+
+  isDrawExpired(draw: Draw): boolean {
+    const drawDate = draw.nextDraw || draw.drawDate || draw.draw_date;
+    if (!drawDate) return false;
+    const expiry = new Date(drawDate);
+    expiry.setHours(20, 0, 0, 0);
+    return new Date() > expiry;
   }
 
   getLotteryCloseCountdown(draw: Draw): string {
