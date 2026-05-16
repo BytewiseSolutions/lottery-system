@@ -168,13 +168,14 @@ class DrawRepository
 
     public function getDueDrawsWithoutResults($asOf = null)
     {
-        $asOf = $asOf ?: date('Y-m-d H:i:s');
+        $asOf = $asOf ?: (new DateTime('now', new DateTimeZone(date_default_timezone_get())))->format('Y-m-d H:i:s');
 
         $sql = "SELECT d.*, l.name AS lottery
                 FROM draw d
                 LEFT JOIN lottery l ON l.id = d.lottery_id
                 LEFT JOIN result r ON r.draw_id = d.id
                 WHERE d.draw_date <= :as_of
+                AND d.status = 'scheduled'
                 AND r.id IS NULL
                 ORDER BY d.draw_date ASC";
 

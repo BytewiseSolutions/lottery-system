@@ -105,6 +105,10 @@ try {
             handleSettingsRoutes($method, $action);
             break;
             
+        case 'cron':
+            handleCronRoutes($method, $action);
+            break;
+            
         default:
             Response::json(false, 'Route not found', null, 404);
     }
@@ -677,6 +681,37 @@ function handleAuditRoutes($method, $action) {
             
         default:
             Response::json(false, 'Audit endpoint not found', null, 404);
+    }
+}
+
+function handleCronRoutes($method, $action) {
+    switch ($action) {
+        case 'auto-publish':
+            if ($method === 'POST') {
+                $token = $_GET['token'] ?? '';
+                $secret = Env::get('CRON_SECRET', '');
+
+                if (empty($secret) || $token !== $secret) {
+                    Response::json(false, 'Unauthorized', null, HTTP_UNAUTHORIZED);
+                    return;
+                }
+
+                $service = new ResultService();
+                $asOf = (new DateTime('now', new DateTimeZone(Env::get('TIMEZONE', 'Africa/Maseru'))))->format('Y-m-d H:i:s');
+                $result = $service->autoPublishDueResults($asOf);
+
+                if ($result['success']) {
+                    Response::json(true, 'Auto-publish complete', $result['data'] ?? null, HTTP_OK);
+                }
+
+                Response::json(false, $result['message'], null, HTTP_BAD_REQUEST);
+            } else {
+                Response::json(false, 'Method not allowed', null, HTTP_METHOD_NOT_ALLOWED);
+            }
+            break;
+
+        default:
+            Response::json(false, 'Cron endpoint not found', null, HTTP_NOT_FOUND);
     }
 }
 

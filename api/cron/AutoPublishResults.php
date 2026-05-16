@@ -3,7 +3,8 @@
 require_once __DIR__ . '/../config/bootstrap.php';
 
 $service = new ResultService();
-$result = $service->autoPublishDueResults();
+$asOf = (new DateTime('now', new DateTimeZone(Env::get('TIMEZONE', 'Africa/Maseru'))))->format('Y-m-d H:i:s');
+$result = $service->autoPublishDueResults($asOf);
 
 if (!$result['success']) {
     echo "Auto publish failed: " . ($result['message'] ?? 'Unknown error') . PHP_EOL;
