@@ -142,7 +142,11 @@ class DrawService
     private function nextDay($dayName, DateTime $date)
     {
         if ($date->format('l') === $dayName) {
-            return $date->format('Y-m-d');
+            $drawTime = clone $date;
+            $drawTime->setTime(20, 0, 0);
+            if (new DateTime() < $drawTime) {
+                return $date->format('Y-m-d');
+            }
         }
 
         $date->modify('next ' . $dayName);
