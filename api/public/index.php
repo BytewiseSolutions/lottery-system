@@ -571,6 +571,14 @@ function handleNotificationRoutes($method, $action) {
                 Response::json(false, 'Method not allowed', null, 405);
             }
             break;
+
+        case 'public':
+            if ($method === 'GET') {
+                $controller->getPublicNotifications();
+            } else {
+                Response::json(false, 'Method not allowed', null, 405);
+            }
+            break;
             
         case 'unread-count':
             if ($method === 'GET') {
@@ -591,6 +599,14 @@ function handleNotificationRoutes($method, $action) {
         case 'mark-read':
             if ($method === 'POST') {
                 $controller->markAsRead();
+            } else {
+                Response::json(false, 'Method not allowed', null, 405);
+            }
+            break;
+
+        case 'mark-all-read':
+            if ($method === 'POST') {
+                $controller->markAllAsRead();
             } else {
                 Response::json(false, 'Method not allowed', null, 405);
             }
