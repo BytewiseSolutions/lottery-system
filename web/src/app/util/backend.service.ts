@@ -223,6 +223,10 @@ export class BackendService {
     return this.get('notification/list');
   }
 
+  getPublicNotifications(): Observable<any> {
+    return this.get('notification/public');
+  }
+
   uploadFile(fileData: FormData): Observable<any> {
     const headers = this.getHeaders().delete('Content-Type');
 
@@ -313,6 +317,10 @@ export class BackendService {
 
   getUnreadNotificationCount(): Observable<any> {
     return this.get('notification/unread-count');
+  }
+
+  markAllNotificationsAsRead(): Observable<any> {
+    return this.post('notification/mark-all-read', {});
   }
 
   markNotificationAsRead(notificationId: number): Observable<any> {

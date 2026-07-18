@@ -8,49 +8,27 @@
               <img src="assets/images/logoo.png" [alt]="siteSettingsService.siteName()" style="height: 60px; width: auto; background: white; padding: 5px; border-radius: 5px;">
             </a>
             <div class="right-area">
-              <div class="log-reg-area" *ngIf="!isLoggedIn">
-                <a href="#" class="custom-button1" (click)="openRegisterModal()">Sign Up</a>
-                <a href="#" class="custom-button2" (click)="openLoginModal()">Login</a>
-              </div>
-              <div class="log-reg-area" *ngIf="isLoggedIn" style="position: relative;">
-                <div class="user-dropdown">
-                  <span class="user-name">{{ getUserDisplayName() }}</span>
-                  <div class="dropdown-menu">
-                    <a routerLink="/profile">Profile</a>
-                    <a routerLink="/winnings">My Winnings</a>
-                    <a routerLink="/settings">Settings</a>
-                    <a href="#" (click)="logout()">Logout</a>
-                  </div>
+              @if (!isLoggedIn) {
+                <div class="log-reg-area">
+                  <a href="#" class="custom-button1" (click)="openRegisterModal()">Sign Up</a>
+                  <a href="#" class="custom-button2" (click)="openLoginModal()">Login</a>
                 </div>
-                <div class="notification-icon" (click)="toggleNotifications()">
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
-                    <path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.9 2 2 2zm6-6v-5c0-3.07-1.64-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.63 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2z"/>
-                  </svg>
-                  <span class="notification-badge" *ngIf="notificationCount > 0">{{ notificationCount }}</span>
-                </div>
-                
-                <div class="notification-dropdown" *ngIf="showNotifications">
-                  <div class="notification-header">
-                    <h4>Notifications</h4>
-                  </div>
-                  <div class="notification-list">
-                    <div *ngIf="notifications.length === 0" class="no-notifications">
-                      <p>No new notifications</p>
-                    </div>
-                    <div
-                      *ngFor="let notification of notifications"
-                      class="notification-item"
-                      [class.notification-unread]="!notification.is_read"
-                      (click)="markNotificationAsRead(notification, $event)">
-                      <div class="notification-item-header">
-                        <p class="notification-title">{{ notification.title || 'Notification' }}</p>
-                        <span *ngIf="!notification.is_read" class="notification-pill">New</span>
-                      </div>
-                      <p class="notification-message">{{ notification.message }}</p>
-                      <p class="notification-date">Posted at: {{ formatNotificationDate(notification.created_at) }}</p>
+              }
+              @if (isLoggedIn) {
+                <div class="log-reg-area" style="position: relative;">
+                  <div class="user-dropdown">
+                    <span class="user-name">{{ getUserDisplayName() }}</span>
+                    <div class="dropdown-menu">
+                      <a routerLink="/profile">Profile</a>
+                      <a routerLink="/winnings">My Winnings</a>
+                      <a routerLink="/settings">Settings</a>
+                      <a href="#" (click)="logout()">Logout</a>
                     </div>
                   </div>
                 </div>
+              }
+              <div class="notification-icon">
+                <app-notification></app-notification>
               </div>
               <div class="cart-area">
                 <div class="amount">

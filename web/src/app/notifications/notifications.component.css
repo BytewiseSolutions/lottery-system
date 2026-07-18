@@ -1,0 +1,170 @@
+.notifications-section {
+  padding: 50px 0 80px;
+  background: #f8f9fa;
+  min-height: 60vh;
+}
+
+.notifications-card {
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+  overflow: hidden;
+}
+
+.card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 24px;
+  background: linear-gradient(90deg, rgb(108, 0, 146) 0%, rgb(175, 0, 255) 100%);
+}
+
+.card-header h4 {
+  margin: 0;
+  color: #fff;
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.unread-badge {
+  background: rgba(255,255,255,0.25);
+  color: #fff;
+  border-radius: 999px;
+  padding: 4px 12px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+/* States */
+.state-box {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 20px;
+  gap: 12px;
+  color: #999;
+}
+
+.state-icon {
+  font-size: 40px;
+}
+
+.state-box p {
+  margin: 0;
+  font-size: 15px;
+}
+
+.spinner {
+  width: 36px;
+  height: 36px;
+  border: 3px solid #f0e6ff;
+  border-top-color: rgb(108, 0, 146);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.retry-btn {
+  background: linear-gradient(90deg, rgb(108, 0, 146), rgb(175, 0, 255));
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  padding: 8px 20px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+/* Notification item */
+.notification-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  padding: 18px 24px;
+  border-bottom: 1px solid #f0f0f0;
+  cursor: pointer;
+  transition: background 0.2s;
+  position: relative;
+}
+
+.notification-item:last-child { border-bottom: none; }
+.notification-item:hover { background: #fafafa; }
+.notification-item.unread { background: #fdf8ff; }
+
+/* Left colour bar by type */
+.type-bar {
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 4px;
+  border-radius: 4px 0 0 4px;
+}
+
+.type-success .type-bar { background: #28a745; }
+.type-warning .type-bar { background: #ffc107; }
+.type-error   .type-bar { background: #dc3545; }
+.type-info    .type-bar { background: #6c0092; }
+
+.item-icon {
+  font-size: 22px;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.item-content { flex: 1; min-width: 0; }
+
+.item-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 6px;
+}
+
+.item-title {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 700;
+  color: #231942;
+}
+
+.new-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: rgb(108, 0, 146);
+  flex-shrink: 0;
+}
+
+.item-message {
+  margin: 0 0 6px 0;
+  font-size: 14px;
+  color: #555;
+  line-height: 1.6;
+}
+
+.item-date {
+  margin: 0;
+  font-size: 12px;
+  color: #aaa;
+}
+
+@media (max-width: 576px) {
+  .notification-item {
+    padding: 14px 16px;
+    gap: 12px;
+  }
+
+  .card-header {
+    padding: 16px 18px;
+  }
+
+  .card-header h4 {
+    font-size: 16px;
+  }
+}

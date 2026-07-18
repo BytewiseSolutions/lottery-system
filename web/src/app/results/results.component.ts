@@ -61,7 +61,6 @@ export class ResultsComponent implements OnInit {
     
     const date = new Date(dateString);
     
-    // Check if date is valid
     if (isNaN(date.getTime())) {
       console.warn('Invalid date string:', dateString);
       return 'TBA';

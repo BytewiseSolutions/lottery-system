@@ -14,6 +14,7 @@ import { PrivacyComponent } from './privacy/privacy.component';
 import { ProfileComponent } from './profile/profile.component';
 import { SettingsComponent } from './settings/settings.component';
 import { WinningsComponent } from './winnings/winnings.component';
+import { NotificationsComponent } from './notifications/notifications.component';
 import { adminGuard } from './guards/admin.guard';
 import { AdminDashboardComponent } from './admin-dashboard/admin-dashboard.component';
 import { ActivityLogComponent } from './admin-dashboard/components/activity-log/activity-log.component';
@@ -48,6 +49,7 @@ export const routes: Routes = [
   { path: 'profile', component: ProfileComponent },
   { path: 'settings', component: SettingsComponent },
   { path: 'winnings', component: WinningsComponent },
+  { path: 'notifications', component: NotificationsComponent },
   { path: 'admin-dashboard', component: AdminDashboardComponent, canActivate: [adminGuard] },
   { path: 'admin-dashboard/activity-log', component: ActivityLogComponent, canActivate: [adminGuard] },
   { path: 'admin-dashboard/voting', component: AdminVotingComponent, canActivate: [adminGuard] },
