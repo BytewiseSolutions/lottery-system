@@ -10,14 +10,14 @@
             <div class="right-area">
               @if (!isLoggedIn) {
                 <div class="log-reg-area">
-                  <a routerLink="/voting" class="vote-now-nav">🎯 Vote Now</a>
-                  <a href="#" class="custom-button1" (click)="openRegisterModal()">Sign Up</a>
+                  <a routerLink="/voting" class="vote-now-nav">Vote</a>
+                  <a href="#" class="custom-button1 hide-mobile" (click)="openRegisterModal()">Sign Up</a>
                   <a href="#" class="custom-button2" (click)="openLoginModal()">Login</a>
                 </div>
               }
               @if (isLoggedIn) {
                 <div class="log-reg-area" style="position: relative;">
-                  <a routerLink="/voting" class="vote-now-nav">🎯 Vote Now</a>
+                  <a routerLink="/voting" class="vote-now-nav">Vote</a>
                   <div class="user-dropdown">
                     <span class="user-name">{{ getUserDisplayName() }}</span>
                     <div class="dropdown-menu">

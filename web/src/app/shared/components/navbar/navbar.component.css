@@ -201,31 +201,42 @@
   display: inline-block;
   background: linear-gradient(90deg, #ff6b00, #ff0080);
   color: #fff !important;
-  font-size: 13px;
-  font-weight: 900;
-  letter-spacing: 1px;
+  font-size: 16px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
   text-transform: uppercase;
-  padding: 8px 18px;
-  border-radius: 50px;
+  padding: 5px 15px;
+  border-radius: 5px;
+  line-height: 26px;
   text-decoration: none;
+  width: auto;
   box-shadow: 0 0 12px rgba(255, 0, 128, 0.5);
   animation: pulse-nav 1.5s infinite;
 }
 
-@keyframes pulse-nav {
-  0%, 100% { transform: scale(1); box-shadow: 0 0 12px rgba(255, 0, 128, 0.5); }
-  50% { transform: scale(1.06); box-shadow: 0 0 22px rgba(255, 0, 128, 0.8); }
+@media (max-width: 991px) {
+  .hide-mobile {
+    display: none;
+  }
 }
 
+@keyframes pulse-nav {
+  0%, 100% { box-shadow: 0 0 12px rgba(255, 0, 128, 0.5); }
+  50% { box-shadow: 0 0 22px rgba(255, 0, 128, 0.8); }
+}
 
+@media (max-width: 767px) {
+  .vote-now-nav {
+    font-size: 14px;
+    padding: 1px 6px;
+    line-height: 24px;
+    letter-spacing: 0;
+  }
+}
+
+.user-dropdown {
   position: relative;
   display: inline-block;
-}
-
-.user-info {
-  display: flex;
-  align-items: center;
-  gap: 10px;
 }
 
 .notification-icon {
