@@ -1,4 +1,8 @@
-.custom-button-closed {
+.banner-col {
+  display: flex;
+  flex-direction: column;
+}
+
   display: inline-block;
   padding: 10px 30px;
   background: #6c757d;
