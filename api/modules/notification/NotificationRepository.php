@@ -15,11 +15,11 @@ class NotificationRepository
             $offset = ($page - 1) * $limit;
 
             $stmt = $this->pdo->prepare('
-                SELECT id, title, message, type, created_at
+                SELECT MIN(id) as id, title, message, type, MIN(created_at) as created_at
                 FROM notification
                 WHERE sent_by IS NOT NULL
-                GROUP BY title, message, type, DATE(created_at)
-                ORDER BY created_at DESC
+                GROUP BY title, message, type
+                ORDER BY MIN(created_at) DESC
                 LIMIT :limit OFFSET :offset
             ');
 
@@ -161,6 +161,16 @@ class NotificationRepository
             ]);
             
             return [];
+        }
+    }
+
+    public function markAllAsRead($userId)
+    {
+        try {
+            $stmt = $this->pdo->prepare('UPDATE notification SET is_read = 1 WHERE user_id = :user_id AND is_read = 0');
+            $stmt->execute([':user_id' => $userId]);
+        } catch (Exception $e) {
+            Logger::error('NotificationRepository markAllAsRead error', ['error' => $e->getMessage()]);
         }
     }
 

@@ -38,6 +38,27 @@ class NotificationController
         }
     }
 
+    public function getPublicNotifications()
+    {
+        try {
+            $page = max(1, (int)($_GET['page'] ?? 1));
+            $limit = max(MIN_PAGE_SIZE, min(MAX_PAGE_SIZE, (int)($_GET['limit'] ?? 10)));
+
+            $result = $this->notificationService->getPublicNotifications($page, $limit);
+
+            if ($result['success']) {
+                Response::json(true, 'Notifications retrieved successfully', $result['data'], HTTP_OK);
+            } else {
+                Response::json(false, $result['message'], null, HTTP_BAD_REQUEST);
+            }
+        } catch (Exception $e) {
+            Logger::error('NotificationController get public notifications error', [
+                'error' => $e->getMessage()
+            ]);
+            Response::json(false, 'Failed to get notifications', null, HTTP_INTERNAL_ERROR);
+        }
+    }
+
     public function getNotifications()
     {
         try {
@@ -45,12 +66,12 @@ class NotificationController
             $page = max(1, (int)($_GET['page'] ?? 1));
             $limit = max(MIN_PAGE_SIZE, min(MAX_PAGE_SIZE, (int)($_GET['limit'] ?? 10)));
 
-            // If no auth token, return public broadcast notifications
             if (!$userId) {
-                $result = $this->notificationService->getPublicNotifications($page, $limit);
-            } else {
-                $result = $this->notificationService->getNotifications($userId, $page, $limit);
+                Response::json(false, 'Authentication required', null, HTTP_UNAUTHORIZED);
+                return;
             }
+
+            $result = $this->notificationService->getNotifications($userId, $page, $limit);
 
             if ($result['success']) {
                 Response::json(true, 'Notifications retrieved successfully', $result['data'], HTTP_OK);
@@ -97,6 +118,25 @@ class NotificationController
                 'error' => $e->getMessage()
             ]);
             Response::json(false, 'Failed to create notification', null, HTTP_INTERNAL_ERROR);
+        }
+    }
+
+    public function markAllAsRead()
+    {
+        try {
+            $userId = $this->getCurrentUserId();
+
+            if (!$userId) {
+                Response::json(false, 'Authentication required', null, HTTP_UNAUTHORIZED);
+                return;
+            }
+
+            $this->notificationService->markAllAsRead($userId);
+            Response::json(true, 'All notifications marked as read', null, HTTP_OK);
+
+        } catch (Exception $e) {
+            Logger::error('NotificationController markAllAsRead error', ['error' => $e->getMessage()]);
+            Response::json(false, 'Failed to mark notifications as read', null, HTTP_INTERNAL_ERROR);
         }
     }
 

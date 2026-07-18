@@ -120,6 +120,11 @@ class NotificationService
         }
     }
 
+    public function markAllAsRead($userId)
+    {
+        $this->notificationRepository->markAllAsRead($userId);
+    }
+
     public function markAsRead($userId, $notificationId)
     {
         try {
