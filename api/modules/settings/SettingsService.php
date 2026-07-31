@@ -80,6 +80,7 @@ class SettingsService
             'site_name' => 'Total Free Lotto',
             'support_email' => '',
             'support_phone' => '',
+            'currency_symbol' => '$',
             'default_draw_jackpot' => '10.00',
             'maintenance_mode' => '0',
             'registration_enabled' => '1',
@@ -93,6 +94,7 @@ class SettingsService
             'site_name' => (string)($settings['site_name'] ?? 'Total Free Lotto'),
             'support_email' => (string)($settings['support_email'] ?? ''),
             'support_phone' => (string)($settings['support_phone'] ?? ''),
+            'currency_symbol' => (string)($settings['currency_symbol'] ?? '$'),
             'default_draw_jackpot' => number_format((float)($settings['default_draw_jackpot'] ?? 10), 2, '.', ''),
             'maintenance_mode' => $this->toBoolean($settings['maintenance_mode'] ?? false),
             'registration_enabled' => $this->toBoolean($settings['registration_enabled'] ?? true),
@@ -107,6 +109,7 @@ class SettingsService
         $siteName = trim((string)($data['site_name'] ?? ''));
         $supportEmail = trim((string)($data['support_email'] ?? ''));
         $supportPhone = trim((string)($data['support_phone'] ?? ''));
+        $currencySymbol = trim((string)($data['currency_symbol'] ?? '$'));
         $defaultDrawJackpot = trim((string)($data['default_draw_jackpot'] ?? '10.00'));
         $maintenanceMode = $this->toBoolean($data['maintenance_mode'] ?? false) ? '1' : '0';
         $registrationEnabled = $this->toBoolean($data['registration_enabled'] ?? true) ? '1' : '0';
@@ -138,6 +141,7 @@ class SettingsService
                 'site_name' => $siteName,
                 'support_email' => $supportEmail,
                 'support_phone' => $supportPhone,
+                'currency_symbol' => $currencySymbol ?: '$',
                 'default_draw_jackpot' => number_format((float)$defaultDrawJackpot, 2, '.', ''),
                 'maintenance_mode' => $maintenanceMode,
                 'registration_enabled' => $registrationEnabled,

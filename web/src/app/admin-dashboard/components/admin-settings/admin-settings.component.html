@@ -40,6 +40,11 @@
                   </div>
 
                   <div class="form-group">
+                    <label for="currency-symbol">Currency Symbol</label>
+                    <input id="currency-symbol" type="text" [(ngModel)]="settings.currency_symbol" name="currency_symbol" maxlength="5">
+                  </div>
+
+                  <div class="form-group">
                     <label for="default-jackpot">Default Draw Jackpot</label>
                     <input
                       id="default-jackpot"

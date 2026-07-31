@@ -4,6 +4,7 @@ import { BackendService } from './backend.service';
 
 interface RuntimeSettings {
   site_name: string;
+  currency_symbol: string;
 }
 
 @Injectable({
@@ -13,6 +14,7 @@ export class SiteSettingsService {
   private initialized = false;
   private readonly defaultSiteName = 'Total Free Lotto';
   readonly siteName = signal(this.defaultSiteName);
+  readonly currencySymbol = signal('$');
 
   constructor(
     private backendService: BackendService,
@@ -34,6 +36,7 @@ export class SiteSettingsService {
         const settings = response?.success ? (response.data as RuntimeSettings) : null;
         const nextSiteName = settings?.site_name?.trim() || this.defaultSiteName;
         this.siteName.set(nextSiteName);
+        this.currencySymbol.set(settings?.currency_symbol?.trim() || '$');
         this.applyBranding(nextSiteName);
       },
       error: (error) => {

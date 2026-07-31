@@ -22,7 +22,7 @@
           <h4 style="text-align: center;">
             {{ draw.lottery || draw.name }}<br>
             {{ formatDate(draw.drawDate || draw.nextDraw || '') }}<br>
-            {{ draw.jackpot }}
+            {{ formatJackpot(draw.jackpot) }}
           </h4>
           @if (isEntryClosed(draw)) {
             <button class="custom-button-closed" disabled>Already Closed</button>

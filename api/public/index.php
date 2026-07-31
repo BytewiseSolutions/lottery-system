@@ -11,7 +11,8 @@ $allowedOrigins = [
     'http://localhost:4200',
 ];
 $origin = $_SERVER['HTTP_ORIGIN'] ?? '';
-if (in_array($origin, $allowedOrigins)) {
+$isAllowed = in_array($origin, $allowedOrigins) || (bool) preg_match('/^http:\/\/localhost:\d+$/', $origin);
+if ($isAllowed) {
     header("Access-Control-Allow-Origin: $origin");
     header("Access-Control-Allow-Credentials: true");
 }

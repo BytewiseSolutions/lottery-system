@@ -38,7 +38,7 @@
                 <h4 style="text-align: center;">
                   {{draw.name}}<br>
                   For {{formatDate(draw.nextDraw)}}<br>
-                  {{draw.jackpot}}
+                  {{formatJackpot(draw.jackpot)}}
                 </h4>
                 @if (isEntryClosed(draw)) {
                 <button class="custom-button-closed" disabled>Already Closed</button>
@@ -151,7 +151,7 @@
                   </div>
                   <div class="right">
                     <span>Pool Money Was</span>
-                    <h6>{{result.poolMoney}}</h6>
+                    <h6>{{formatJackpot(result.poolMoney)}}</h6>
                   </div>
                 </div>
               </div>
@@ -162,7 +162,7 @@
                 </div>
                 <div class="bottom">
                   <span>Pool Money Now</span>
-                  <h6><a href="#" style="color: inherit; text-decoration: none;">{{result.currentPool}}</a></h6>
+                  <h6><a href="#" style="color: inherit; text-decoration: none;">{{formatJackpot(result.currentPool)}}</a></h6>
                 </div>
               </div>
             </div>

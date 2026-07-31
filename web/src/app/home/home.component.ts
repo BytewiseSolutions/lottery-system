@@ -6,6 +6,7 @@ import { Draw } from '../lotteries/draw';
 import { BackendService } from '../util/backend.service';
 import { ApiResponse } from '../util/api-response';
 import { LayoutComponent } from '../layout/layout.component';
+import { SiteSettingsService } from '../util/site-settings.service';
 
 @Component({
   selector: 'app-home',
@@ -25,8 +26,9 @@ export class HomeComponent implements OnInit, OnDestroy {
 
   constructor(
     private backendService: BackendService,
-    private cdr: ChangeDetectorRef, 
-    private ngZone: NgZone
+    private cdr: ChangeDetectorRef,
+    private ngZone: NgZone,
+    private siteSettings: SiteSettingsService
   ) {}
 
   ngOnInit() {
@@ -162,6 +164,13 @@ export class HomeComponent implements OnInit, OnDestroy {
       .sort((a, b) => new Date(a.nextDraw || a.drawDate || '').getTime() - new Date(b.nextDraw || b.drawDate || '').getTime());
     const draw = matching[0];
     return String(draw?.jackpot || '$10.00');
+  }
+
+  formatJackpot(jackpot: string | number | undefined): string {
+    const symbol = this.siteSettings.currencySymbol();
+    const value = parseFloat(String(jackpot ?? 0));
+    if (isNaN(value)) return String(jackpot ?? '');
+    return `${symbol}${value.toFixed(2)}`;
   }
 
   formatDate(dateString: string | undefined): string {
