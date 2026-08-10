@@ -128,7 +128,7 @@ class DrawService
             'lottery_id' => $lotteryId,
             'draw_date'  => $date . ' 20:00:00',
             'status'     => DRAW_SCHEDULED,
-            'jackpot'    => $this->calculateJackpot($lotteryId)
+            'jackpot'    => $this->defaultJackpot
         ]);
 
         $this->drawRepository->create($draw);
@@ -165,10 +165,4 @@ class DrawService
         return $date->format('Y-m-d');
     }
 
-    private function calculateJackpot($lotteryId)
-    {
-        $votes = $this->drawRepository->countVotesByLottery($lotteryId);
-
-        return number_format($this->defaultJackpot + ($votes * 0.01), 2, '.', '');
-    }
 }
